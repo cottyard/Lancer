@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Lancer</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="global.js"></script>
+    <script src="canvas.js"></script>
+    <script src="settings.js"></script>
+    <script src="ui/renderer.js"></script>
+    <style>
+        textarea {
+            resize: none;
+        }
+
+        .panel {
+            padding: 10px;
+        }
+
+        .column {
+            float: left;
+            width: 33.33%;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .column-left {
+            float: left;
+            width: 33%;
+        }
+
+        .column-center {
+            display: inline-block;
+            width: 67%;
+        }
+    </style>
+</head>
+<body class="row">
+    <div class="column-left">&nbsp;</div>
+    <div class="column-center">
+        <div align="left" style="padding-top: 50px;">
+            <canvas id="animate" tabindex="1"></canvas>
+            <canvas id="static"></canvas>
+            <canvas id="background"></canvas>
+        </div>
+    </div>
+</body>
+</html>
