@@ -16,7 +16,7 @@ class Game
 
     run()
     {
-        new Renderer(this.canvas.bg_ctx).line(1, 1, 100, 100, 3);
+        this.canvas.paint_background();
     }
 }
 

@@ -32,4 +32,22 @@ class Canvas
         }
         return ctx;
     }
+
+    paint_background()
+    {
+        let grid_size = m.settings.grid_size;
+        let grids = m.settings.grid_count;
+
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            renderer.set_style(Renderer.STYLE_GREY);
+
+            for (let i = 0; i < grids; ++i) {
+                for (let j = 0; j < grids; ++j) {
+                    if ((i + j) % 2 != 0) {
+                        renderer.rectangle(i * grid_size, j * grid_size, grid_size, grid_size, true);
+                    }
+                }   
+            }
+        });
+    }
 }
