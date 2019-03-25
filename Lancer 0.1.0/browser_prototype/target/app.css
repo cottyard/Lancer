@@ -1,0 +1,36 @@
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+span {
+    font-style: italic;
+}
+
+textarea {
+    resize: none;
+}
+
+.panel {
+    padding: 10px;
+}
+
+.column {
+    float: left;
+    width: 33.33%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.column-left {
+    float: left;
+    width: 33%;
+}
+
+.column-center {
+    display: inline-block;
+    width: 67%;
+}
