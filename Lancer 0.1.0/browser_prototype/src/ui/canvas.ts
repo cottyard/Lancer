@@ -21,9 +21,9 @@ class Canvas
 
     set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number): CanvasRenderingContext2D
     {
-        cvs.style.border = "solid #000 #{border_width}px";
+        cvs.style.border = `solid #000 ${border_width}px`;
         cvs.style.position = "absolute";
-        cvs.style.setProperty("z-index", "#{z_index}");
+        cvs.style.setProperty("z-index", `${z_index}`);
         cvs.width = cvs.height = size;
         let ctx = cvs.getContext('2d');
         if (ctx == null)
@@ -49,5 +49,10 @@ class Canvas
                 }   
             }
         });
+
+        let img = document.getElementById("soldier_white");
+        let piece_width = 30, piece_height = 50;
+        let piece_x = 20, piece_y = 10;
+        this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
 }
