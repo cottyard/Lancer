@@ -1,3 +1,3 @@
-Board game is dying - this will save it.
+Lancer is the new Chess.
 
-`tsc global.ts` to compile.
+Under browser_prototype, `tsc -w` to compile.
