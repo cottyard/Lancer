@@ -1,3 +1,4 @@
 *.js
 .vscode
 *.js.map
+__pycache__

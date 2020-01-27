@@ -26,37 +26,38 @@ class Unit:
         self.skillset[x][y] = False
 
     def absorb(self, unit):
-        if self.is_promotion_ready():
-            promotions = set()
-            for p in promotion_map[type(self)]:
-                adv_potentials = skills.op_skillsets(
-                    skills.op_skillset_subtract,
-                    skills.potential_skillset[p.display],
-                    self.ultimate_skillset)
-                for i in range(skills.skillset_size):
-                    for j in range(skills.skillset_size):
-                        if unit.skills()[i][j] and adv_potentials[i][j]:
-                            promotions.add(p)
-
-            assert len(promotions) <= 1
-            if len(promotions) == 0:
-                return self
-            promotion_creator = promotions.pop()
-            promoted = promotion_creator(
-                self.owner,
-                skills.op_skillsets(
-                    skills.op_skillset_common,
-                    skills.potential_skillset[promotion_creator.display],
-                    skills.op_skillsets(
-                        skills.op_skillset_union,
-                        self.skillset,
-                        unit.skills())))
-
-            return promoted
-        else:
-            incremental = skills.op_skillsets(skills.op_skillset_common, self.ultimate_skillset, unit.skillset)
-            self.skillset = skills.op_skillsets(skills.op_skillset_union, self.skillset, incremental)
-            return self
+        return self
+##        if self.is_promotion_ready():
+##            promotions = set()
+##            for p in promotion_map[type(self)]:
+##                adv_potentials = skills.op_skillsets(
+##                    skills.op_skillset_subtract,
+##                    skills.potential_skillset[p.display],
+##                    self.ultimate_skillset)
+##                for i in range(skills.skillset_size):
+##                    for j in range(skills.skillset_size):
+##                        if unit.skills()[i][j] and adv_potentials[i][j]:
+##                            promotions.add(p)
+##
+##            assert len(promotions) <= 1
+##            if len(promotions) == 0:
+##                return self
+##            promotion_creator = promotions.pop()
+##            promoted = promotion_creator(
+##                self.owner,
+##                skills.op_skillsets(
+##                    skills.op_skillset_common,
+##                    skills.potential_skillset[promotion_creator.display],
+##                    skills.op_skillsets(
+##                        skills.op_skillset_union,
+##                        self.skillset,
+##                        unit.skills())))
+##
+##            return promoted
+##        else:
+##            incremental = skills.op_skillsets(skills.op_skillset_common, self.ultimate_skillset, unit.skillset)
+##            self.skillset = skills.op_skillsets(skills.op_skillset_union, self.skillset, incremental)
+##            return self
 
     def is_perfected(self):
         return not any(
