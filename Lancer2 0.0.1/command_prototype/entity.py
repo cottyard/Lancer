@@ -1,4 +1,5 @@
 import skills
+from copy import deepcopy
 
 board_size_x = 9
 board_size_y = 9
@@ -19,68 +20,151 @@ class Board:
             (board_size_y - 2, board_setting_2nd_row, player_2)
         ]:
             for i in range(board_size_x):
-                self.board[i][row] = setting[i](player)
+                self.board[i][row] = setting[i](player, flip_skillset=player==player_2)
     
     def at(self, position):
         return self.board[position.x][position.y]
+    
+    def put(self, position, unit):
+        self.board[position.x][position.y] = unit
+
+    def remove(self, position):
+        self.board[position.x][position.y] = None
+
+    def move(self, move):
+        unit = self.at(move.position_from)
+        self.put(move.position_to, unit)
+        self.remove(move.position_from)
 
     def iterate_units(self, func):
         for i in range(board_size_x):
             for j in range(board_size_y):
                 u = self.board[i][j]
                 if u is not None:
-                    func(u, i, j)
+                    func(u, Position(i, j))
+    
+    def copy(self):
+        return deepcopy(self)
 
 class Move:
     def __init__(self, position_from, position_to):
         self.position_from = position_from
         self.position_to = position_to
+    
+    def __eq__(self, move):
+        return self.position_from == move.position_from and \
+            self.position_to == move.position_to
+
+    def is_from_same(self, move):
+        return self.position_from == move.position_from
+
+    def is_to_same(self, move):
+        return self.position_to == move.position_to
+    
+    def get_skill(self):
+        return Skill(self.position_from.get_delta(self.position_to))
+
+    def __repr__(self):
+        return str(self.position_from) + '->' + str(self.position_to)
 
 class Position:
     def __init__(self, x, y):
+        if not (0 <= x < board_size_x and 0 <= y < board_size_y):
+            raise InvalidParameter("invalid data for Position")
         self.x = x
         self.y = y
 
+    def get_delta(self, position):
+        return PositionDelta(position.x - self.x, position.y - self.y)
+    
+    def __eq__(self, position):
+        return self.x == position.x and self.y == position.y
+
+    def get_new_position(self, position_delta):
+        try:
+            return Position(self.x + position_delta.dx, self.y + position_delta.dy)
+        except InvalidParameter:
+            return None
+
+    def __str__(self):
+        return '(%s, %s)' % (self.x + 1, self.y + 1)
+
 class Unit:
     display = ""
-    def __init__(self, owner, flip_skillset=False):
+    
+    def __init__(self, owner, skillset=None, flip_skillset=False):
         self.owner = owner
-        self.ultimate_skillset = SkillSet(potential_skill_list_map[self.display])
-        self.skillset = SkillSet(inborn_skill_list_map[self.display])
+        self.perfect_skillset = potential_skillset_map[self.display].copy()
+        if skillset is None:
+            self.skillset = inborn_skillset_map[self.display].copy()
+        else:
+            self.skillset = skillset.copy()
+
         if flip_skillset:
             self.skillset.flip()
 
     def endow(self, skill):
-        if self.ultimate_skillset.has(skill) and not self.skillset.has(skill):
+        if self.perfect_skillset.has(skill):
             self.skillset.add(skill)
             return True
         return False
+        
+    def has_skill(self, skill):
+        return self.skillset.has(skill)
+    
+    def has_potential_skill(self, skill):
+        return self.potential_skillset().has(skill)
 
-    def is_ultimate(self):
-        return self.skillset.equals(self.ultimate_skillset)
+    def is_perfect(self):
+        return self.skillset == self.perfect_skillset
 
     def is_promotion_ready(self):
-        return not self.is_advanced() and self.is_ultimate()
+        return not self.is_advanced() and self.is_perfect()
 
     def is_advanced(self):
         return type(self) not in promotion_map
 
     def potential_skillset(self):
-        ultimate = self.ultimate_skillset.copy()
+        return self.ultimate_skillset().subtract(self.skillset)
+    
+    def ultimate_skillset(self):
+        ultimate = self.perfect_skillset.copy()
         if self.is_promotion_ready():
-            for p in promotion_map[type(self)]:
-                ultimate.add_some(skills.potential_skill_list_map[p.display])
+            for creator in promotion_map[type(self)]:
+                ultimate.union(potential_skillset_map[creator.display])
 
-        return ultimate.subtract(self.skillset)
+        return ultimate
+
+    def get_promoted(self, skill):
+        if not self.is_promotion_ready():
+            return None
+
+        for creator in promotion_map[type(self)]:
+            if potential_skillset_map[creator.display].has(skill):
+                promoted = creator(self.owner, skillset=self.skillset)
+                promoted.endow(skill)
+                return promoted
+        
+        return None
 
 class PositionDelta:
     def __init__(self, dx, dy):
         self.dx = dx
         self.dy = dy
+    
+    def __eq__(self, other):
+        return self.dx == other.dx and self.dy == other.dy
+
+class InvalidParameter(Exception):
+    pass
 
 class Skill:
     def __init__(self, position_delta):
         self.delta = position_delta
+        if not (
+                0 <= self.delta.dx + skillset_offset < skillset_size and \
+                0 <= self.delta.dy + skillset_offset < skillset_size):
+            raise InvalidParameter("invalid delta for Skill")
 
 class SkillSet:
     op_union = lambda a, b: a or b
@@ -89,7 +173,8 @@ class SkillSet:
 
     def __init__(self, skill_list=[]):
         self.map = [[False] * skillset_size for i in range(skillset_size)]
-        self.add_some(skill_list)
+        for skill in skill_list:
+            self.add(skill)
 
     def apply(self, operator, skillset):
         self.map = [
@@ -110,9 +195,9 @@ class SkillSet:
     def subtract(self, skillset):
         return self.apply(SkillSet.op_subtract, skillset)
 
-    def equals(self, skillset):
+    def __eq__(self, other):
         return all(
-            self.map[i][j] == skillset.map[i][j]
+            self.map[i][j] == other.map[i][j]
             for i in range(skillset_size)
             for j in range(skillset_size)
         )
@@ -122,13 +207,17 @@ class SkillSet:
 
     def add(self, skill):
         self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset] = True
-    
-    def add_some(self, skill_list):
-        for skill in skill_list:
-            self.add(skill)
 
     def has(self, skill):
         return self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset]
+
+    def list_skills(self):
+        return [
+            Skill(PositionDelta(x - skillset_offset, y - skillset_offset))
+            for x in range(skillset_size)
+            for y in range(skillset_size)
+            if self.map[x][y]
+        ]
 
 class Knight(Unit):
     display = "KNT"
@@ -163,14 +252,11 @@ class Warrior(Unit):
 class King(Unit):
     display = "KING"
 
-def convert_skill_list_map(skill_list_map):
+def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {
-        k: [Skill(PositionDelta(x - skillset_offset, y - skillset_offset)) for x, y in v] 
+        k: SkillSet([Skill(PositionDelta(x - skillset_offset, y - skillset_offset)) for x, y in v])
         for k, v in skill_list_map.items() 
     }
-
-potential_skill_list_map = convert_skill_list_map(skills.potential_skill_list_map)
-inborn_skill_list_map = convert_skill_list_map(skills.inborn_skill_list_map)
 
 promotion_map = {
     Knight: [Lancer, Calvary],
@@ -178,6 +264,9 @@ promotion_map = {
     Archer: [Sniper, Spearman],
     Barbarian: [Warrior, Swordsman]
 }
+
+potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)
+inborn_skillset_map = convert_skill_list_map_to_skillset_map(skills.inborn_skill_list_map)
 
 board_setting_1st_row = [Archer, Knight, Archer, Knight, King, Knight, Archer, Knight, Archer]
 board_setting_2nd_row = [Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier]

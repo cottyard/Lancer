@@ -18,10 +18,12 @@ def render_row(renderer, height, content, offset=0):
         render_square(renderer, 0, i, canvas_width - 1, i, content)
 
 def show_canvas(canvas):
+    buffer = []
     for j in range(canvas_height - 1, -1, -1):
         for i in range(canvas_width):
-            print(canvas[i][j], end='')
-        print()
+            buffer.append(canvas[i][j])
+        buffer.append('\n')
+    print(''.join(buffer))
 
 def get_zero_renderer(canvas):
     def renderer(x, y, content):
@@ -42,18 +44,19 @@ def get_condensed_text_renderer(renderer):
     return condensed_text_renderer
 
 def get_highlight_renderer(renderer):
-    def highlight_renderer(grid_x, grid_y):
-        renderer(
-            grid_width * grid_x + grid_width // 2 - 1,
-            grid_height * (grid_y + 1),
-            paint("BLUE", '[')
-        )
-        renderer(
-            grid_width * grid_x + grid_width // 2 + 2,
-            grid_height * (grid_y + 1),
-            paint("BLUE", ']')
-        )
-        
+    def highlight_renderer(grid_x, grid_y, color, to_the_left, content):
+        if to_the_left:
+            offset = -4
+        else:
+            offset = 3
+
+        for char in content:
+            renderer(
+                grid_width * grid_x + grid_width // 2 + offset,
+                grid_height * (grid_y + 1),
+                paint(color, char)
+            )
+            offset += 1
     return highlight_renderer
 
 def get_grid_renderer(renderer):
@@ -139,6 +142,8 @@ pixel_marked_1 = 'o'
 pixel_marked_2 = 'x'
 pixel_not_marked = '.'
 pixel_flag = '*'
+pixel_row = '-'
+pixel_column = '|'
 matrix_size = 5
 canvas_width = 109
 canvas_height = 55
@@ -149,8 +154,8 @@ grid_size = 9
 def init_canvas():
     canvas = [[pixel_empty] * canvas_height for i in range(canvas_width)]
     renderer = get_zero_renderer(canvas)
-    render_row(renderer, grid_height, '-')
-    render_column(renderer, grid_width, '|')
+    render_row(renderer, grid_height, pixel_row)
+    render_column(renderer, grid_width, pixel_column)
     render_reference(renderer)
     return canvas
 
