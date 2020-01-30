@@ -9,9 +9,8 @@ def make_move(board, move_p1, move_p2):
     for move, player in (
             (move_p1, player_1), 
             (move_p2, player_2)):
-        if not validate_move_unit(board, move, player):
-            raise InvalidMoveException("grid is empty or enemy")
-    
+        validate_move(board, move, player)
+
     move_type_p1 = decide_move_type(board, move_p1, move_p2)
     move_type_p2 = decide_move_type(board, move_p2, move_p1)
 
@@ -43,7 +42,7 @@ def decide_move_type(board, move, enemy_move):
         else:
             return 'A2'
     else:
-        raise InvalidMoveException("skill not available")
+        raise Exception("Unhandled invalid move")
 
 def status(board):
     king_1 = find_unit(board, King, player_1)
@@ -68,11 +67,15 @@ def find_unit(board, type_, owner):
     board.iterate_units(each)
     return found_position
 
-def validate_move_unit(board, move, player):
+def validate_move(board, move, player):
     unit = board.at(move.position_from)
     if unit is None:
-        return False
-    return unit.owner == player
+        raise InvalidMoveException("grid is empty")
+    if unit.owner != player:
+        raise InvalidMoveException("grid is enemy")
+    skill = move.get_skill()
+    if not unit.ultimate_skillset().has(skill):
+        raise InvalidMoveException("skill not available")
 
 def all_valid_moves(board, player, include_endowment=False):
     all_moves = []
