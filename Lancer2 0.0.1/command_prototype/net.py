@@ -11,13 +11,14 @@ class BadMessage(Exception):
 
 def receive_command(socket):
     try:
-        message_header = socket.recv(HEADER_LENGTH)
-        if len(message_header) == 0:
+        header = socket.recv(HEADER_LENGTH)
+        if len(header) == 0:
             raise BadMessage
-        message_length = int(message_header.decode(ENCODING).strip())
-        message_payload = socket.recv(message_length)
-
-        return pickle.loads(message_payload)
+        length = int(header.decode(ENCODING).strip())
+        payload = b''
+        while len(payload) < length:
+            payload += socket.recv(length - len(payload))
+        return pickle.loads(payload)
     except:
         raise BadMessage
 
