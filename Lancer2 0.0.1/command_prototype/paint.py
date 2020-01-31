@@ -5,11 +5,11 @@ hint_from = "o>>"
 hint_to = ">>o"
 
 move_type_hint_map = {
-    'E': ('UPG', 'BLUE'),
-    'D': ('DEF', 'GREEN'),
-    'A1': ('ATK', 'RED'),
-    'A2': ('ATK', 'RED'),
-    'O': ('MOV', None)
+    'E': ('U', 'BLUE'),
+    'D': ('D', 'GREEN'),
+    'A1': ('A', 'RED'),
+    'A2': ('A', 'RED'),
+    'O': ('M', None)
 }
 
 def get_painted_canvas(game, player_name, player_color):
@@ -27,13 +27,12 @@ def get_painted_canvas(game, player_name, player_color):
 
     game.board.iterate_units(render_unit)
 
-    paint_last_move_hint(highlight_renderer, game, player_1, player_color[player_1])
-    paint_last_move_hint(highlight_renderer, game, player_2, player_color[player_2], \
-        game.target_same_position())
+    for player in [player_1, player_2]:
+        paint_last_move_hint(highlight_renderer, game, player, player_color[player])
 
     return canvas
 
-def paint_last_move_hint(renderer, game, player, color, conflict=False):
+def paint_last_move_hint(renderer, game, player, color):
     if not game.player_moved(player):
         return
 
@@ -44,9 +43,11 @@ def paint_last_move_hint(renderer, game, player, color, conflict=False):
     if hint_color is None:
         hint_color = color
 
-    renderer(move.position_from.x, move.position_from.y, color, False, hint_from)
-    renderer(move.position_from.x, move.position_from.y, hint_color, True, hint_content)
-    renderer(move.position_to.x, move.position_to.y, color, conflict, hint_to)
+    offset = -3 if player == player_1 else 3
+
+    renderer(move.position_from.x, move.position_from.y, hint_color, -5, hint_content)
+    renderer(move.position_from.x, move.position_from.y, color, offset, hint_from)
+    renderer(move.position_to.x, move.position_to.y, color, offset, hint_to)
 
 # def gen_hints(board):
 #     hint_board = [

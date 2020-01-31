@@ -1,6 +1,6 @@
 #get_color，show，get_valid_moves，make_move，undo_move，get_status
 from entity import Board, Move, Position, Unit, King, \
-player_1, player_2, board_size_x, board_size_y
+player_1, player_2, board_size_x, board_size_y, InvalidParameter
 
 class InvalidMoveException(Exception):
     pass
@@ -73,7 +73,10 @@ def validate_move(board, move, player):
         raise InvalidMoveException("grid is empty")
     if unit.owner != player:
         raise InvalidMoveException("grid is enemy")
-    skill = move.get_skill()
+    try:
+        skill = move.get_skill()
+    except InvalidParameter:
+        raise InvalidMoveException("not a valid skill")
     if not unit.ultimate_skillset().has(skill):
         raise InvalidMoveException("skill not available")
 

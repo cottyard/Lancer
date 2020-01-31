@@ -44,12 +44,7 @@ def get_condensed_text_renderer(renderer):
     return condensed_text_renderer
 
 def get_highlight_renderer(renderer):
-    def highlight_renderer(grid_x, grid_y, color, to_the_left, content):
-        if to_the_left:
-            offset = -4
-        else:
-            offset = 3
-
+    def highlight_renderer(grid_x, grid_y, color, offset, content):
         for char in content:
             renderer(
                 grid_width * grid_x + grid_width // 2 + offset,
