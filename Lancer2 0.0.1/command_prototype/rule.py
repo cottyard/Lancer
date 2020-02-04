@@ -136,7 +136,7 @@ def validate_player_move(board, player_move):
         Action(move, validate_move(board, move, player_move.player))
         for move in moves
     ])
-    
+
 def all_valid_moves(board, player, include_endowment=False):
     all_moves = []
     def each(u, position):

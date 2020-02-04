@@ -118,6 +118,9 @@ class PlayerMove:
     def __init__(self, player, move_list):
         self.player = player
         self.move_list = move_list
+    
+    def __repr__(self):
+        return ','.join([str(m) for m in self.move_list])
 
 class Action:
     def __init__(self, move, type_):

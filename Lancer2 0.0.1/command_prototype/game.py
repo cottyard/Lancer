@@ -3,6 +3,9 @@ import rule
 import random
 
 class Game:
+    supply_incremental = 5
+    msg_not_enough_supply = "not enough supply"
+
     def __init__(self, board=None):
         if board is None:
             self.board = Board()
@@ -29,9 +32,18 @@ class Game:
     def get_status(self):
         return rule.status(self.board)
 
-    def get_random_move(self, player):
-        return random.choice(
-            rule.all_valid_moves(self.board, player, True))
+    def get_random_player_move(self, player):
+        move_list = []
+        while random.randint(0, 4) != 0:
+            move = random.choice(
+                rule.all_valid_moves(self.board, player, True))
+            try:
+                self.validate_player_move(PlayerMove(player, move_list + [move]))
+                move_list.append(move)
+            except rule.InvalidMoveException:
+                break
+        print(move_list)
+        return PlayerMove(player, move_list)
     
     def make_move(self, player_move_list):
         for player_move in player_move_list:
@@ -46,9 +58,12 @@ class Game:
     def validate_player_move(self, player_move):
         player_action = rule.validate_player_move(self.board, player_move)
         if player_action.get_cost() > self.supply[player_action.player]:
-            raise rule.InvalidMoveException("not enough supply")
+            raise rule.InvalidMoveException(Game.msg_not_enough_supply)
         return player_action
-        
-    def replenish(self, amount):
+
+    def replenish(self, amount=None):
         for player in self.supply:
-            self.supply[player] += amount
+            if amount is None:
+                self.supply[player] += Game.supply_incremental
+            else:
+                self.supply[player] += amount

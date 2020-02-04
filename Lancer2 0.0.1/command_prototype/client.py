@@ -3,7 +3,7 @@ import rule
 import paint
 import game
 import socket
-from entity import player_1, player_2, Position, Move
+from entity import player_1, player_2, Position, PlayerMove
 from os import system
 import renderer
 import net
@@ -85,21 +85,25 @@ def mode_hotseat():
     }
 
     this_game = game.Game()
-
+    
     while True:
         system('cls')
         renderer.show_canvas(paint.get_painted_canvas(this_game, player_name, player_color))
-        
+
+        this_game.replenish()
+
+        print(f"{player_name[player_1]} supply:{this_game.supply[player_1]} | " + \
+            f"{player_name[player_2]} supply: {this_game.supply[player_2]}")
         try:
             check_game_status(this_game, player_name)
         
-            move_p1 = read_player_move(this_game, player_1, player_name[player_1])
-            move_p2 = read_player_move(this_game, player_2, player_name[player_2])
+            player_move_p1 = read_player_move(this_game, player_1, player_name[player_1])
+            player_move_p2 = read_player_move(this_game, player_2, player_name[player_2])
         except ExitCommand:
             return
 
         try:
-            this_game.make_move(move_p1, move_p2)
+            this_game.make_move([player_move_p1, player_move_p2])
         except rule.InvalidMoveException as e:
             prompt(e)
 
@@ -109,21 +113,16 @@ def prompt(msg):
 
 def read_player_move(game, player, name):
     if player_autoplay[player]:
-        return game.get_random_move(player)
+        return game.get_random_player_move(player)
     while True:
-        i = input("[x:exit a:autoplay %s]: " % name)
+        i = input(f"[x:exit a:autoplay {name}]: ")
         if i == op_exit:
             raise ExitCommand
         if i == op_toggle_auto:
             player_autoplay[player] = True
-            return game.get_random_move(player)
+            return game.get_random_player_move(player)
+            
         try:
-            x1, y1, x2, y2 = i
-            x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
-
-            position_1 = Position(x1 - 1, y1 - 1)
-            position_2 = Position(x2 - 1, y2 - 1)
+            return PlayerMove.from_literal(player, i)
         except:
             prompt("invalid input")
-        else:
-            return Move(position_1, position_2)
