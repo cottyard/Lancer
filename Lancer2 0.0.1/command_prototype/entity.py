@@ -62,6 +62,9 @@ class ForceBoard:
             for i in range(board_size_x)
         ]
 
+    def read(self, position, player):
+        return self.board[position.x][position.y][player]
+
     def increase(self, position, player):
         self.board[position.x][position.y][player] += 1
 
@@ -72,6 +75,11 @@ class ForceBoard:
         if force[player_2] > force[player_1]:
             return player_2
         return None
+
+    def iterate(self, func):
+        for i in range(board_size_x):
+            for j in range(board_size_y):
+                func(self.board[i][j], Position(i, j))
 
 class Move:
     @classmethod

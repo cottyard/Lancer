@@ -40,7 +40,7 @@ def mode_online():
             system('cls')
             renderer.show_canvas(
                 paint.get_painted_canvas(
-                    command.game, command.player_name, player_color))
+                    command.game, command.player_name, player_color, command.side))
             show_supply(command.player_name, command.game)
             check_game_status(command.game, command.player_name)
 

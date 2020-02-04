@@ -59,7 +59,7 @@ def get_grid_renderer(renderer):
     c_text_renderer = get_condensed_text_renderer(renderer)
     def grid_renderer(
             grid_x, grid_y, label_1, label_2, color,
-            flag, counter_1, counter_2, matrix_1, matrix_2):
+            flag, matrix_1, matrix_2):
         text_renderer(
             grid_width * grid_x + 2,
             grid_height * grid_y + grid_height // 2 + 1,
@@ -78,6 +78,20 @@ def get_grid_renderer(renderer):
                 pixel_flag
             )
 
+        dx = grid_width * (grid_x + 1) - matrix_size
+        dy = grid_height * grid_y + 1
+        matrix = get_matrices_display(matrix_1, matrix_2)
+        [
+            renderer(i + dx, j + dy, matrix[i][j]) 
+            for j in range(matrix_size) 
+            for i in range(matrix_size)
+        ]
+
+    return grid_renderer
+
+def get_hint_renderer(renderer):
+    c_text_renderer = get_condensed_text_renderer(renderer)
+    def hint_renderer(grid_x, grid_y, counter_1, counter_2):
         if counter_1 > 0:
             c_text_renderer(
                 grid_width * grid_x + 2,
@@ -94,16 +108,7 @@ def get_grid_renderer(renderer):
                 len(str(counter_2))
             )
 
-        dx = grid_width * (grid_x + 1) - matrix_size
-        dy = grid_height * grid_y + 1
-        matrix = get_matrices_display(matrix_1, matrix_2)
-        [
-            renderer(i + dx, j + dy, matrix[i][j]) 
-            for j in range(matrix_size) 
-            for i in range(matrix_size)
-        ]
-
-    return grid_renderer
+    return hint_renderer
 
 def paint(color, text):
     return colorama.Fore.__dict__[color] + text + colorama.Fore.WHITE

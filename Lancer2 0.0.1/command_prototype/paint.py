@@ -1,5 +1,6 @@
 import renderer
-from entity import player_1, player_2, ActionType
+from entity import player_1, player_2, ActionType, ForceBoard
+import rule
 
 no_color = 'WHITE'
 
@@ -11,20 +12,33 @@ action_type_color_map = {
     ActionType.Spawn: None
 }
 
-def get_painted_canvas(game, player_name, player_color):
+def get_painted_canvas(game, player_name, player_color, side=None):
     canvas = renderer.init_canvas()
     zero = renderer.get_zero_renderer(canvas)
     grid_renderer = renderer.get_grid_renderer(zero)
     highlight_renderer = renderer.get_highlight_renderer(zero)
-    #hint_board = gen_hints(board)
+    hint_renderer = renderer.get_hint_renderer(zero)
+    hint_board = get_hint_board(game.board)
     
     def render_unit(u, position):
         grid_renderer(
-            position.x, position.y, player_name[u.owner], u.display, player_color[u.owner],
-            u.is_perfect(), 0, 0, u.skillset.map, u.potential_skillset().map)
-            #hint_board[x][y]
-
+            position.x, position.y, player_name[u.owner],
+            u.display, player_color[u.owner], u.is_perfect(),
+            u.skillset.map, u.potential_skillset().map)
+    
     game.board.iterate_units(render_unit)
+
+    if side is None:
+        side = player_1
+
+    def render_hint(force, position):
+        hint_renderer(
+            position.x, position.y,
+            hint_board.read(position, player_1 if side != player_1 else player_2), 
+            hint_board.read(position, side)
+        )
+
+    hint_board.iterate(render_hint)
 
     for player in [player_1, player_2]:
         paint_last_move_hint(highlight_renderer, game, player, player_color[player])
@@ -56,21 +70,9 @@ def paint_last_move_hint(renderer, game, player, color):
             move.position_from.x, move.position_from.y, 
             no_color, 2, ']')
 
-# def gen_hints(board):
-#     hint_board = [
-#         [[0, 0] for j in range(rule.board_size_y)]
-#         for i in range(rule.board_size_x)
-#     ]
-    
-#     def each(u, i, j):
-#         for (x, y) in rule.pos_in_reach(i, j, u.skills()):
-#             u2 = board[x][y]
-#             if u2 is None:
-#                 continue
-#             if u2.owner == u.owner:
-#                 hint_board[x][y][1] += 1
-#             else:
-#                 hint_board[x][y][0] += 1
-
-#     iterate_units(board, each)
-#     return hint_board
+def get_hint_board(board):
+    hint_board = ForceBoard()
+    for player in [player_1, player_2]:
+        for move in rule.all_valid_moves(board, player):
+            hint_board.increase(move.position_to, player)
+    return hint_board
