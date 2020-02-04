@@ -1,15 +1,14 @@
 import renderer
-from entity import player_1, player_2
+from entity import player_1, player_2, ActionType
 
-hint_from = "o>>"
-hint_to = ">>o"
+no_color = 'WHITE'
 
-move_type_hint_map = {
-    'E': ('U', 'BLUE'),
-    'D': ('D', 'GREEN'),
-    'A1': ('A', 'RED'),
-    'A2': ('A', 'RED'),
-    'O': ('M', None)
+action_type_color_map = {
+    ActionType.Upgrade: 'BLUE',
+    ActionType.Defend: 'GREEN',
+    ActionType.Move: None,
+    ActionType.Attack: 'RED',
+    ActionType.Spawn: None
 }
 
 def get_painted_canvas(game, player_name, player_color):
@@ -36,18 +35,26 @@ def paint_last_move_hint(renderer, game, player, color):
     if not game.player_moved(player):
         return
 
-    move = game.get_last_move(player)
-    move_type = game.get_last_move_type(player)
+    player_action = game.get_last_player_action(player)
 
-    hint_content, hint_color = move_type_hint_map[move_type]
-    if hint_color is None:
-        hint_color = color
+    for action in player_action.action_list:
+        hint_color = action_type_color_map[action.type]
+        if hint_color is None:
+            hint_color = color
 
-    offset = -3 if player == player_1 else 3
-
-    renderer(move.position_from.x, move.position_from.y, hint_color, -5, hint_content)
-    renderer(move.position_from.x, move.position_from.y, color, offset, hint_from)
-    renderer(move.position_to.x, move.position_to.y, color, offset, hint_to)
+        move = action.move
+        renderer(
+            move.position_from.x, move.position_from.y, 
+            hint_color, -4, ActionType.show(action.type))
+        renderer(
+            move.position_from.x, move.position_from.y, 
+            color, 3, str(move.position_to))
+        renderer(
+            move.position_from.x, move.position_from.y, 
+            no_color, -1, '[')
+        renderer(
+            move.position_from.x, move.position_from.y, 
+            no_color, 2, ']')
 
 # def gen_hints(board):
 #     hint_board = [

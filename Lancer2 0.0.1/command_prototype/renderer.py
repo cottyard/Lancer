@@ -116,7 +116,7 @@ def render_reference(renderer):
             text_renderer(
                 grid_width * i + grid_width // 2,
                 grid_height * (j + 1),
-                str(i + 1) + str(j + 1)
+                f'{i + 1}{j + 1}'
             )
 
 def get_matrices_display(matrix_1, matrix_2):

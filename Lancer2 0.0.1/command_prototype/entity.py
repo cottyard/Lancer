@@ -1,5 +1,6 @@
 import skills
 from copy import deepcopy
+from enum import Enum
 
 board_size_x = 9
 board_size_y = 9
@@ -29,7 +30,9 @@ class Board:
         self.board[position.x][position.y] = unit
 
     def remove(self, position):
+        unit = self.board[position.x][position.y]
         self.board[position.x][position.y] = None
+        return unit
 
     def move(self, move):
         unit = self.at(move.position_from)
@@ -46,7 +49,44 @@ class Board:
     def copy(self):
         return deepcopy(self)
 
+class ForceBoard:
+    def __init__(self):
+        self.board = [
+            [
+                {
+                    player_1: 0,
+                    player_2: 0
+                }
+                for j in range(board_size_y)
+            ]
+            for i in range(board_size_x)
+        ]
+
+    def increase(self, position, player):
+        self.board[position.x][position.y][player] += 1
+
+    def winner(self, position):
+        force = self.board[position.x][position.y]
+        if force[player_1] > force[player_2]:
+            return player_1
+        if force[player_2] > force[player_1]:
+            return player_2
+        return None
+
 class Move:
+    @classmethod
+    def from_literal(self, literal):
+        try:
+            x1, y1, x2, y2 = literal
+            x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+
+            position_1 = Position(x1 - 1, y1 - 1)
+            position_2 = Position(x2 - 1, y2 - 1)
+        except:
+            raise InvalidParameter("move literal")
+        else:
+            return Move(position_1, position_2)
+
     def __init__(self, position_from, position_to):
         self.position_from = position_from
         self.position_to = position_to
@@ -60,19 +100,99 @@ class Move:
 
     def is_to_same(self, move):
         return self.position_to == move.position_to
-    
+
     def get_skill(self):
         return Skill(self.position_from.get_delta(self.position_to))
 
     def __repr__(self):
         return str(self.position_from) + '->' + str(self.position_to)
 
+class PlayerMove:
+    @classmethod
+    def from_literal(self, player, literal):
+        try:
+            return PlayerMove(player, [Move.from_literal(lit) for lit in literal.split()])
+        except:
+            raise InvalidParameter("player move literal")
+
+    def __init__(self, player, move_list):
+        self.player = player
+        self.move_list = move_list
+
+class Action:
+    def __init__(self, move, type_):
+        self.move = move
+        self.type = type_
+
+    def __repr__(self):
+        return f'{self.move}({ActionType.show(self.type)})'
+
+    def get_cost(self):
+        return ActionType.cost(self.type)
+
+class PlayerAction:
+    def __init__(self, player, action_list):
+        self.player = player
+        self.action_list = action_list
+    
+    def extract_actions(self, filter):
+        extracted = [a for a in self.action_list if filter(a)]
+        remaining = [a for a in self.action_list if not filter(a)]
+        self.action_list = remaining
+        return extracted
+
+    def copy(self):
+        return PlayerAction(self.player, self.action_list.copy())
+
+    def get_cost(self):
+        return sum([action.get_cost() for action in self.action_list])
+
+    def __repr__(self):
+        return ','.join([str(a) for a in self.action_list])
+
+class ActionType(Enum):
+    Upgrade = 1
+    Defend = 2
+    Move = 3
+    Attack = 4
+    Spawn = 5
+
+    @classmethod
+    def show(self, action_type):
+        return {
+            ActionType.Upgrade: 'UPG',
+            ActionType.Defend: 'DEF',
+            ActionType.Move: 'MOV',
+            ActionType.Attack: 'ATK',
+            ActionType.Spawn: 'SPW'
+        }[action_type]
+
+    @classmethod
+    def cost(self, action_type):
+        return {
+            ActionType.Upgrade: 3,
+            ActionType.Defend: 1,
+            ActionType.Move: 2,
+            ActionType.Attack: 3,
+            ActionType.Spawn: 5
+        }[action_type]
+
 class Position:
     def __init__(self, x, y):
         if not (0 <= x < board_size_x and 0 <= y < board_size_y):
-            raise InvalidParameter("invalid data for Position")
+            raise InvalidParameter("Position")
         self.x = x
         self.y = y
+
+    @classmethod
+    def from_literal(self, literal):
+        try:
+            x, y = literal
+            x, y = map(int, [x, y])
+        except:
+            raise InvalidParameter("move literal")
+        else:
+            return Position(x - 1, y - 1)
 
     def get_delta(self, position):
         return PositionDelta(position.x - self.x, position.y - self.y)
@@ -87,7 +207,10 @@ class Position:
             return None
 
     def __str__(self):
-        return '(%s, %s)' % (self.x + 1, self.y + 1)
+        return f'{self.x + 1}{self.y + 1}'
+
+    def __hash__(self):
+        return self.x * 10 + self.y
 
 class Unit:
     display = ""
@@ -164,7 +287,7 @@ class Skill:
         if not (
                 0 <= self.delta.dx + skillset_offset < skillset_size and \
                 0 <= self.delta.dy + skillset_offset < skillset_size):
-            raise InvalidParameter("invalid delta for Skill")
+            raise InvalidParameter("Skill")
 
 class SkillSet:
     op_union = lambda a, b: a or b

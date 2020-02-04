@@ -1,48 +1,83 @@
 #get_color，show，get_valid_moves，make_move，undo_move，get_status
-from entity import Board, Move, Position, Unit, King, \
+
+from entity import Board, Move, PlayerMove, Action, PlayerAction, ActionType, \
+ForceBoard, Position, Unit, King, \
 player_1, player_2, board_size_x, board_size_y, InvalidParameter
 
 class InvalidMoveException(Exception):
     pass
 
-def make_move(board, move_p1, move_p2):
-    for move, player in (
-            (move_p1, player_1), 
-            (move_p2, player_2)):
-        validate_move(board, move, player)
+def make_move(board, player_move_list):
+    player_action_map = {}
+    for player_move in player_move_list:
+        player_action_map[player_move.player] = validate_player_move(board, player_move)
 
-    move_type_p1 = decide_move_type(board, move_p1, move_p2)
-    move_type_p2 = decide_move_type(board, move_p2, move_p1)
+    player_action_list = [player_action.copy() for player_action in player_action_map.values()]
 
     next_board = board.copy()
 
-    if move_type_p1 in move_case_map and \
-       move_type_p2 in move_case_map[move_type_p1]:
-        move_case_map[move_type_p1][move_type_p2](
-            next_board, move_p1, move_p2)
-    else:
-        move_case_map[move_type_p2][move_type_p1](
-            next_board, move_p2, move_p1)
+    run_upgrade_phase(next_board, player_action_list)
+    force_board = run_defend_phase(player_action_list)
+    run_clash_phase(next_board, player_action_list)
+    run_battle_phase(next_board, player_action_list, force_board)
 
-    return next_board, move_type_p1, move_type_p2
+    return next_board, player_action_map
 
-def decide_move_type(board, move, enemy_move):
-    unit = board.at(move.position_from)
-    skill = move.get_skill()
-    if unit.has_potential_skill(skill):
-        return 'E'
-    if unit.has_skill(skill):
-        destination = board.at(move.position_to)
-        if destination is None:
-            return 'O'
-        if destination.owner == unit.owner:
-            return 'D'
-        if move.position_to == enemy_move.position_from:
-            return 'A1'
-        else:
-            return 'A2'
-    else:
-        raise Exception("Unhandled invalid move")
+def run_upgrade_phase(board, player_action_list):
+    for player_action in player_action_list:
+        for action in player_action.extract_actions(lambda a: a.type == ActionType.Upgrade):
+            endow(board, action.move)
+    
+def run_defend_phase(player_action_list):
+    force_board = ForceBoard()
+    for player_action in player_action_list:
+        for action in player_action.extract_actions(lambda a: a.type == ActionType.Defend):
+            force_board.increase(action.move.position_to, player_action.player)
+    return force_board
+
+def run_clash_phase(board, player_action_list):
+    clash_board = Board()
+    clashing_actions = []
+    for player_action in player_action_list:
+        for action in player_action.action_list:
+            if action.type != ActionType.Attack:
+                continue
+            action_other = clash_board.at(action.move.position_to)
+            if action_other is not None:
+                if action_other.move.position_to == action.move.position_from:
+                    clashing_actions.append(action)
+                    clashing_actions.append(action_other)
+            clash_board.put(action.move.position_from, action)
+
+    if len(clashing_actions) == 0:
+        return
+
+    for player_action in player_action_list:
+        player_action.extract_actions(lambda a: a in clashing_actions)
+
+    for action in clashing_actions:
+        board.remove(action.move.position_from)
+
+def run_battle_phase(board, player_action_list, force_board):
+    arrive_board = {
+        player_1: Board(),
+        player_2: Board()
+    }
+    for player_action in player_action_list:
+        for action in player_action.action_list:
+            assert(action.type in (ActionType.Attack, ActionType.Move))
+            target = action.move.position_to
+            if arrive_board[player_action.player].at(target) is None:
+                unit = board.remove(action.move.position_from)
+                arrive_board[player_action.player].put(target, unit)
+            force_board.increase(target, player_action.player)
+
+    def foreach_arriver(unit, target_position):
+        if force_board.winner(target_position) == unit.owner:
+            board.put(target_position, unit)
+
+    for player in arrive_board:
+        arrive_board[player].iterate_units(foreach_arriver)
 
 def status(board):
     king_1 = find_unit(board, King, player_1)
@@ -79,7 +114,29 @@ def validate_move(board, move, player):
         raise InvalidMoveException("not a valid skill")
     if not unit.ultimate_skillset().has(skill):
         raise InvalidMoveException("skill not available")
+    
+    if not unit.skillset.has(skill):
+        return ActionType.Upgrade
 
+    target_unit = board.at(move.position_to)
+    if target_unit is None:
+        return ActionType.Move
+    if unit.owner == target_unit.owner:
+        return ActionType.Defend
+    else:
+        return ActionType.Attack
+
+def validate_player_move(board, player_move):
+    moves = player_move.move_list
+    position_from_list = [move.position_from for move in moves]
+    if len(set(position_from_list)) != len(moves):
+        raise InvalidMoveException("unit moved more than once")
+
+    return PlayerAction(player_move.player, [
+        Action(move, validate_move(board, move, player_move.player))
+        for move in moves
+    ])
+    
 def all_valid_moves(board, player, include_endowment=False):
     all_moves = []
     def each(u, position):
@@ -113,12 +170,6 @@ def endow(board, move):
     else:
         assert(unit.endow(skill))
 
-# E: endow
-# O: move to empty grid
-# A1: attack enemy moving unit
-# A2: attack enemy non-moving unit
-# D: defend ally unit
-
 move_case_map = {}
 
 def case(key_1, key_2):
@@ -128,29 +179,6 @@ def case(key_1, key_2):
         move_case_map[key_1][key_2] = f
         return f
     return wrap
-
-@case('E', 'E')
-def move_case_EE(board, move_1, move_2):
-    endow(board, move_1)
-    endow(board, move_2)
-
-@case('O', 'E')
-def move_case_OE(board, move_1, move_2):
-    board.move(move_1)
-    endow(board, move_2)
-
-@case('O', 'O')
-def move_case_OO(board, move_1, move_2):
-    if move_1.position_to == move_2.position_to:
-        board.remove(move_1.position_from)
-        board.remove(move_2.position_from)
-    else:
-        board.move(move_1)
-        board.move(move_2)
-
-@case('A1', 'E')
-def move_case_A1E(board, move_1, move_2):
-    board.move(move_1)
 
 @case('A1', 'O')
 def move_case_A1O(board, move_1, move_2):
@@ -162,45 +190,3 @@ def move_case_A1A1(board, move_1, move_2):
     board.remove(move_1.position_from)
     board.remove(move_2.position_from)
 
-@case('D', 'E')
-def move_case_DE(board, move_1, move_2):
-    endow(board, move_2)
-
-@case('D', 'O')
-def move_case_DO(board, move_1, move_2):
-    board.move(move_2)
-
-@case('D', 'A1')
-def move_case_DA1(board, move_1, move_2):
-    board.move(move_2)
-
-@case('D', 'D')
-def move_case_DD(board, move_1, move_2):
-    pass
-
-@case('A2', 'E')
-def move_case_A2E(board, move_1, move_2):
-    board.move(move_1)
-    endow(board, move_2)
-
-@case('A2', 'O')
-def move_case_A2O(board, move_1, move_2):
-    board.move(move_1)
-    board.move(move_2)
-
-@case('A2', 'A1')
-def move_case_A2A1(board, move_1, move_2):
-    board.move(move_1)
-    board.move(move_2)
-
-@case('A2', 'D')
-def move_case_A2D(board, move_1, move_2):
-    if move_1.position_to == move_2.position_to:
-        board.remove(move_1.position_from)
-    else:
-        board.move(move_1)
-
-@case('A2', 'A2')
-def move_case_A2A2(board, move_1, move_2):
-    board.move(move_1)
-    board.move(move_2)
