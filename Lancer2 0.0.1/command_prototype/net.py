@@ -37,6 +37,6 @@ class GameCommand:
         self.side = side
         self.player_name = player_name
     
-class MoveCommand:
-    def __init__(self, move):
-        self.move = move        
+class PlayerMoveCommand:
+    def __init__(self, player_move):
+        self.player_move = player_move        

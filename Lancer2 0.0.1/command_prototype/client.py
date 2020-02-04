@@ -41,16 +41,16 @@ def mode_online():
             renderer.show_canvas(
                 paint.get_painted_canvas(
                     command.game, command.player_name, player_color))
-            
+            show_supply(command.player_name, command.game)
             check_game_status(command.game, command.player_name)
 
             while True:
                 try:
-                    move = read_player_move(
+                    player_move = read_player_move(
                         command.game, 
                         command.side, 
                         command.player_name[command.side])
-                    command.game.validate_move(move, command.side)
+                    command.game.validate_player_move(player_move)
                 except rule.InvalidMoveException as e:
                     prompt(e)
                 else:
@@ -58,7 +58,7 @@ def mode_online():
         except ExitCommand:
             return
 
-        net.send_command(client_socket, net.MoveCommand(move))
+        net.send_command(client_socket, net.PlayerMoveCommand(player_move))
         print("Waiting for opponent move...")
 
 def check_game_status(game, player_name):
@@ -73,6 +73,10 @@ def check_game_status(game, player_name):
         else:
             prompt("Unknown status.")
         raise ExitCommand
+
+def show_supply(player_name, game):
+    print(f"{player_name[player_1]} supply:{game.supply[player_1]} | " + \
+        f"{player_name[player_2]} supply: {game.supply[player_2]}")
 
 def mode_hotseat():
     # global player_1_name, player_2_name
@@ -91,9 +95,8 @@ def mode_hotseat():
         renderer.show_canvas(paint.get_painted_canvas(this_game, player_name, player_color))
 
         this_game.replenish()
-
-        print(f"{player_name[player_1]} supply:{this_game.supply[player_1]} | " + \
-            f"{player_name[player_2]} supply: {this_game.supply[player_2]}")
+        show_supply(player_name, this_game)
+        
         try:
             check_game_status(this_game, player_name)
         

@@ -46,6 +46,7 @@ def start():
 
 def run_game():
     this_game = game.Game()
+    this_game.replenish()
     while True:
         for player, socket in player_socket.items():
             net.send_command(socket, net.GameCommand(this_game, player, player_name))
@@ -69,9 +70,10 @@ def run_game():
 
             for socket in read_sockets:
                 command = net.receive_command(socket)
-                assert(type(command) is net.MoveCommand)
+                assert(type(command) is net.PlayerMoveCommand)
                 player = socket_player[socket]
-                print(f"Received player {player} move: {command.move}.")
-                player_move[player] = command.move
+                print(f"Received player {player} move: {command.player_move}.")
+                player_move[player] = command.player_move
 
-        this_game.make_move(player_move[player_1], player_move[player_2])
+        this_game.make_move(player_move.values())
+        this_game.replenish()
