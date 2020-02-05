@@ -20,14 +20,22 @@ def make_move(board, player_move_list):
     force_board = run_defend_phase(player_action_list)
     run_clash_phase(next_board, player_action_list)
     run_battle_phase(next_board, player_action_list, force_board)
+    run_recruit_phase(next_board, player_action_list)
 
     return next_board, player_action_map
 
 def run_upgrade_phase(board, player_action_list):
     for player_action in player_action_list:
         for action in player_action.extract_actions(lambda a: a.type == ActionType.Upgrade):
-            endow(board, action.move)
-    
+            unit = board.at(action.move.position_from)
+            skill = action.move.get_skill()
+            if unit.is_promotion_ready():
+                promoted = unit.get_promoted(skill)
+                assert(promoted is not None)
+                board.put(action.move.position_from, promoted)
+            else:
+                assert(unit.endow(skill))
+
 def run_defend_phase(player_action_list):
     force_board = ForceBoard()
     for player_action in player_action_list:
@@ -64,8 +72,8 @@ def run_battle_phase(board, player_action_list, force_board):
         player_2: Board()
     }
     for player_action in player_action_list:
-        for action in player_action.action_list:
-            assert(action.type in (ActionType.Attack, ActionType.Move))
+        for action in player_action.extract_actions(
+                lambda a: a.type in (ActionType.Attack, ActionType.Move)):
             target = action.move.position_to
             if arrive_board[player_action.player].at(target) is None:
                 unit = board.remove(action.move.position_from)
@@ -78,6 +86,15 @@ def run_battle_phase(board, player_action_list, force_board):
 
     for player in arrive_board:
         arrive_board[player].iterate_units(foreach_arriver)
+
+def run_recruit_phase(board, player_action_list):
+    for player_action in player_action_list:
+        for action in player_action.action_list:
+            assert(action.type == ActionType.Recruit)
+            if board.at(action.move.position_from) is None:
+                skill = action.move.get_skill()
+                unit_recruited = Unit.create_from_skill(player_action.player, skill)
+                board.put(action.move.position_from, unit_recruited)
 
 def status(board):
     king_1 = find_unit(board, King, player_1)
@@ -102,29 +119,47 @@ def find_unit(board, type_, owner):
     board.iterate_units(each)
     return found_position
 
+spawn_row = {
+    player_1: 0,
+    player_2: board_size_y - 1
+}
+
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
     if unit is None:
-        raise InvalidMoveException("grid is empty")
+        if move.position_from.y == spawn_row[player]:
+            try:
+                skill = move.get_skill()
+            except InvalidParameter:
+                raise InvalidMoveException("this skill recruits nothing")
+            unit_recruited = Unit.create_from_skill(player, skill)
+            return Action(move, ActionType.Recruit, type(unit_recruited))
+        else:
+            raise InvalidMoveException("grid is empty")
+
     if unit.owner != player:
         raise InvalidMoveException("grid is enemy")
+
     try:
         skill = move.get_skill()
     except InvalidParameter:
         raise InvalidMoveException("not a valid skill")
+
     if not unit.ultimate_skillset().has(skill):
         raise InvalidMoveException("skill not available")
     
     if not unit.skillset.has(skill):
-        return ActionType.Upgrade
+        return Action(move, ActionType.Upgrade, type(unit))
 
     target_unit = board.at(move.position_to)
+
     if target_unit is None:
-        return ActionType.Move
+        return Action(move, ActionType.Move, type(unit))
+
     if unit.owner == target_unit.owner:
-        return ActionType.Defend
+        return Action(move, ActionType.Defend, type(unit))
     else:
-        return ActionType.Attack
+        return Action(move, ActionType.Attack, type(unit))
 
 def validate_player_move(board, player_move):
     moves = player_move.move_list
@@ -135,10 +170,7 @@ def validate_player_move(board, player_move):
     return PlayerAction(
         player_move.player,
         [
-            Action(
-                move,
-                validate_move(board, move, player_move.player),
-                type(board.at(move.position_from)))
+            validate_move(board, move, player_move.player)
             for move in moves
         ])
 
@@ -164,34 +196,4 @@ def valid_moves(board, position, include_endowment=False):
     skill_list = skillset.list_skills()
     in_reach = [position.get_new_position(skill.delta) for skill in skill_list]
     return [Move(position, pos) for pos in in_reach if pos is not None]
-
-def endow(board, move):
-    unit = board.at(move.position_from)
-    skill = move.get_skill()
-    if unit.is_promotion_ready():
-        promoted = unit.get_promoted(skill)
-        assert(promoted is not None)
-        board.put(move.position_from, promoted)
-    else:
-        assert(unit.endow(skill))
-
-move_case_map = {}
-
-def case(key_1, key_2):
-    def wrap(f):
-        if key_1 not in move_case_map:
-            move_case_map[key_1] = {}
-        move_case_map[key_1][key_2] = f
-        return f
-    return wrap
-
-@case('A1', 'O')
-def move_case_A1O(board, move_1, move_2):
-    board.move(move_2)
-    board.move(move_1)
-
-@case('A1', 'A1')
-def move_case_A1A1(board, move_1, move_2):
-    board.remove(move_1.position_from)
-    board.remove(move_2.position_from)
-
+   

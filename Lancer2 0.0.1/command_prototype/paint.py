@@ -8,10 +8,16 @@ action_type_color_map = {
     ActionType.Upgrade: 'BLUE',
     ActionType.Defend: 'GREEN',
     ActionType.Move: None,
-    ActionType.Attack: 'RED'
+    ActionType.Attack: 'RED',
+    ActionType.Recruit: 'CYAN'
 }
 
-def get_painted_canvas(game, player_name, player_color, side=None):
+player_color = {
+    player_1: "LIGHTMAGENTA_EX",
+    player_2: "YELLOW"
+}
+
+def get_painted_canvas(game, player_name, side=None):
     canvas = renderer.init_canvas()
     zero = renderer.get_zero_renderer(canvas)
     grid_renderer = renderer.get_grid_renderer(zero)

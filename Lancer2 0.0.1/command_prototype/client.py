@@ -16,11 +16,6 @@ player_autoplay = {
 op_exit = 'x'
 op_toggle_auto = 'a'
 
-player_color = {
-    player_1: "LIGHTMAGENTA_EX",
-    player_2: "YELLOW"
-}
-
 class ExitCommand(Exception):
     pass
 
@@ -40,7 +35,7 @@ def mode_online():
             system('cls')
             renderer.show_canvas(
                 paint.get_painted_canvas(
-                    command.game, command.player_name, player_color, command.side))
+                    command.game, command.player_name, command.side))
             show_supply(command.player_name, command.game)
             check_game_status(command.game, command.player_name)
 
@@ -92,7 +87,7 @@ def mode_hotseat():
     
     while True:
         system('cls')
-        renderer.show_canvas(paint.get_painted_canvas(this_game, player_name, player_color))
+        renderer.show_canvas(paint.get_painted_canvas(this_game, player_name))
 
         this_game.replenish()
         show_supply(player_name, this_game)

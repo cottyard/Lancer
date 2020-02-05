@@ -140,7 +140,7 @@ class Action:
         return f'{self.move}({ActionType.show(self.type)})'
 
     def get_cost(self):
-        return ActionType.cost(self.type)
+        return ActionType.cost(self.type, self.unit_type)
 
 class PlayerAction:
     def __init__(self, player, action_list):
@@ -168,7 +168,6 @@ class ActionType(Enum):
     Move = 3
     Attack = 4
     Recruit = 5
-    RecruitKnight = 6
 
     @classmethod
     def show(self, action_type):
@@ -177,21 +176,27 @@ class ActionType(Enum):
             ActionType.Defend: 'DEF',
             ActionType.Move: 'MOV',
             ActionType.Attack: 'ATK',
-            ActionType.Recruit: 'REC',
-            ActionType.RecruitKnight: 'REC'
+            ActionType.Recruit: 'REC'
         }[action_type]
 
     @classmethod
-    def cost(self, action_type):
-        return {
-            ActionType.Upgrade: 3,
-            ActionType.Defend: 1,
-            ActionType.Move: 2,
-            ActionType.Attack: 3,
-            ActionType.Recruit: 5,
-            ActionType.RecruitKnight: 7
-        }[action_type]
-
+    def cost(self, action_type, unit_type):
+        try:
+            return {
+                ActionType.Upgrade: 2,
+                ActionType.Defend: 1,
+                ActionType.Move: 2,
+                ActionType.Attack: 3,
+            }[action_type]
+        except KeyError:
+            return {
+                Soldier: 5,
+                Barbarian: 5,
+                Archer: 5,
+                Wagon: 6,
+                Knight: 7
+            }[unit_type]
+            
 class Position:
     def __init__(self, x, y):
         if not (0 <= x < board_size_x and 0 <= y < board_size_y):
@@ -277,13 +282,27 @@ class Unit:
         if not self.is_promotion_ready():
             return None
 
-        for creator in promotion_map[type(self)]:
-            if potential_skillset_map[creator.display].has(skill):
-                promoted = creator(self.owner, skillset=self.skillset)
-                promoted.endow(skill)
-                return promoted
+        creator = Unit.which_creator_has_skill(promotion_map[type(self)], skill)
+        if creator is None:
+            return None
+        promoted = creator(self.owner, skillset=self.skillset)
+        promoted.endow(skill)
+        return promoted
         
-        return None
+    @classmethod
+    def which_creator_has_skill(self, creator_list, skill):
+        for creator in creator_list:
+            if potential_skillset_map[creator.display].has(skill):
+                return creator
+                
+    @classmethod
+    def create_from_skill(self, player, skill):
+        creator = self.which_creator_has_skill(
+            [Knight, Soldier, Warrior, Archer, Wagon], skill)
+        assert(creator is not None)
+        created = creator(player)
+        created.endow(skill)
+        return created
 
 class PositionDelta:
     def __init__(self, dx, dy):
@@ -401,6 +420,10 @@ class King(Unit):
     display = "KING"
     letter = "K"
 
+class Wagon(Unit):
+    display = "WAG"
+    letter = "G"
+
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {
         k: SkillSet([Skill(PositionDelta(x - skillset_offset, y - skillset_offset)) for x, y in v])
@@ -417,5 +440,5 @@ promotion_map = {
 potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)
 inborn_skillset_map = convert_skill_list_map_to_skillset_map(skills.inborn_skill_list_map)
 
-board_setting_1st_row = [Archer, Knight, Archer, Knight, King, Knight, Archer, Knight, Archer]
+board_setting_1st_row = [Wagon, Archer, Archer, Knight, King, Knight, Archer, Archer, Wagon]
 board_setting_2nd_row = [Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier]
