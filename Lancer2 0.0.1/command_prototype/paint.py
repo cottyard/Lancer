@@ -8,8 +8,7 @@ action_type_color_map = {
     ActionType.Upgrade: 'BLUE',
     ActionType.Defend: 'GREEN',
     ActionType.Move: None,
-    ActionType.Attack: 'RED',
-    ActionType.Spawn: None
+    ActionType.Attack: 'RED'
 }
 
 def get_painted_canvas(game, player_name, player_color, side=None):
@@ -63,6 +62,9 @@ def paint_last_move_hint(renderer, game, player, color):
         renderer(
             move.position_from.x, move.position_from.y, 
             color, 3, str(move.position_to))
+        renderer(
+            move.position_from.x, move.position_from.y, 
+            no_color, -5, str(action.unit_type.letter))
         renderer(
             move.position_from.x, move.position_from.y, 
             no_color, -1, '[')

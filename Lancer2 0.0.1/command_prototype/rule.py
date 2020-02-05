@@ -132,10 +132,15 @@ def validate_player_move(board, player_move):
     if len(set(position_from_list)) != len(moves):
         raise InvalidMoveException("unit moved more than once")
 
-    return PlayerAction(player_move.player, [
-        Action(move, validate_move(board, move, player_move.player))
-        for move in moves
-    ])
+    return PlayerAction(
+        player_move.player,
+        [
+            Action(
+                move,
+                validate_move(board, move, player_move.player),
+                type(board.at(move.position_from)))
+            for move in moves
+        ])
 
 def all_valid_moves(board, player, include_endowment=False):
     all_moves = []

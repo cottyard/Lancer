@@ -131,9 +131,10 @@ class PlayerMove:
         return ','.join([str(m) for m in self.move_list])
 
 class Action:
-    def __init__(self, move, type_):
+    def __init__(self, move, type_, unit_type):
         self.move = move
         self.type = type_
+        self.unit_type = unit_type
 
     def __repr__(self):
         return f'{self.move}({ActionType.show(self.type)})'
@@ -166,7 +167,8 @@ class ActionType(Enum):
     Defend = 2
     Move = 3
     Attack = 4
-    Spawn = 5
+    Recruit = 5
+    RecruitKnight = 6
 
     @classmethod
     def show(self, action_type):
@@ -175,7 +177,8 @@ class ActionType(Enum):
             ActionType.Defend: 'DEF',
             ActionType.Move: 'MOV',
             ActionType.Attack: 'ATK',
-            ActionType.Spawn: 'SPW'
+            ActionType.Recruit: 'REC',
+            ActionType.RecruitKnight: 'REC'
         }[action_type]
 
     @classmethod
@@ -185,7 +188,8 @@ class ActionType(Enum):
             ActionType.Defend: 1,
             ActionType.Move: 2,
             ActionType.Attack: 3,
-            ActionType.Spawn: 5
+            ActionType.Recruit: 5,
+            ActionType.RecruitKnight: 7
         }[action_type]
 
 class Position:
@@ -355,36 +359,47 @@ class SkillSet:
 
 class Knight(Unit):
     display = "KNT"
+    letter = "N"
     
 class Soldier(Unit):
     display = "SLD"
+    letter = "D"
 
 class Archer(Unit):
     display = "ACH"
+    letter = "A"
 
 class Barbarian(Unit):
     display = "BAR"
+    letter = "B"
 
 class Lancer(Unit):
     display = "LAN"
+    letter = "L"
 
 class Calvary(Unit):
     display = "CAL"
+    letter = "C"
 
 class Swordsman(Unit):
     display = "SWD"
+    letter = "S"
 
 class Spearman(Unit):
     display = "SPR"
+    letter = "P"
 
 class Sniper(Unit):
     display = "SNP"
+    letter = "P"
 
 class Warrior(Unit):
     display = "WAR"
+    letter = "W"
 
 class King(Unit):
     display = "KING"
+    letter = "K"
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {
