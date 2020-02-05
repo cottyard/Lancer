@@ -1,9 +1,9 @@
-from entity import Board, player_1, player_2, Position, Move, PlayerMove
+from entity import Board, player_1, player_2, Position, Move, PlayerMove, Wagon, Skill
 import rule
 import random
 
 class Game:
-    supply_incremental = 5
+    supply_basic_incremental = 3
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
@@ -35,13 +35,18 @@ class Game:
     def get_random_player_move(self, player):
         move_list = []
         while random.randint(0, 4) != 0:
-            move = random.choice(
-                rule.all_valid_moves(self.board, player, True))
+            if random.randint(0, 5) == 0:
+                recruit_position = Position(random.randint(0, rule.board_size_x - 1), rule.spawn_row[player])
+                move = Move(recruit_position, recruit_position)
+            else:
+                move = random.choice(
+                    rule.all_valid_moves(self.board, player, True))
             try:
                 self.validate_player_move(PlayerMove(player, move_list + [move]))
                 move_list.append(move)
             except rule.InvalidMoveException:
                 break
+
         print(move_list)
         return PlayerMove(player, move_list)
     
@@ -64,6 +69,13 @@ class Game:
     def replenish(self, amount=None):
         for player in self.supply:
             if amount is None:
-                self.supply[player] += Game.supply_incremental
+                self.supply[player] += Game.supply_basic_incremental
+                self.supply[player] += self.bonus_supply(player)
             else:
                 self.supply[player] += amount
+
+    def bonus_supply(self, player):
+        return rule.count_unit(self.board, player, Wagon)
+
+    def incremental_supply(self, player):
+        return self.bonus_supply(player) + Game.supply_basic_incremental

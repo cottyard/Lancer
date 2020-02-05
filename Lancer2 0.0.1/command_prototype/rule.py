@@ -4,6 +4,8 @@ from entity import Board, Move, PlayerMove, Action, PlayerAction, ActionType, \
 ForceBoard, Position, Unit, King, \
 player_1, player_2, board_size_x, board_size_y, InvalidParameter
 
+max_unit_count = 20
+
 class InvalidMoveException(Exception):
     pass
 
@@ -124,18 +126,30 @@ spawn_row = {
     player_2: board_size_y - 1
 }
 
+def count_unit(board, player, unit_type=None):
+    count = 0
+    def count_unit(u, _):
+        nonlocal count
+        if u.owner == player:
+            if unit_type is None or type(u) == unit_type:
+                count += 1
+    board.iterate_units(count_unit)
+    return count
+
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
     if unit is None:
-        if move.position_from.y == spawn_row[player]:
+        if move.position_from.y != spawn_row[player]:
+            raise InvalidMoveException("grid is empty")
+        elif count_unit(board, player) >= max_unit_count:
+            raise InvalidMoveException("units limit exceeded - cannot recruit anymore")
+        else:
             try:
                 skill = move.get_skill()
             except InvalidParameter:
                 raise InvalidMoveException("this skill recruits nothing")
             unit_recruited = Unit.create_from_skill(player, skill)
             return Action(move, ActionType.Recruit, type(unit_recruited))
-        else:
-            raise InvalidMoveException("grid is empty")
 
     if unit.owner != player:
         raise InvalidMoveException("grid is enemy")

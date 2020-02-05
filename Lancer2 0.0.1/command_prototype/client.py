@@ -39,17 +39,10 @@ def mode_online():
             show_supply(command.player_name, command.game)
             check_game_status(command.game, command.player_name)
 
-            while True:
-                try:
-                    player_move = read_player_move(
-                        command.game, 
-                        command.side, 
-                        command.player_name[command.side])
-                    command.game.validate_player_move(player_move)
-                except rule.InvalidMoveException as e:
-                    prompt(e)
-                else:
-                    break
+            player_move = read_player_move(
+                command.game, 
+                command.side, 
+                command.player_name[command.side])
         except ExitCommand:
             return
 
@@ -70,17 +63,13 @@ def check_game_status(game, player_name):
         raise ExitCommand
 
 def show_supply(player_name, game):
-    print(f"{player_name[player_1]} supply: {game.supply[player_1]} | " + \
-        f"{player_name[player_2]} supply: {game.supply[player_2]}")
+    print(f"{player_name[player_1]} supply: {game.supply[player_1]} (+{game.incremental_supply(player_1)}) | " + \
+        f"{player_name[player_2]} supply: {game.supply[player_2]} (+{game.incremental_supply(player_2)})")
 
 def mode_hotseat():
-    # global player_1_name, player_2_name
-    # player_1_name = input("player1: ")
-    # player_2_name = input("player2: ")
-
     player_name = {
-        player_1: 'xyt',
-        player_2: 'zc'
+        player_1: input("player1: "),
+        player_2: input("player2: ")
     }
 
     this_game = game.Game()
@@ -121,6 +110,15 @@ def read_player_move(game, player, name):
             return game.get_random_player_move(player)
             
         try:
-            return PlayerMove.from_literal(player, i)
+            player_move = PlayerMove.from_literal(player, i)
         except:
             prompt("invalid input")
+            continue
+
+        try:
+            game.validate_player_move(player_move)
+        except rule.InvalidMoveException as e:
+            prompt(e)
+            continue
+
+        return player_move
