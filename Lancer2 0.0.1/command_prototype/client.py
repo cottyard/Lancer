@@ -75,7 +75,7 @@ def check_game_status(game, player_name):
         raise ExitCommand
 
 def show_supply(player_name, game):
-    print(f"{player_name[player_1]} supply:{game.supply[player_1]} | " + \
+    print(f"{player_name[player_1]} supply: {game.supply[player_1]} | " + \
         f"{player_name[player_2]} supply: {game.supply[player_2]}")
 
 def mode_hotseat():
