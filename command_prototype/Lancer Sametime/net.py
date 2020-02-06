@@ -2,7 +2,7 @@ import pickle
 import base64
 import requests
 
-server_endpoint = "http://localhost:5000/"
+server_endpoint = "http://52.246.182.85:5000/"
 encoding = 'ascii'
 
 def receive_game(session_id):
