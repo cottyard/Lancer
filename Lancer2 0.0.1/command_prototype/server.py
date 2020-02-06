@@ -1,99 +1,157 @@
-import socket
-import select
+from flask import Flask, request, abort
 import net
 import game
 from entity import player_1, player_2
+import uuid
 
-player_socket = {}
-player_name = {}
-socket_player = {}
+app = Flask(__name__)
 
-HOST_IP = "0.0.0.0"
+match_queue = []
+game_player_move_map = {}
 
-def init():
-    global player_socket, player_name, socket_player
-    player_socket = {
-        player_1: None,
-        player_2: None
-    }
-    player_name = {
-        player_1: None,
-        player_2: None
-    }
-    for socket in socket_player:
-        socket.close()
-    socket_player = {}
+@app.route('/session/<string:session_id>/current_game')
+def get_game(session_id):
+    session_id = uuid.UUID(session_id)
+    if session_id not in Session.session_map:
+        abort(404)
+
+    session = Session.session_map[session_id]
+    server_game = session.current_game()
+    return net.pack_command(
+        net.GameCommand(
+            server_game.game,
+            server_game.game_id,
+            server_game.status,
+            server_game.player_name_map))
+
+@app.route('/session/<string:session_id>/current_game_id')
+def get_game_id(session_id):
+    session_id = uuid.UUID(session_id)
+    if session_id not in Session.session_map:
+        return ''
+    else:
+        return str(Session.session_map[session_id].current_game_id())
+
+@app.route('/game/<string:game_id>/move', methods=['POST'])
+def submit_player_move(game_id):
+    game_id = uuid.UUID(game_id)
+    command = net.unpack_command(request.get_json())
+    assert(type(command) is net.PlayerMoveCommand)
+    player = command.player_move.player
+    print(f"Received player {player} move: {command.player_move}.")
+    if game_id not in game_player_move_map:
+        game_player_move_map[game_id] = ServerGamePlayerMove()
+    game_player_move_map[game_id].update(player, command.player_move)
+
+    Session.process_sessions()
+    return 'done'
+
+@app.route('/match/<string:player_name>', methods=['POST'])
+def new_game(player_name):
+    if len(match_queue) > 0:
+        session_id, waiting_player_name = match_queue.pop(0)
+        if waiting_player_name != player_name:
+            player_name_map = {
+                player_1: waiting_player_name,
+                player_2: player_name
+            }
+            Session(session_id, player_name_map)
+            return str(session_id)
+    session_id = uuid.uuid4()
+    match_queue.append((session_id, player_name))
+    return str(session_id)
+
+class ServerGame:
+    server_game_map = {}
+
+    def __init__(self, player_name_map, game_=None):
+        if game_ is None:
+            self.game = game.Game()
+        else:
+            self.game = game_
+        self.game_id = uuid.uuid4()
+        self.status = self.game.get_status()
+        self.player_name_map = player_name_map
+        ServerGame.server_game_map[self.game_id] = self
+
+    def next(self, player_move):
+        try:
+            next_game = self.game.make_move(player_move.as_list())
+        except Exception as e:
+            print(e)
+            print(player_move)
+            return None
+        return ServerGame(self.player_name_map, next_game)
+
+class ServerGamePlayerMove:
+    def __init__(self):
+        self.reset()
+
+    def all_players_moved(self):
+        return self.as_list().count(None) == 0
+
+    def update(self, player, player_move):
+        self.player_move_map[player] = player_move
+
+    def as_list(self):
+        return list(self.player_move_map.values())
+
+    def reset(self):
+        self.player_move_map = { 
+            player_1: None, 
+            player_2: None 
+        }
+
+    def __repr__(self):
+        return ','.join([str(pm) for pm in self.as_list()])
+
+class Session:
+    session_map = {}
+    ended_session_map = {}
+
+    def __init__(self, session_id, player_name_map):
+        self.session_id = session_id
+        server_game = ServerGame(player_name_map)
+        self.game_id_list = [server_game.game_id]
+        Session.session_map[self.session_id] = self
+
+    def update(self, game_id):
+        self.game_id_list.append(game_id)
+
+    def current_game_id(self):
+        return self.game_id_list[-1]
+
+    def current_game(self):
+        return ServerGame.server_game_map[self.current_game_id()]
+
+    def is_ended(self):
+        return self.current_game().status != game.GameStatus.Ongoing
+
+    @classmethod
+    def process_sessions(cls):
+        for session in cls.session_map.values():
+            if session.current_game_id() not in game_player_move_map:
+                continue
+
+            sg_player_move = game_player_move_map[session.current_game_id()]
+            if not sg_player_move.all_players_moved():
+                continue
+            
+            server_game = session.current_game()
+            next_server_game = server_game.next(sg_player_move)
+
+            if next_server_game is None:
+                # this should never happen
+                sg_player_move.reset()
+            
+            session.update(next_server_game.game_id)
+
+            if session.is_ended():
+                cls.ended_session_map[session.session_id] = session
+                del cls.session_map[session.session_id]
 
 def start():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind((HOST_IP, net.PORT))
-    server_socket.listen()
+    app.run(debug=True, host='0.0.0.0')
 
-    print(f'Listening for connections on {HOST_IP}:{net.PORT}...')
-
-    while True:
-        try:
-            if len(socket_player) < 2:
-                wait_for_players(server_socket)
-            run_game()
-        except Exception:
-            continue
-
-def wait_for_players(server_socket):
-    print(f'Waiting for players...')
-    init()
-    for player in player_socket:
-        client_socket, client_address = server_socket.accept()
-        try:
-            command = net.receive_command(client_socket)
-        except net.BadMessage:
-            continue
-
-        assert(type(command) is net.LoginCommand)
-
-        player_socket[player] = client_socket
-        socket_player[client_socket] = player
-        player_name[player] = command.player_name
-        print(f'Player {command.player_name} connected from {client_address}.')
-
-    print('All players connected, starting game...')
-
-def run_game():
-    this_game = game.Game()
-    this_game.replenish()
-    while True:
-        for player, socket in player_socket.items():
-            net.send_command(socket, net.GameCommand(this_game, player, player_name))
-        
-        if this_game.get_status() != 0:
-            break
-
-        player_move = {
-            player_1: None,
-            player_2: None
-        }
-        
-        sockets = player_socket.values()
-        while not all(player_move.values()):
-            read_sockets, _, exception_sockets = select.select(sockets, [], sockets)
-
-            if len(exception_sockets) > 0:
-                for socket in exception_sockets:
-                    print(f"Connection error from {socket_player[socket]}.")
-                    socket_player.pop(socket)
-                    raise net.BadMessage
-
-            for socket in read_sockets:
-                try:
-                    command = net.receive_command(socket)
-                except net.BadMessage:
-                    socket_player.pop(socket)
-                    raise net.BadMessage
-                assert(type(command) is net.PlayerMoveCommand)
-                player = socket_player[socket]
-                print(f"Received player {player} move: {command.player_move}.")
-                player_move[player] = command.player_move
-
-        this_game.make_move(player_move.values())
-        this_game.replenish()
+if __name__ == '__main__':
+    start()

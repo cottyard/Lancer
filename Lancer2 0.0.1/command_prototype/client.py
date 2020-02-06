@@ -7,6 +7,7 @@ from entity import player_1, player_2, Position, PlayerMove
 from os import system
 import renderer
 import net
+import time
 
 player_autoplay = {
     player_1: False,
@@ -19,55 +20,71 @@ op_toggle_auto = 'a'
 class ExitCommand(Exception):
     pass
 
+def get_player(player_name_map, player_name):
+    for player in player_name_map:
+        if player_name_map[player] == player_name:
+            return player
+    raise Exception(f"player name not found in received game: {player_name_map}")
+
 def mode_online():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((net.SERVER_IP, net.PORT))
-
     name = input("[Your name]: ")
-    net.send_command(client_socket, net.LoginCommand(name))
+    session_id = net.new_game(name)
+    game_id = None
 
-    print("Waiting for server to start game...")
+    print("Waiting for other players...")
 
     while True:
-        command = net.receive_command(client_socket)
-        assert(type(command) is net.GameCommand)
+        game_id = net.query_game(session_id)
+        if game_id:
+            break
+        time.sleep(2)
+
+    while True:
         try:
-            system('cls')
+            cmd = net.receive_game(session_id)
+            assert(type(cmd) is net.GameCommand)
+            player = get_player(cmd.player_name_map, name)
             renderer.show_canvas(
                 paint.get_painted_canvas(
-                    command.game, command.player_name, command.side))
-            show_supply(command.player_name, command.game)
-            check_game_status(command.game, command.player_name)
+                    cmd.game, cmd.player_name_map, player))
+            show_supply(cmd.player_name_map, cmd.game)
+            check_game_status(cmd.status, cmd.player_name_map)
 
             player_move = read_player_move(
-                command.game, 
-                command.side, 
-                command.player_name[command.side])
+                cmd.game, 
+                player, 
+                cmd.player_name_map[player])
         except ExitCommand:
             return
 
-        net.send_command(client_socket, net.PlayerMoveCommand(player_move))
+        net.submit_player_move(game_id, player_move)
         print("Waiting for opponent move...")
 
-def check_game_status(game, player_name):
-    status = game.get_status()
-    if status != 0:
-        if status == 3:
+        while True:
+            new_game_id = net.query_game(session_id)
+            if new_game_id != game_id:
+                game_id = new_game_id
+                break
+            time.sleep(2)
+
+def check_game_status(status, player_name_map):
+    if status != game.GameStatus.Ongoing:
+        if status == game.GameStatus.Draw:
             prompt("Draw.")
-        elif status == 1:
-            prompt("%s wins." % player_name[player_1])
-        elif status == 2:
-            prompt("%s wins." % player_name[player_2])
+        elif status == game.GameStatus.Victorious:
+            prompt("%s wins." % player_name_map[player_1])
+        elif status == game.GameStatus.Defeated:
+            prompt("%s wins." % player_name_map[player_2])
         else:
             prompt("Unknown status.")
         raise ExitCommand
 
-def show_supply(player_name, game):
-    print(f"{player_name[player_1]} supply: {game.supply[player_1]} (+{game.incremental_supply(player_1)}) | " + \
-        f"{player_name[player_2]} supply: {game.supply[player_2]} (+{game.incremental_supply(player_2)})")
+def show_supply(player_name_map, game):
+    print(f"{player_name_map[player_1]} supply: {game.supply[player_1]} (+{game.incremental_supply(player_1)}) | " + \
+        f"{player_name_map[player_2]} supply: {game.supply[player_2]} (+{game.incremental_supply(player_2)})")
 
 def mode_hotseat():
-    player_name = {
+    player_name_map = {
         player_1: input("player1: "),
         player_2: input("player2: ")
     }
@@ -76,16 +93,15 @@ def mode_hotseat():
     
     while True:
         system('cls')
-        renderer.show_canvas(paint.get_painted_canvas(this_game, player_name))
+        renderer.show_canvas(paint.get_painted_canvas(this_game, player_name_map))
 
-        this_game.replenish()
-        show_supply(player_name, this_game)
+        show_supply(player_name_map, this_game)
         
         try:
-            check_game_status(this_game, player_name)
+            check_game_status(this_game, player_name_map)
         
-            player_move_p1 = read_player_move(this_game, player_1, player_name[player_1])
-            player_move_p2 = read_player_move(this_game, player_2, player_name[player_2])
+            player_move_p1 = read_player_move(this_game, player_1, player_name_map[player_1])
+            player_move_p2 = read_player_move(this_game, player_2, player_name_map[player_2])
         except ExitCommand:
             return
 

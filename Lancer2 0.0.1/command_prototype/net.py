@@ -1,42 +1,56 @@
 import pickle
+import base64
+import requests
 
-SERVER_IP = "127.0.0.1"
-PORT = 24601
+server_endpoint = "http://localhost:5000/"
+encoding = 'ascii'
 
-HEADER_LENGTH = 10
-ENCODING = 'utf-8'
+def receive_game(session_id):
+    url = server_endpoint + f"session/{session_id}/current_game"
+    res = requests.get(url=url)
+    if not res.ok:
+        raise Exception(f"Did not receive game for session {session_id}: {res.status_code}")
+    command = unpack_command(res.json())
+    assert(type(command) == GameCommand)
+    return command
 
-class BadMessage(Exception):
-    pass
+def query_game(session_id):
+    url = server_endpoint + f"session/{session_id}/current_game_id"
+    res = requests.get(url=url)
+    return res.text
 
-def receive_command(socket):
-    try:
-        header = socket.recv(HEADER_LENGTH)
-        if len(header) == 0:
-            raise BadMessage
-        length = int(header.decode(ENCODING).strip())
-        payload = b''
-        while len(payload) < length:
-            payload += socket.recv(length - len(payload))
-        return pickle.loads(payload)
-    except:
-        raise BadMessage
+def new_game(player_name):
+    url = server_endpoint + f"match/{player_name}"
+    res = requests.post(url=url)
+    session_id = res.text
+    return session_id
 
-def send_command(socket, command):
-    payload = pickle.dumps(command)
-    header = f"{len(payload):<{HEADER_LENGTH}}".encode(ENCODING)
-    socket.send(header + payload)
+def submit_player_move(game_id, player_move):
+    url = server_endpoint + f"game/{game_id}/move"
+    data = pack_command(PlayerMoveCommand(player_move))
+    requests.post(url, json=data)
 
-class LoginCommand:
-    def __init__(self, player_name):
-        self.player_name = player_name
+def unpack_command(data):
+    return unpack_data(data['command'])
+
+def pack_command(command):
+    return {'command': pack_data(command)}
+
+def pack_data(obj):
+    byte_data = pickle.dumps(obj)
+    base64_data = base64.encodebytes(byte_data)
+    return base64_data.decode(encoding)
+
+def unpack_data(data):
+    return pickle.loads(base64.decodebytes(data.encode(encoding)))
 
 class GameCommand:
-    def __init__(self, game, side, player_name):
+    def __init__(self, game, game_id, status, player_name_map):
         self.game = game
-        self.side = side
-        self.player_name = player_name
-    
+        self.game_id = game_id
+        self.status = status
+        self.player_name_map = player_name_map
+
 class PlayerMoveCommand:
     def __init__(self, player_move):
-        self.player_move = player_move        
+        self.player_move = player_move
