@@ -9,7 +9,8 @@ def receive_game(session_id):
     url = server_endpoint + f"session/{session_id}/current_game"
     res = requests.get(url=url)
     if not res.ok:
-        raise Exception(f"Did not receive game for session {session_id}: {res.status_code}")
+        print(f"Did not receive game for session {session_id}: {res.status_code}")
+        return None
     command = unpack_command(res.json())
     assert(type(command) == GameCommand)
     return command

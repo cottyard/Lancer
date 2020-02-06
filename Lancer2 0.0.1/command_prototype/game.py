@@ -11,7 +11,7 @@ class GameStatus(Enum):
     Draw = 3
 
 class Game:
-    supply_initial = 10
+    supply_initial = 5
     supply_basic_incremental = 3
     msg_not_enough_supply = "not enough supply"
 
@@ -96,3 +96,6 @@ class Game:
 
     def incremental_supply(self, player):
         return self.bonus_supply(player) + Game.supply_basic_incremental
+
+    def count_unit(self, player):
+        return rule.count_unit(self.board, player)

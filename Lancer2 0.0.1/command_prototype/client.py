@@ -37,17 +37,20 @@ def mode_online():
         game_id = net.query_game(session_id)
         if game_id:
             break
-        time.sleep(2)
+        time.sleep(1)
 
     while True:
         try:
             cmd = net.receive_game(session_id)
+            if cmd is None:
+                prompt('Game session aborted.')
+                return
             assert(type(cmd) is net.GameCommand)
             player = get_player(cmd.player_name_map, name)
             renderer.show_canvas(
                 paint.get_painted_canvas(
                     cmd.game, cmd.player_name_map, player))
-            show_supply(cmd.player_name_map, cmd.game)
+            show_supply_and_population(cmd.player_name_map, cmd.game)
             check_game_status(cmd.status, cmd.player_name_map)
 
             player_move = read_player_move(
@@ -62,10 +65,13 @@ def mode_online():
 
         while True:
             new_game_id = net.query_game(session_id)
+            if not new_game_id:
+                prompt('Game session aborted.')
+                return
             if new_game_id != game_id:
                 game_id = new_game_id
                 break
-            time.sleep(2)
+            time.sleep(1)
 
 def check_game_status(status, player_name_map):
     if status != game.GameStatus.Ongoing:
@@ -79,9 +85,11 @@ def check_game_status(status, player_name_map):
             prompt("Unknown status.")
         raise ExitCommand
 
-def show_supply(player_name_map, game):
-    print(f"{player_name_map[player_1]} supply: {game.supply[player_1]} (+{game.incremental_supply(player_1)}) | " + \
-        f"{player_name_map[player_2]} supply: {game.supply[player_2]} (+{game.incremental_supply(player_2)})")
+def show_supply_and_population(player_name_map, game):
+    for player in player_name_map:
+        print(
+            f"{player_name_map[player]} supply: {game.supply[player]} (+{game.incremental_supply(player)}) | " + \
+            f"units: {game.count_unit(player)}/{rule.max_unit_count}")
 
 def mode_hotseat():
     player_name_map = {
@@ -92,13 +100,11 @@ def mode_hotseat():
     this_game = game.Game()
     
     while True:
-        system('cls')
         renderer.show_canvas(paint.get_painted_canvas(this_game, player_name_map))
-
-        show_supply(player_name_map, this_game)
+        show_supply_and_population(player_name_map, this_game)
         
         try:
-            check_game_status(this_game, player_name_map)
+            check_game_status(this_game.get_status(), player_name_map)
         
             player_move_p1 = read_player_move(this_game, player_1, player_name_map[player_1])
             player_move_p2 = read_player_move(this_game, player_2, player_name_map[player_2])
@@ -106,7 +112,7 @@ def mode_hotseat():
             return
 
         try:
-            this_game.make_move([player_move_p1, player_move_p2])
+            this_game = this_game.make_move([player_move_p1, player_move_p2])
         except rule.InvalidMoveException as e:
             prompt(e)
 

@@ -12,25 +12,25 @@ game_player_move_map = {}
 @app.route('/session/<string:session_id>/current_game')
 def get_game(session_id):
     session_id = uuid.UUID(session_id)
-    if session_id not in Session.session_map:
-        abort(404)
-
-    session = Session.session_map[session_id]
-    server_game = session.current_game()
-    return net.pack_command(
-        net.GameCommand(
-            server_game.game,
-            server_game.game_id,
-            server_game.status,
-            server_game.player_name_map))
+    for pool in [Session.session_map, Session.ended_session_map]:
+        if session_id in pool:
+            session = pool[session_id]
+            server_game = session.current_game()
+            return net.pack_command(
+                net.GameCommand(
+                    server_game.game,
+                    server_game.game_id,
+                    server_game.status,
+                    server_game.player_name_map))
+    abort(404)
 
 @app.route('/session/<string:session_id>/current_game_id')
 def get_game_id(session_id):
     session_id = uuid.UUID(session_id)
-    if session_id not in Session.session_map:
-        return ''
-    else:
-        return str(Session.session_map[session_id].current_game_id())
+    for pool in [Session.session_map, Session.ended_session_map]:
+        if session_id in pool:
+            return str(pool[session_id].current_game_id())
+    return ''
 
 @app.route('/game/<string:game_id>/move', methods=['POST'])
 def submit_player_move(game_id):
