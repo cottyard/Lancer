@@ -31,7 +31,7 @@ def mode_online():
     session_id = net.new_game(name)
     game_id = None
 
-    print("Waiting for other players...")
+    print(f"Waiting for other players on session {session_id}...")
 
     while True:
         game_id = net.query_game(session_id)
@@ -39,6 +39,17 @@ def mode_online():
             break
         time.sleep(1)
 
+    start_session(session_id, game_id, name)
+
+def mode_recover():
+    session_id = input("[Session ID]: ").strip()
+    game_id = net.query_game(session_id)
+    if not game_id:
+        prompt("Session not found.")
+    name = input("[Your name]: ")
+    start_session(session_id, game_id, name)
+
+def start_session(session_id, game_id, player_name):
     while True:
         try:
             cmd = net.receive_game(session_id)
@@ -46,7 +57,7 @@ def mode_online():
                 prompt('Game session aborted.')
                 return
             assert(type(cmd) is net.GameCommand)
-            player = get_player(cmd.player_name_map, name)
+            player = get_player(cmd.player_name_map, player_name)
             renderer.show_canvas(
                 paint.get_painted_canvas(
                     cmd.game, cmd.player_name_map, player))
