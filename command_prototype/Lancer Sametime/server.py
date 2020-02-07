@@ -24,6 +24,16 @@ def get_game(session_id):
                     server_game.player_name_map))
     abort(404)
 
+@app.route('/session/<string:session_id>/rollback', methods=['POST'])
+def rollback_game(session_id):
+    session_id = uuid.UUID(session_id)
+    for pool in [Session.session_map, Session.ended_session_map]:
+        if session_id in pool:
+            session = pool[session_id]
+            session.rollback()
+            return 'done'
+    abort(404)
+
 @app.route('/session/<string:session_id>/current_game_id')
 def get_game_id(session_id):
     session_id = uuid.UUID(session_id)
@@ -127,6 +137,10 @@ class Session:
     def is_ended(self):
         return self.current_game().status != game.GameStatus.Ongoing
 
+    def rollback(self):
+        if len(self.game_id_list) > 1:
+            self.game_id_list.pop()
+
     @classmethod
     def process_sessions(cls):
         ended_sessions = []
@@ -149,7 +163,7 @@ class Session:
 
             if session.is_ended():
                 ended_sessions.append(session.session_id)
-                
+
         for session_id in ended_sessions:
             cls.ended_session_map[session.session_id] = session
             del cls.session_map[session.session_id]

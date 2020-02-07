@@ -1,35 +1,73 @@
 import pickle
 import base64
 import requests
+from requests.exceptions import ReadTimeout
 
 server_endpoint = "http://52.246.182.85:5000/"
 encoding = 'ascii'
 
+def retry_on_timeout(func):
+    for _ in range(3):
+        try:
+            return func()
+        except ReadTimeout:
+            continue
+    raise Exception("Server timed out.")
+
 def receive_game(session_id):
     url = server_endpoint + f"session/{session_id}/current_game"
-    res = requests.get(url=url)
-    if not res.ok:
-        print(f"Did not receive game for session {session_id}: {res.status_code}")
-        return None
-    command = unpack_command(res.json())
-    assert(type(command) == GameCommand)
-    return command
+
+    def receive():
+        res = requests.get(url=url, timeout=5)
+        if not res.ok:
+            print(f"Did not receive game for session {session_id}: {res.status_code}")
+            return None
+        command = unpack_command(res.json())
+        assert(type(command) == GameCommand)
+        return command
+    
+    return retry_on_timeout(receive)
 
 def query_game(session_id):
     url = server_endpoint + f"session/{session_id}/current_game_id"
-    res = requests.get(url=url)
-    return res.text
+
+    def query():
+        res = requests.get(url=url, timeout=3)
+        if res.text:
+            return res.text
+        else:
+            return None
+
+    return retry_on_timeout(query)
+
+def rollback_game(session_id):
+    url = server_endpoint + f"session/{session_id}/rollback"
+
+    def query():
+        res = requests.post(url=url, timeout=3)
+        return res.text == 'done'
+
+    return retry_on_timeout(query)
 
 def new_game(player_name):
     url = server_endpoint + f"match/{player_name}"
-    res = requests.post(url=url)
-    session_id = res.text
-    return session_id
+
+    def new():
+        res = requests.post(url=url, timeout=3)
+        session_id = res.text
+        return session_id
+    
+    return retry_on_timeout(new)
 
 def submit_player_move(game_id, player_move):
     url = server_endpoint + f"game/{game_id}/move"
-    data = pack_command(PlayerMoveCommand(player_move))
-    requests.post(url, json=data)
+
+    def submit():
+        data = pack_command(PlayerMoveCommand(player_move))
+        res = requests.post(url, json=data)
+        return res.text == 'done'
+
+    return retry_on_timeout(submit) 
 
 def unpack_command(data):
     return unpack_data(data['command'])

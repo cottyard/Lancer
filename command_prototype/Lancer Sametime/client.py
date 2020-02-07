@@ -16,8 +16,11 @@ player_autoplay = {
 
 op_exit = 'x'
 op_toggle_auto = 'a'
+op_rollback = 'r'
 
 class ExitCommand(Exception):
+    pass
+class RollbackCommand(Exception):
     pass
 
 def get_player(player_name_map, player_name):
@@ -50,6 +53,9 @@ def mode_recover():
     start_session(session_id, game_id, name)
 
 def start_session(session_id, game_id, player_name):
+    with open(session_id, 'w'):
+        pass
+
     while True:
         try:
             cmd = net.receive_game(session_id)
@@ -64,12 +70,15 @@ def start_session(session_id, game_id, player_name):
             show_supply_and_population(cmd.player_name_map, cmd.game)
             check_game_status(cmd.status, cmd.player_name_map)
 
-            player_move = read_player_move(
+            player_move = read_player_move_online(
                 cmd.game, 
                 player, 
-                cmd.player_name_map[player])
+                cmd.player_name_map[player],
+                session_id)
         except ExitCommand:
             return
+        except RollbackCommand:
+            continue
 
         net.submit_player_move(game_id, player_move)
         print("Waiting for opponent move...")
@@ -117,8 +126,8 @@ def mode_hotseat():
         try:
             check_game_status(this_game.get_status(), player_name_map)
         
-            player_move_p1 = read_player_move(this_game, player_1, player_name_map[player_1])
-            player_move_p2 = read_player_move(this_game, player_2, player_name_map[player_2])
+            player_move_p1 = read_player_move_hotseat(this_game, player_1, player_name_map[player_1])
+            player_move_p2 = read_player_move_hotseat(this_game, player_2, player_name_map[player_2])
         except ExitCommand:
             return
 
@@ -131,7 +140,7 @@ def prompt(msg):
     print(msg)
     input("press enter...".upper())
 
-def read_player_move(game, player, name):
+def read_player_move_hotseat(game, player, name):
     if player_autoplay[player]:
         return game.get_random_player_move(player)
     while True:
@@ -141,6 +150,29 @@ def read_player_move(game, player, name):
         if i == op_toggle_auto:
             player_autoplay[player] = True
             return game.get_random_player_move(player)
+            
+        try:
+            player_move = PlayerMove.from_literal(player, i)
+        except:
+            prompt("invalid input")
+            continue
+
+        try:
+            game.validate_player_move(player_move)
+        except rule.InvalidMoveException as e:
+            prompt(e)
+            continue
+
+        return player_move
+
+def read_player_move_online(game, player, name, session_id):
+    while True:
+        i = input(f"[x:exit r:rollback {name}]: ")
+        if i == op_exit:
+            raise ExitCommand
+        if i == op_rollback:
+            net.rollback_game(session_id)
+            raise RollbackCommand
             
         try:
             player_move = PlayerMove.from_literal(player, i)
