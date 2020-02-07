@@ -129,6 +129,7 @@ class Session:
 
     @classmethod
     def process_sessions(cls):
+        ended_sessions = []
         for session in cls.session_map.values():
             if session.current_game_id() not in game_player_move_map:
                 continue
@@ -147,8 +148,11 @@ class Session:
             session.update(next_server_game.game_id)
 
             if session.is_ended():
-                cls.ended_session_map[session.session_id] = session
-                del cls.session_map[session.session_id]
+                ended_sessions.append(session.session_id)
+                
+        for session_id in ended_sessions:
+            cls.ended_session_map[session.session_id] = session
+            del cls.session_map[session.session_id]
 
 def start():
     app.run(debug=True, host='0.0.0.0')
