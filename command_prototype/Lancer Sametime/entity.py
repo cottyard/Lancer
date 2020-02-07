@@ -183,18 +183,18 @@ class ActionType(Enum):
     def cost(self, action_type, unit_type):
         try:
             return {
-                ActionType.Upgrade: 2,
-                ActionType.Defend: 1,
-                ActionType.Move: 2,
-                ActionType.Attack: 3,
+                ActionType.Upgrade: 20,
+                ActionType.Defend: 10,
+                ActionType.Move: 15,
+                ActionType.Attack: 25,
             }[action_type]
         except KeyError:
             return {
-                Soldier: 5,
-                Barbarian: 5,
-                Archer: 5,
-                Wagon: 8,
-                Knight: 7
+                Soldier: 50,
+                Barbarian: 50,
+                Archer: 50,
+                Wagon: 100,
+                Knight: 70
             }[unit_type]
             
 class Position:

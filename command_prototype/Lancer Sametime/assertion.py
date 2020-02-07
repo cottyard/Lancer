@@ -53,7 +53,7 @@ def assert_clash():
     g = Game(b)
     g.replenish(100)
 
-    g.make_move([
+    g = g.make_move([
         PlayerMove.from_literal(player_2, "5554"),
         PlayerMove.from_literal(player_1, "5455")])
 
@@ -77,7 +77,7 @@ def assert_move_conflict():
     g = Game(b)
     g.replenish(100)
 
-    g.make_move([
+    g = g.make_move([
         PlayerMove.from_literal(player_2, "5554 6564"),
         PlayerMove.from_literal(player_1, "5354 6364 7264")])
     
@@ -113,7 +113,7 @@ def assert_attack_defend():
     g = Game(b)
     g.replenish(100)
 
-    g.make_move([
+    g = g.make_move([
         PlayerMove.from_literal(player_2, "5554 6654 6162"),
         PlayerMove.from_literal(player_1, "5354 6254 6766 5655 5446")])
 
@@ -128,8 +128,6 @@ def assert_attack_defend():
     assert(g.board.at(p1u5) is None)
 
     assert(g.board.at(Position.from_literal('46')).owner == player_1)
-    assert(g.supply[player_1] == 90)
-    assert(g.supply[player_2] == 91)
 
 assert_input()
 assert_invalid_input()

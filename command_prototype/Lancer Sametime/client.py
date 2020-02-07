@@ -34,7 +34,7 @@ def mode_online():
     session_id = net.new_game(name)
     game_id = None
 
-    print(f"Waiting for other players on session {session_id}...")
+    print("Waiting for opponent to join...")
 
     while True:
         game_id = net.query_game(session_id)
@@ -55,6 +55,8 @@ def mode_recover():
 def start_session(session_id, game_id, player_name):
     with open(session_id, 'w'):
         pass
+
+    print(f'Started session {session_id} .')
 
     while True:
         try:
