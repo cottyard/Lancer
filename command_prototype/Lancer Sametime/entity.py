@@ -114,7 +114,7 @@ class ActionType(Enum):
                 Soldier: 50,
                 Barbarian: 50,
                 Archer: 50,
-                Wagon: 100,
+                Wagon: 80,
                 Knight: 70
             }[unit_type]
             

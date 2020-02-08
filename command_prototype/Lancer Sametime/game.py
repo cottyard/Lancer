@@ -14,8 +14,8 @@ class GameStatus(Enum):
 
 class Game:
     supply_initial = 50
-    supply_basic_incremental = 24
-    supply_wagon = 8
+    supply_basic_incremental = 40
+    supply_wagon = 5
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
