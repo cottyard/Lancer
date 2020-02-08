@@ -19,7 +19,7 @@ def get_game(session_id):
             return net.pack_command(
                 net.GameCommand(
                     server_game.game,
-                    server_game.game_id,
+                    str(server_game.game_id),
                     server_game.status,
                     server_game.player_name_map))
     abort(404)

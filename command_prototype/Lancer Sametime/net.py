@@ -79,7 +79,7 @@ def submit_player_move(game_id, player_move):
 
     def submit():
         data = pack_command(PlayerMoveCommand(player_move))
-        res = requests.post(url, json=data)
+        res = requests.post(url, json=data, timeout=client_timeout)
         return res.text == 'done'
 
     return retry_on_timeout(submit) 
