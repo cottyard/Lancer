@@ -1,7 +1,9 @@
 import paint
 import renderer
 from game import Game
-from entity import player_1, player_2, Board, Soldier, Knight, Position, PlayerMove, Move
+from entity import Soldier, Knight, Barbarian, Position, PlayerMove, Move
+from const import player_1, player_2
+from board import Board
 import rule
 
 player_color = {
@@ -93,6 +95,7 @@ def assert_attack_defend():
     p2u1 = Position.from_literal('55')
     p2u2 = Position.from_literal('66')
     p2u3 = Position.from_literal('61')
+    #p2u4 = Position.from_literal('65')
 
     p1u1 = Position.from_literal('54')
     p1u2 = Position.from_literal('53')
@@ -103,6 +106,7 @@ def assert_attack_defend():
     b.put(p2u1, Soldier(player_2))
     b.put(p2u2, Knight(player_2, flip_skillset=True))
     b.put(p2u3, Soldier(player_2))
+    #b.put(p2u4, Barbarian(player_2, flip_skillset=True)))
 
     b.put(p1u1, Knight(player_1))
     b.put(p1u2, Soldier(player_1))
@@ -113,9 +117,19 @@ def assert_attack_defend():
     g = Game(b)
     g.replenish(100)
 
+    # renderer.show_canvas(
+    #     paint.get_painted_canvas(
+    #         g, {player_1:'a', player_2:'b'}, player_1))
+
     g = g.make_move([
         PlayerMove.from_literal(player_2, "5554 6654 6162"),
         PlayerMove.from_literal(player_1, "5354 6254 6766 5655 5446")])
+
+    # for clash_brief in g.round_brief.clash_briefs:
+    #     print(clash_brief.brief())
+        
+    # for battle_brief in g.round_brief.battle_briefs:
+    #     print(battle_brief.brief())
 
     assert(g.board.at(p2u1).owner == player_1)
     assert(g.board.at(p2u2).owner == player_1)
@@ -128,6 +142,7 @@ def assert_attack_defend():
     assert(g.board.at(p1u5) is None)
 
     assert(g.board.at(Position.from_literal('46')).owner == player_1)
+
 
 assert_input()
 assert_invalid_input()

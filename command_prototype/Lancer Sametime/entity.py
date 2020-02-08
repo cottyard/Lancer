@@ -1,85 +1,6 @@
 import skills
-from copy import deepcopy
 from enum import Enum
-
-board_size_x = 9
-board_size_y = 9
-player_1 = 1
-player_2 = 2
-skillset_size = 5
-skillset_offset = skillset_size // 2
-
-class Board:
-    def __init__(self):
-        self.board = [[None] * board_size_y for i in range(board_size_x)]
-
-    def set_out(self):
-        for row, setting, player in [
-            (0, board_setting_1st_row, player_1),
-            (1, board_setting_2nd_row, player_1),
-            (board_size_y - 1, board_setting_1st_row, player_2),
-            (board_size_y - 2, board_setting_2nd_row, player_2)
-        ]:
-            for i in range(board_size_x):
-                self.board[i][row] = setting[i](player, flip_skillset=player==player_2)
-    
-    def at(self, position):
-        return self.board[position.x][position.y]
-    
-    def put(self, position, unit):
-        self.board[position.x][position.y] = unit
-
-    def remove(self, position):
-        unit = self.board[position.x][position.y]
-        self.board[position.x][position.y] = None
-        return unit
-
-    def move(self, move):
-        unit = self.at(move.position_from)
-        self.put(move.position_to, unit)
-        self.remove(move.position_from)
-
-    def iterate_units(self, func):
-        for i in range(board_size_x):
-            for j in range(board_size_y):
-                u = self.board[i][j]
-                if u is not None:
-                    func(u, Position(i, j))
-    
-    def copy(self):
-        return deepcopy(self)
-
-class ForceBoard:
-    def __init__(self):
-        self.board = [
-            [
-                {
-                    player_1: 0,
-                    player_2: 0
-                }
-                for j in range(board_size_y)
-            ]
-            for i in range(board_size_x)
-        ]
-
-    def read(self, position, player):
-        return self.board[position.x][position.y][player]
-
-    def increase(self, position, player):
-        self.board[position.x][position.y][player] += 1
-
-    def winner(self, position):
-        force = self.board[position.x][position.y]
-        if force[player_1] > force[player_2]:
-            return player_1
-        if force[player_2] > force[player_1]:
-            return player_2
-        return None
-
-    def iterate(self, func):
-        for i in range(board_size_x):
-            for j in range(board_size_y):
-                func(self.board[i][j], Position(i, j))
+from const import board_size_x, board_size_y, skillset_size, skillset_offset
 
 class Move:
     @classmethod
@@ -440,5 +361,3 @@ promotion_map = {
 potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)
 inborn_skillset_map = convert_skill_list_map_to_skillset_map(skills.inborn_skill_list_map)
 
-board_setting_1st_row = [Wagon, Archer, Archer, Knight, King, Knight, Archer, Archer, Wagon]
-board_setting_2nd_row = [Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier]

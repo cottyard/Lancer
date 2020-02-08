@@ -1,11 +1,12 @@
 import pickle
 import rule
-import paint
+from paint import get_painted_canvas
 import game
 import socket
-from entity import player_1, player_2, Position, PlayerMove
+from entity import Position, PlayerMove
+from const import player_1, player_2
 from os import system
-import renderer
+from renderer import show_canvas
 import net
 import time
 
@@ -66,8 +67,8 @@ def start_session(session_id, game_id, player_name):
                 return
             assert(type(cmd) is net.GameCommand)
             player = get_player(cmd.player_name_map, player_name)
-            renderer.show_canvas(
-                paint.get_painted_canvas(
+            show_canvas(
+                get_painted_canvas(
                     cmd.game, cmd.player_name_map, player))
             show_supply_and_population(cmd.player_name_map, cmd.game)
             check_game_status(cmd.status, cmd.player_name_map)
@@ -113,25 +114,44 @@ def show_supply_and_population(player_name_map, game):
             f"{player_name_map[player]} supply: {game.supply[player]} (+{game.incremental_supply(player)}) | " + \
             f"units: {game.count_unit(player)}/{rule.max_unit_count}")
 
+def show_round_brief(game):
+    print(f'Round {game.round_count}')
+    if game.round_brief is None:
+        return
+
+    for clash_brief in game.round_brief.clash_briefs:
+        print(clash_brief.brief())
+        
+    for battle_brief in game.round_brief.battle_briefs:
+        print(battle_brief.brief())
+        
 def mode_hotseat():
     player_name_map = {
-        player_1: input("player1: "),
-        player_2: input("player2: ")
+        player_1: 'a',#input("player1: "),
+        player_2: 'b'#input("player2: ")
     }
 
     this_game = game.Game()
     
     while True:
-        renderer.show_canvas(paint.get_painted_canvas(this_game, player_name_map))
+        show_round_brief(this_game)
+        show_canvas(get_painted_canvas(this_game, player_name_map, player_1))
         show_supply_and_population(player_name_map, this_game)
         
         try:
             check_game_status(this_game.get_status(), player_name_map)
-        
             player_move_p1 = read_player_move_hotseat(this_game, player_1, player_name_map[player_1])
-            player_move_p2 = read_player_move_hotseat(this_game, player_2, player_name_map[player_2])
         except ExitCommand:
             return
+
+        print('\n\n\n\n\n\n\n\n\n\n\n\n')
+
+        show_round_brief(this_game)
+        show_canvas(get_painted_canvas(this_game, player_name_map, player_1))
+        show_supply_and_population(player_name_map, this_game)
+        player_move_p2 = read_player_move_hotseat(this_game, player_2, player_name_map[player_2])
+
+        prompt('Proceeding to next round...')
 
         try:
             this_game = this_game.make_move([player_move_p1, player_move_p2])

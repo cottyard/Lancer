@@ -1,5 +1,4 @@
 import colorama
-import rule
 colorama.init()
 
 def render_square(renderer, begin_x, begin_y, end_x, end_y, content, offset=0):
@@ -49,7 +48,7 @@ def get_highlight_renderer(renderer):
             renderer(
                 grid_width * grid_x + grid_width // 2 + offset,
                 grid_height * (grid_y + 1),
-                paint(color, char)
+                dye(color, char)
             )
             offset += 1
     return highlight_renderer
@@ -68,7 +67,7 @@ def get_grid_renderer(renderer):
         c_text_renderer(
             grid_width * grid_x + 2,
             grid_height * grid_y + grid_height // 2,
-            paint(color, label_2),
+            dye(color, label_2),
             len(label_2))
 
         if flag:
@@ -96,7 +95,7 @@ def get_hint_renderer(renderer):
             c_text_renderer(
                 grid_width * grid_x + 2,
                 grid_height * grid_y + grid_height // 2 - 2,
-                paint("RED", str(counter_1)),
+                dye("RED", str(counter_1)),
                 len(str(counter_1))
             )
 
@@ -104,13 +103,13 @@ def get_hint_renderer(renderer):
             c_text_renderer(
                 grid_width * grid_x + 4,
                 grid_height * grid_y + grid_height // 2 - 2,
-                paint("GREEN", str(counter_2)),
+                dye("GREEN", str(counter_2)),
                 len(str(counter_2))
             )
 
     return hint_renderer
 
-def paint(color, text):
+def dye(color, text):
     return colorama.Fore.__dict__[color] + text + colorama.Fore.WHITE
 
 def render_reference(renderer):

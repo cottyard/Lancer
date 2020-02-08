@@ -1,6 +1,8 @@
 import renderer
-from entity import player_1, player_2, ActionType, ForceBoard
+from entity import ActionType
 import rule
+from const import player_1, player_2, player_color_map
+from board import HeatBoard
 
 no_color = 'WHITE'
 
@@ -12,12 +14,7 @@ action_type_color_map = {
     ActionType.Recruit: 'CYAN'
 }
 
-player_color = {
-    player_1: "LIGHTMAGENTA_EX",
-    player_2: "YELLOW"
-}
-
-def get_painted_canvas(game, player_name, side=None):
+def get_painted_canvas(game, player_name, side):
     canvas = renderer.init_canvas()
     zero = renderer.get_zero_renderer(canvas)
     grid_renderer = renderer.get_grid_renderer(zero)
@@ -28,25 +25,22 @@ def get_painted_canvas(game, player_name, side=None):
     def render_unit(u, position):
         grid_renderer(
             position.x, position.y, player_name[u.owner],
-            u.display, player_color[u.owner], u.is_perfect(),
+            u.display, player_color_map[u.owner], u.is_perfect(),
             u.skillset.map, u.potential_skillset().map)
     
     game.board.iterate_units(render_unit)
 
-    if side is None:
-        side = player_1
-
     def render_hint(force, position):
         hint_renderer(
             position.x, position.y,
-            hint_board.read(position, player_1 if side != player_1 else player_2), 
-            hint_board.read(position, side)
+            hint_board.heat(position, player_1 if side != player_1 else player_2), 
+            hint_board.heat(position, side)
         )
 
     hint_board.iterate(render_hint)
 
     for player in [player_1, player_2]:
-        paint_last_move_hint(highlight_renderer, game, player, player_color[player])
+        paint_last_move_hint(highlight_renderer, game, player, player_color_map[player])
 
     return canvas
 
@@ -79,8 +73,8 @@ def paint_last_move_hint(renderer, game, player, color):
             no_color, 2, ']')
 
 def get_hint_board(board):
-    hint_board = ForceBoard()
+    hint_board = HeatBoard()
     for player in [player_1, player_2]:
         for move in rule.all_valid_moves(board, player):
-            hint_board.increase(move.position_to, player)
+            hint_board.heatup(move.position_to, player)
     return hint_board

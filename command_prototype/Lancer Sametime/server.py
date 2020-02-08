@@ -1,7 +1,7 @@
 from flask import Flask, request, abort
 import net
 import game
-from entity import player_1, player_2
+from const import player_1, player_2
 import uuid
 
 app = Flask(__name__)
@@ -162,9 +162,9 @@ class Session:
             session.update(next_server_game.game_id)
 
             if session.is_ended():
-                ended_sessions.append(session.session_id)
+                ended_sessions.append(session)
 
-        for session_id in ended_sessions:
+        for session in ended_sessions:
             cls.ended_session_map[session.session_id] = session
             del cls.session_map[session.session_id]
 
