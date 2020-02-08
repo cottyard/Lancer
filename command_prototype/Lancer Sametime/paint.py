@@ -61,7 +61,7 @@ def paint_last_move_hint(renderer, game, player, color):
             hint_color, -4, ActionType.show(action.type))
         renderer(
             move.position_from.x, move.position_from.y, 
-            color, 3, str(move.position_to))
+            color, 4, str(move.position_to))
         renderer(
             move.position_from.x, move.position_from.y, 
             no_color, -5, str(action.unit_type.letter))
@@ -70,7 +70,7 @@ def paint_last_move_hint(renderer, game, player, color):
             no_color, -1, '[')
         renderer(
             move.position_from.x, move.position_from.y, 
-            no_color, 2, ']')
+            no_color, 2, ']>')
 
 def get_hint_board(board):
     hint_board = HeatBoard()
