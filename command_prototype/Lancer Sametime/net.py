@@ -1,16 +1,25 @@
 import pickle
 import base64
 import requests
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ReadTimeout, ConnectTimeout, ConnectionError
 
 server_endpoint = "http://localhost:5000/"
 encoding = 'ascii'
+
+client_timeout = 8
 
 def retry_on_timeout(func):
     for _ in range(3):
         try:
             return func()
         except ReadTimeout:
+            print(f'{func.__name__} read timeout')
+            continue
+        except ConnectTimeout:
+            print(f'{func.__name__} timeout')
+            continue
+        except ConnectionError:
+            print(f'{func.__name__} read timeout')
             continue
     raise Exception("Server timed out.")
 
@@ -18,7 +27,7 @@ def receive_game(session_id):
     url = server_endpoint + f"session/{session_id}/current_game"
 
     def receive():
-        res = requests.get(url=url, timeout=5)
+        res = requests.get(url=url, timeout=client_timeout * 2)
         if not res.ok:
             print(f"Did not receive game for session {session_id}: {res.status_code}")
             return None
@@ -32,7 +41,7 @@ def query_game(session_id):
     url = server_endpoint + f"session/{session_id}/current_game_id"
 
     def query():
-        res = requests.get(url=url, timeout=3)
+        res = requests.get(url=url, timeout=client_timeout)
         if res.text:
             return res.text
         else:
@@ -43,17 +52,17 @@ def query_game(session_id):
 def rollback_game(session_id):
     url = server_endpoint + f"session/{session_id}/rollback"
 
-    def query():
-        res = requests.post(url=url, timeout=3)
+    def rollback():
+        res = requests.post(url=url, timeout=client_timeout)
         return res.text == 'done'
 
-    return retry_on_timeout(query)
+    return retry_on_timeout(rollback)
 
 def new_game(player_name):
     url = server_endpoint + f"match/{player_name}"
 
     def new():
-        res = requests.post(url=url, timeout=3)
+        res = requests.post(url=url, timeout=client_timeout)
         session_id = res.text
         return session_id
     
