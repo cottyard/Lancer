@@ -3,7 +3,13 @@ import base64
 import requests
 from requests.exceptions import ReadTimeout, ConnectTimeout, ConnectionError
 
-server_endpoint = "http://localhost:5000/"
+try:
+    with open('ip.txt', 'r') as f:
+        ip = f.readline().strip()
+except FileNotFoundError:
+    ip = 'localhost'
+
+server_endpoint = f"http://{ip}:5000/"
 encoding = 'ascii'
 
 client_timeout = 8
