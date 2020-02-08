@@ -67,9 +67,9 @@ def start_session(session_id, game_id, player_name):
                 return
             assert(type(cmd) is net.GameCommand)
             player = get_player(cmd.player_name_map, player_name)
-            show_canvas(
-                get_painted_canvas(
-                    cmd.game, cmd.player_name_map, player))
+            print('\n\n')
+            show_round_brief(cmd.game)
+            show_canvas(get_painted_canvas(cmd.game, cmd.player_name_map, player))
             show_supply_and_population(cmd.player_name_map, cmd.game)
             check_game_status(cmd.status, cmd.player_name_map)
 
@@ -152,6 +152,7 @@ def mode_hotseat():
         player_move_p2 = read_player_move_hotseat(this_game, player_2, player_name_map[player_2])
 
         prompt('Proceeding to next round...')
+        print('\n\n\n')
 
         try:
             this_game = this_game.make_move([player_move_p1, player_move_p2])

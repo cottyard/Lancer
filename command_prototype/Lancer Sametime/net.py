@@ -3,7 +3,7 @@ import base64
 import requests
 from requests.exceptions import ReadTimeout
 
-server_endpoint = "http://52.246.182.85:5000/"
+server_endpoint = "http://localhost:5000/"
 encoding = 'ascii'
 
 def retry_on_timeout(func):
