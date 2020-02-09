@@ -13,9 +13,9 @@ class GameStatus(Enum):
     Draw = 3
 
 class Game:
-    supply_initial = 50
-    supply_basic_incremental = 40
-    supply_wagon = 5
+    supply_initial = 20
+    supply_basic_incremental = 16
+    supply_wagon = 2
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
@@ -54,7 +54,7 @@ class Game:
 
     def get_random_player_move(self, player):
         move_list = []
-        while random.randint(0, 6) != 0:
+        while random.randint(0, 12) != 0:
             if random.randint(0, 8) == 0:
                 recruit_position = Position(random.randint(0, board_size_x - 1), rule.spawn_row[player])
                 move = Move(recruit_position, recruit_position)
