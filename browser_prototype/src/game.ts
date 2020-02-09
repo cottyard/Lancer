@@ -17,6 +17,17 @@ class Game
     run()
     {
         this.canvas.paint_background();
+        
+        
+        let grid_size = g.settings.grid_size;
+        let grids = g.settings.grid_count;
+
+        for (let i = 0; i < grids; ++i) {
+            for (let j = 0; j < 2; ++j) {
+                this.canvas.paint_soldier(
+                    new Position(i * grid_size + 40, j * grid_size + 40));
+            }   
+        }
     }
 }
 

@@ -3,6 +3,9 @@
     ctx: CanvasRenderingContext2D;
     
     static STYLE_GREY = "#DDD";
+    static STYLE_BLACK = "#000";
+    static STYLE_WHITE = "#FFF";
+    static STYLE_CYAN = '#01cdfe';
 
     constructor(ctx: CanvasRenderingContext2D)
     {
@@ -10,25 +13,70 @@
         this.ctx.save();
     }
 
-    line(x: number, y: number, to_x: number, to_y: number, width: number): void
+    line(from: Position, to: Position, width: number): void
     {
         this.ctx.lineWidth = width;
         this.ctx.beginPath();
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(to_x, to_y);
+        this.ctx.moveTo(from.x, from.y);
+        this.ctx.lineTo(to.x, to.y);
+        this.ctx.stroke();
+        this.ctx.closePath();                        
+    }
+
+    circle(position: Position, radius: number, width: number, fill_style: string | null = null): void
+    {
+        this.ctx.lineWidth = width;
+        this.ctx.beginPath();
+        this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
+        if (fill_style != null)
+        {
+            this.ctx.fillStyle = fill_style;
+            this.ctx.fill();
+        }
+        this.ctx.closePath();
+    }
+
+    arc(position: Position, radius: number, startAngle: number, endAngle: number, width: number): void
+    {
+        this.ctx.lineWidth = width;
+        this.ctx.beginPath();
+        this.ctx.arc(position.x, position.y, radius, startAngle / 180 * Math.PI, endAngle / 180 * Math.PI, false);
         this.ctx.stroke();
         this.ctx.closePath();
     }
 
-    rectangle(x: number, y: number, width: number, height: number, fill: boolean = false): void
+    curve(from: Position, control: Position, to: Position, width: number): void
+    {
+        this.ctx.lineWidth = width;
+        this.ctx.beginPath();
+        this.ctx.moveTo(from.x, from.y);
+        this.ctx.quadraticCurveTo(control.x, control.y, to.x, to.y);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
+    triangle(point_1: Position, point_2: Position, point_3: Position, width: number): void
+    {
+        this.ctx.lineWidth = width;
+        this.ctx.beginPath();
+        this.ctx.moveTo(point_1.x, point_1.y);
+        this.ctx.lineTo(point_2.x, point_2.y);
+        this.ctx.lineTo(point_3.x, point_3.y);
+        this.ctx.lineTo(point_1.x, point_1.y);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
+    rectangle(position: Position, width: number, height: number, fill: boolean = false): void
     {
         if (fill)
         {
-            this.ctx.fillRect(x, y, width, height);
+            this.ctx.fillRect(position.x, position.y, width, height);
         }
         else 
         {
-            this.ctx.strokeRect(x, y, width, height);
+            this.ctx.strokeRect(position.x, position.y, width, height);
         }
     }
 

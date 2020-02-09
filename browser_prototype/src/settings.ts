@@ -1,7 +1,7 @@
 ﻿(() => {
-    const cvs_size: number = 400;
+    const cvs_size: number = 720;
 
-    m.settings = {
+    g.settings = {
         'cvs_size': cvs_size,
         'cvs_border_width': 3,
         'grid_size': cvs_size / 9,
