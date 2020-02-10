@@ -329,10 +329,6 @@ class Spearman(Unit):
     display = "SPR"
     letter = "P"
 
-class Sniper(Unit):
-    display = "SNP"
-    letter = "P"
-
 class Warrior(Unit):
     display = "WAR"
     letter = "W"
@@ -354,7 +350,7 @@ def convert_skill_list_map_to_skillset_map(skill_list_map):
 promotion_map = {
     Knight: [Lancer, Calvary],
     Soldier: [Swordsman, Spearman],
-    Archer: [Sniper, Spearman],
+    Archer: [Warrior, Spearman],
     Barbarian: [Warrior, Swordsman]
 }
 
