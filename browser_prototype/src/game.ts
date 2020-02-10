@@ -24,8 +24,23 @@ class Game
 
         for (let i = 0; i < grids; ++i) {
             for (let j = 0; j < 2; ++j) {
-                this.canvas.paint_soldier(
-                    new Position(i * grid_size + 40, j * grid_size + 40));
+                let p = new Position(i * grid_size + 40, j * grid_size + 40);
+                if ((i + j) % 4 == 0)
+                {
+                    this.canvas.paint_soldier(p);
+                }
+                else if ((i + j) % 4 == 1)
+                {
+                    this.canvas.paint_archer(p);
+                }
+                else if ((i + j) % 4 == 2)
+                {
+                    this.canvas.paint_barbarian(p);
+                }
+                else
+                {
+                    this.canvas.paint_knight(p);
+                }
             }   
         }
     }

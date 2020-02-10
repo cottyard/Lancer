@@ -8,6 +8,9 @@ class Canvas
     st_ctx: CanvasRenderingContext2D;
     am_ctx: CanvasRenderingContext2D;
 
+    halo_size_large = 60;
+    halo_size_small = 30;
+
     constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement) 
     {
         this.background = background;
@@ -58,32 +61,131 @@ class Canvas
         // this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
 
-    paint_soldier(position: Position)
+    paint_soldier(center: Position)
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.set_style(Renderer.STYLE_BLACK);
-            
-            let head_center = new Position(position.x, position.y - 10);
-            let head_size = 13;
-            let size_x = 17;
-            let size_y = 31;
-
-            let corner_left = head_center.add(new PositionDelta(-size_x, size_y));
-            let corner_right = head_center.add(new PositionDelta(size_x, size_y));
-            renderer.line(head_center, corner_left, 3);
-            renderer.line(head_center, corner_right, 3);
-            renderer.circle(head_center, head_size, 6, Renderer.STYLE_WHITE);
-            renderer.curve(corner_left, new Position(head_center.x, head_center.y + size_y + 10), corner_right, 3);
-            
-            renderer.set_style(Renderer.STYLE_CYAN);
-
-            let halo_center = new Position(position.x, position.y);
-            let halo_size = g.settings.grid_size / 2 - 5
-            
-            renderer.arc(halo_center, halo_size, -120, -60, 3);
-            renderer.arc(halo_center, halo_size, -30, 30, 3);
-            renderer.arc(halo_center, halo_size, 60, 120, 3);
-            renderer.arc(halo_center, halo_size, 150, 210, 3);
+            this.render_soldier(center, renderer);
+            this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
+            this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
         });
+    }
+
+    paint_archer(center: Position)
+    {
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            this.render_soldier(center, renderer);
+            this.render_hat(new Position(center.x + 3, center.y - 30), renderer);
+            this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
+            this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
+        });
+    }
+
+    paint_barbarian(center: Position)
+    {
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            this.render_horns(new Position(center.x, center.y - 15), renderer);
+            this.render_soldier(center, renderer);
+            this.render_halo(center, Angle.create(Direction.DownLeft, this.halo_size_large), renderer);
+            this.render_halo(center, Angle.create(Direction.DownRight, this.halo_size_large), renderer);
+        });
+    }
+
+    paint_knight(center: Position)
+    {
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            this.render_knight(center, renderer);
+            this.render_halo(center, Angle.create(Direction.DownLeftRight, this.halo_size_small), renderer);
+            this.render_halo(center, Angle.create(Direction.DownRightLeft, this.halo_size_small), renderer);
+        });
+    }
+
+    render_soldier(center: Position, renderer: Renderer)
+    {
+        renderer.set_style(Renderer.STYLE_BLACK);
+        
+        let head_center = new Position(center.x, center.y - 10);
+        let head_size = 13;
+        let size_x = 17;
+        let size_y = 31;
+        let width = 2;
+
+        let corner_left = head_center.add(new PositionDelta(-size_x, size_y));
+        let corner_right = head_center.add(new PositionDelta(size_x, size_y));
+
+        renderer.line(head_center, corner_left, width);
+        renderer.line(head_center, corner_right, width);
+        renderer.circle(head_center, head_size, width, Renderer.STYLE_WHITE);
+        renderer.curve(corner_left, head_center.add(new PositionDelta(0, size_y + 10)), corner_right, width);
+    }
+
+    render_knight(center: Position, renderer: Renderer)
+    {
+        renderer.set_style(Renderer.STYLE_BLACK);
+        
+        let head_size = 13;
+        let size_x = 17;
+        let size_y = 21;
+        let width = 2;
+
+        let body_left = center.add(new PositionDelta(-size_x, size_y));
+        let body_right = center.add(new PositionDelta(size_x, size_y));
+        let body_top = center.add(new PositionDelta(size_x, -10));
+        
+        renderer.line(body_top, body_left, width);
+        renderer.line(body_top, body_right, width);
+        renderer.curve(body_left, center.add(new PositionDelta(0, size_y + 10)), body_right, width);
+    }
+
+    render_halo(center: Position, angle: Angle, renderer: Renderer)
+    {
+        let width = 3;
+        renderer.set_style(Renderer.STYLE_CYAN);
+
+        let halo_center = new Position(center.x, center.y);
+        let halo_radius = g.settings.grid_size / 2 - 5
+
+        renderer.arc(halo_center, halo_radius, angle, width);
+    }
+
+    render_hat(hat_top: Position, renderer: Renderer)
+    {
+        renderer.set_style(Renderer.STYLE_BLACK);
+        let hat_size = 18
+        renderer.triangle(
+            hat_top, 
+            new Position(hat_top.x - hat_size * 1.2, hat_top.y + hat_size),
+            new Position(hat_top.x + hat_size * 0.8, hat_top.y + hat_size),
+            2, Renderer.STYLE_WHITE);
+    }
+
+    render_horns(center: Position, renderer: Renderer)
+    {
+        renderer.set_style(Renderer.STYLE_BLACK);
+        let width = 2;
+        let horn_size = 10;
+
+        renderer.curve(
+            center, 
+            center.add(new PositionDelta(-horn_size, 0)),
+            center.add(new PositionDelta(-horn_size * 1.5, -horn_size)),
+            width);
+        
+        renderer.curve(
+            center, 
+            new Position(center.x - horn_size - horn_size, center.y + horn_size),
+            new Position(center.x - horn_size * 1.5, center.y - horn_size),
+            width);
+        
+        renderer.curve(
+            center, 
+            new Position(center.x + horn_size, center.y),
+            new Position(center.x + horn_size * 1.5, center.y - horn_size),
+            width);
+        
+        renderer.curve(
+            center, 
+            new Position(center.x + horn_size + horn_size, center.y + horn_size),
+            new Position(center.x + horn_size * 1.5, center.y - horn_size),
+            width);
     }
 }

@@ -28,20 +28,21 @@
         this.ctx.lineWidth = width;
         this.ctx.beginPath();
         this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI, false);
-        this.ctx.stroke();
         if (fill_style != null)
         {
             this.ctx.fillStyle = fill_style;
             this.ctx.fill();
         }
+        this.ctx.stroke();
         this.ctx.closePath();
     }
 
-    arc(position: Position, radius: number, startAngle: number, endAngle: number, width: number): void
+    arc(position: Position, radius: number, angle: Angle, width: number): void
     {
         this.ctx.lineWidth = width;
         this.ctx.beginPath();
-        this.ctx.arc(position.x, position.y, radius, startAngle / 180 * Math.PI, endAngle / 180 * Math.PI, false);
+        angle.as_radian();
+        this.ctx.arc(position.x, position.y, radius, angle.start, angle.end, false);
         this.ctx.stroke();
         this.ctx.closePath();
     }
@@ -56,7 +57,7 @@
         this.ctx.closePath();
     }
 
-    triangle(point_1: Position, point_2: Position, point_3: Position, width: number): void
+    triangle(point_1: Position, point_2: Position, point_3: Position, width: number, fill_style: string | null = null): void
     {
         this.ctx.lineWidth = width;
         this.ctx.beginPath();
@@ -64,6 +65,11 @@
         this.ctx.lineTo(point_2.x, point_2.y);
         this.ctx.lineTo(point_3.x, point_3.y);
         this.ctx.lineTo(point_1.x, point_1.y);
+        if (fill_style != null)
+        {
+            this.ctx.fillStyle = fill_style;
+            this.ctx.fill();
+        }
         this.ctx.stroke();
         this.ctx.closePath();
     }
