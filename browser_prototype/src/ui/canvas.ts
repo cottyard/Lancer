@@ -8,7 +8,7 @@ class Canvas
     st_ctx: CanvasRenderingContext2D;
     am_ctx: CanvasRenderingContext2D;
 
-    halo_size_large = 60;
+    halo_size_large = 45;
     halo_size_small = 30;
 
     constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement) 
@@ -93,7 +93,7 @@ class Canvas
     paint_knight(center: Position)
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            this.render_knight(center, renderer);
+            renderer.knight(center);
             this.render_halo(center, Angle.create(Direction.DownLeftRight, this.halo_size_small), renderer);
             this.render_halo(center, Angle.create(Direction.DownRightLeft, this.halo_size_small), renderer);
         });
@@ -116,24 +116,6 @@ class Canvas
         renderer.line(head_center, corner_right, width);
         renderer.circle(head_center, head_size, width, Renderer.STYLE_WHITE);
         renderer.curve(corner_left, head_center.add(new PositionDelta(0, size_y + 10)), corner_right, width);
-    }
-
-    render_knight(center: Position, renderer: Renderer)
-    {
-        renderer.set_style(Renderer.STYLE_BLACK);
-        
-        let head_size = 13;
-        let size_x = 17;
-        let size_y = 21;
-        let width = 2;
-
-        let body_left = center.add(new PositionDelta(-size_x, size_y));
-        let body_right = center.add(new PositionDelta(size_x, size_y));
-        let body_top = center.add(new PositionDelta(size_x, -10));
-        
-        renderer.line(body_top, body_left, width);
-        renderer.line(body_top, body_right, width);
-        renderer.curve(body_left, center.add(new PositionDelta(0, size_y + 10)), body_right, width);
     }
 
     render_halo(center: Position, angle: Angle, renderer: Renderer)
