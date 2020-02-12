@@ -1,4 +1,4 @@
-class Canvas 
+class GameCanvas 
 {
     background: HTMLCanvasElement;
     static: HTMLCanvasElement;
@@ -8,8 +8,8 @@ class Canvas
     st_ctx: CanvasRenderingContext2D;
     am_ctx: CanvasRenderingContext2D;
 
-    halo_size_large = 45;
-    halo_size_small = 30;
+    static halo_size_large = 45;
+    static halo_size_small = 30;
 
     constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement) 
     {
@@ -49,7 +49,7 @@ class Canvas
                     if ((i + j) % 2 != 0) {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size), 
-                            grid_size, grid_size, true);
+                            grid_size, grid_size, Renderer.STYLE_GREY);
                     }
                 }   
             }
@@ -61,48 +61,71 @@ class Canvas
         // this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
 
-    paint_soldier(center: Position)
+    paint_soldier(center: Position, color: string, halo_angles: Angle[])
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.soldier(center);
-            this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
-            this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
+            renderer.soldier(center, color);
+            for (let angle of halo_angles)
+            {
+                this.render_halo(center, angle, renderer);
+            }
         });
     }
 
-    paint_archer(center: Position)
+    paint_king(center: Position, color: string)
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.soldier(center);
+            renderer.soldier(center, color);
+            renderer.crown(center);
+        });
+    }
+
+    paint_archer(center: Position, color: string, halo_angles: [Angle])
+    {
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            renderer.soldier(center, color);
             this.render_hat(new Position(center.x + 3, center.y - 30), renderer);
-            this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
-            this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
+            for (let angle of halo_angles)
+            {
+                this.render_halo(center, angle, renderer);
+            }
         });
     }
 
-    paint_barbarian(center: Position)
+    paint_barbarian(center: Position, color: string, halo_angles: [Angle])
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
             this.render_horns(new Position(center.x, center.y - 15), renderer);
-            renderer.soldier(center);
-            this.render_halo(center, Angle.create(Direction.DownLeft, this.halo_size_large), renderer);
-            this.render_halo(center, Angle.create(Direction.DownRight, this.halo_size_large), renderer);
+            renderer.soldier(center, color);
+            for (let angle of halo_angles)
+            {
+                this.render_halo(center, angle, renderer);
+            }
         });
     }
 
-    paint_knight(center: Position)
+    paint_knight(center: Position, color: string, halo_angles: [Angle])
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.knight(center);
-            this.render_halo(center, Angle.create(Direction.DownLeftRight, this.halo_size_small), renderer);
-            this.render_halo(center, Angle.create(Direction.DownRightLeft, this.halo_size_small), renderer);
+            renderer.knight(center, color);
+            for (let angle of halo_angles)
+            {
+                this.render_halo(center, angle, renderer);
+            }
+        });
+    }
+
+    paint_wagon(center: Position, color: string)
+    {
+        using(new Renderer(this.bg_ctx), (renderer) => {
+            renderer.wagon(center, color);
         });
     }
 
     render_halo(center: Position, angle: Angle, renderer: Renderer)
     {
         let width = 3;
-        renderer.set_style(Renderer.STYLE_CYAN);
+        renderer.set_style(Renderer.STYLE_CYAN_T);
 
         let halo_center = new Position(center.x, center.y);
         let halo_radius = g.settings.grid_size / 2 - 5

@@ -7,6 +7,9 @@
     static STYLE_WHITE = "#FFF";
     static STYLE_CYAN = '#01cdfe';
     static STYLE_RED_LIGHT = '#ff8080';
+    static STYLE_GOLD = '#ffd700';
+    static STYLE_BLUE_LIGHT = '#80ccff';
+    static STYLE_CYAN_T = "rgba(1, 205, 254, 0.5)"
 
     constructor(ctx: CanvasRenderingContext2D)
     {
@@ -71,24 +74,46 @@
         this.ctx.stroke();
     }
 
-    rectangle(position: Position, width: number, height: number, fill: boolean = false): void
+    rectangle(position: Position, width: number, height: number, fill_style: string | null = null): void
     {
-        if (fill)
+        if (fill_style != null)
         {
+            this.ctx.fillStyle = fill_style;
             this.ctx.fillRect(position.x, position.y, width, height);
         }
-        else 
-        {
-            this.ctx.strokeRect(position.x, position.y, width, height);
-        }
+        this.ctx.strokeRect(position.x, position.y, width, height);
     }
 
     crown(center:Position)
     {
+        let size = 10;
+        let height = 20;
+        let jewel_height = height + 8;
+        let control_left = center.add(new PositionDelta(-size / 3, -height));
+        let control_right = center.add(new PositionDelta(+size / 3, -height));
+        let left = center.add(new PositionDelta(-size, -height)); 
+        let right = center.add(new PositionDelta(size, -height)); 
+        let pointy_1 = center.add(new PositionDelta(-size - 2, -jewel_height)); 
+        let pointy_2 = center.add(new PositionDelta(0, -jewel_height * 1.1)); 
+        let pointy_3 = center.add(new PositionDelta(size + 2, -jewel_height)); 
 
+        this.ctx.lineWidth = 2;
+        this.ctx.fillStyle = Renderer.STYLE_GOLD;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(left.x, left.y);
+        this.ctx.lineTo(right.x, right.y);
+        this.ctx.lineTo(pointy_3.x, pointy_3.y);
+        
+        this.ctx.quadraticCurveTo(control_right.x, control_right.y, pointy_2.x, pointy_2.y);
+        this.ctx.quadraticCurveTo(control_left.x, control_left.y, pointy_1.x, pointy_1.y);
+        this.ctx.closePath();
+
+        this.ctx.fill();
+        this.ctx.stroke();
     }
 
-    soldier(center: Position)
+    soldier(center: Position, color: string)
     {
         this.set_style(Renderer.STYLE_BLACK);
         
@@ -102,7 +127,7 @@
         let corner_right = head_center.add(new PositionDelta(size_x, size_y));
 
         this.ctx.lineWidth = width;
-        this.ctx.fillStyle = Renderer.STYLE_RED_LIGHT;
+        this.ctx.fillStyle = color;
 
         this.ctx.beginPath();
         this.ctx.moveTo(head_center.x, head_center.y);
@@ -116,7 +141,7 @@
         this.circle(head_center, head_size, width, Renderer.STYLE_WHITE);
     }
 
-    knight(center: Position)
+    knight(center: Position, color: string)
     {
         this.set_style(Renderer.STYLE_BLACK);
         
@@ -141,7 +166,7 @@
         let ear_top = center.add(new PositionDelta(body_size_x, -head_height - 20 - ear_size));
 
         this.ctx.lineWidth = width;
-        this.ctx.fillStyle = Renderer.STYLE_RED_LIGHT;
+        this.ctx.fillStyle = color;
 
         this.ctx.beginPath();
         this.ctx.moveTo(body_top.x, body_top.y);
@@ -167,6 +192,35 @@
         this.ctx.stroke();
         
         this.circle(center.add(new PositionDelta(4, -13)), 1, width, Renderer.STYLE_BLACK);
+    }
+
+    wagon(center: Position, color: string)
+    {
+        let size_x = 30;
+        let size_y = 22;
+        let width = 2;
+        let tyre_size = 8;
+
+        this.set_style(Renderer.STYLE_BLACK);
+        this.ctx.lineWidth = width;
+
+        let upleft = center.add(new PositionDelta(-size_x * 1.3 / 2, -size_y / 2));
+        let upright = center.add(new PositionDelta(size_x * 1.3 / 2, -size_y / 2));
+        let downleft = center.add(new PositionDelta(-size_x / 2, size_y / 2));
+        let downright = center.add(new PositionDelta(size_x / 2, size_y / 2));
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(upleft.x, upleft.y);
+        this.ctx.lineTo(upright.x, upright.y);
+        this.ctx.lineTo(downright.x, downright.y);
+        this.ctx.lineTo(downleft.x, downleft.y);
+        this.ctx.closePath();
+        this.ctx.fillStyle = color;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.circle(center.add(new PositionDelta(-size_x / 2 * 0.8, size_y / 2)), tyre_size, width, Renderer.STYLE_WHITE);
+        this.circle(center.add(new PositionDelta(size_x / 2 * 0.8, size_y / 2)), tyre_size, width, Renderer.STYLE_WHITE);
     }
 
     set_style(style: string): void
