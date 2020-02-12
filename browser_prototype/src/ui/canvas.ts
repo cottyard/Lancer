@@ -67,7 +67,7 @@ class GameCanvas
             renderer.soldier(center, color);
             for (let angle of halo_angles)
             {
-                this.render_halo(center, angle, renderer);
+                renderer.halo(center, angle, color);
             }
         });
     }
@@ -87,7 +87,7 @@ class GameCanvas
             this.render_hat(new Position(center.x + 3, center.y - 30), renderer);
             for (let angle of halo_angles)
             {
-                this.render_halo(center, angle, renderer);
+                renderer.halo(center, angle, color);
             }
         });
     }
@@ -99,7 +99,7 @@ class GameCanvas
             renderer.soldier(center, color);
             for (let angle of halo_angles)
             {
-                this.render_halo(center, angle, renderer);
+                renderer.halo(center, angle, color);
             }
         });
     }
@@ -110,7 +110,7 @@ class GameCanvas
             renderer.knight(center, color);
             for (let angle of halo_angles)
             {
-                this.render_halo(center, angle, renderer);
+                renderer.halo(center, angle, color);
             }
         });
     }
@@ -120,17 +120,6 @@ class GameCanvas
         using(new Renderer(this.bg_ctx), (renderer) => {
             renderer.wagon(center, color);
         });
-    }
-
-    render_halo(center: Position, angle: Angle, renderer: Renderer)
-    {
-        let width = 3;
-        renderer.set_style(Renderer.STYLE_CYAN_T);
-
-        let halo_center = new Position(center.x, center.y);
-        let halo_radius = g.settings.grid_size / 2 - 5
-
-        renderer.arc(halo_center, halo_radius, angle, width);
     }
 
     render_hat(hat_top: Position, renderer: Renderer)

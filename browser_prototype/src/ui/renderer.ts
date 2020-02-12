@@ -223,6 +223,20 @@
         this.circle(center.add(new PositionDelta(size_x / 2 * 0.8, size_y / 2)), tyre_size, width, Renderer.STYLE_WHITE);
     }
 
+    halo(center: Position, angle: Angle, color: string)
+    {
+        let width = 4;
+        this.set_style(color);
+        this.ctx.globalAlpha = 0.5;
+
+        let halo_center = new Position(center.x, center.y);
+        let halo_radius = g.settings.grid_size / 2 - 5
+
+        this.arc(halo_center, halo_radius, angle, width);
+
+        this.ctx.globalAlpha = 1;
+    }
+
     set_style(style: string): void
     {
         this.ctx.strokeStyle = this.ctx.fillStyle = style;
