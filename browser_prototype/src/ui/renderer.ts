@@ -2,7 +2,7 @@
 {
     ctx: CanvasRenderingContext2D;
     
-    static STYLE_GREY = "#DDD";
+    static STYLE_GREY = "rgb(228, 228, 228)";
     static STYLE_BLACK = "#000";
     static STYLE_WHITE = "#FFF";
     static STYLE_CYAN = '#01cdfe';
@@ -81,7 +81,10 @@
             this.ctx.fillStyle = fill_style;
             this.ctx.fillRect(position.x, position.y, width, height);
         }
-        this.ctx.strokeRect(position.x, position.y, width, height);
+        else
+        {
+            this.ctx.strokeRect(position.x, position.y, width, height);
+        }
     }
 
     crown(center:Position)
