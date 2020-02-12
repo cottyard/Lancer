@@ -64,7 +64,7 @@ class Canvas
     paint_soldier(center: Position)
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            this.render_soldier(center, renderer);
+            renderer.soldier(center);
             this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
             this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
         });
@@ -73,7 +73,7 @@ class Canvas
     paint_archer(center: Position)
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
-            this.render_soldier(center, renderer);
+            renderer.soldier(center);
             this.render_hat(new Position(center.x + 3, center.y - 30), renderer);
             this.render_halo(center, Angle.create(Direction.Up, this.halo_size_large), renderer);
             this.render_halo(center, Angle.create(Direction.Down, this.halo_size_large), renderer);
@@ -84,7 +84,7 @@ class Canvas
     {
         using(new Renderer(this.bg_ctx), (renderer) => {
             this.render_horns(new Position(center.x, center.y - 15), renderer);
-            this.render_soldier(center, renderer);
+            renderer.soldier(center);
             this.render_halo(center, Angle.create(Direction.DownLeft, this.halo_size_large), renderer);
             this.render_halo(center, Angle.create(Direction.DownRight, this.halo_size_large), renderer);
         });
@@ -97,25 +97,6 @@ class Canvas
             this.render_halo(center, Angle.create(Direction.DownLeftRight, this.halo_size_small), renderer);
             this.render_halo(center, Angle.create(Direction.DownRightLeft, this.halo_size_small), renderer);
         });
-    }
-
-    render_soldier(center: Position, renderer: Renderer)
-    {
-        renderer.set_style(Renderer.STYLE_BLACK);
-        
-        let head_center = new Position(center.x, center.y - 10);
-        let head_size = 13;
-        let size_x = 17;
-        let size_y = 31;
-        let width = 2;
-
-        let corner_left = head_center.add(new PositionDelta(-size_x, size_y));
-        let corner_right = head_center.add(new PositionDelta(size_x, size_y));
-
-        renderer.line(head_center, corner_left, width);
-        renderer.line(head_center, corner_right, width);
-        renderer.circle(head_center, head_size, width, Renderer.STYLE_WHITE);
-        renderer.curve(corner_left, head_center.add(new PositionDelta(0, size_y + 10)), corner_right, width);
     }
 
     render_halo(center: Position, angle: Angle, renderer: Renderer)

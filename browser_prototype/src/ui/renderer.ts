@@ -6,6 +6,7 @@
     static STYLE_BLACK = "#000";
     static STYLE_WHITE = "#FFF";
     static STYLE_CYAN = '#01cdfe';
+    static STYLE_RED_LIGHT = '#ff8080';
 
     constructor(ctx: CanvasRenderingContext2D)
     {
@@ -82,6 +83,39 @@
         }
     }
 
+    crown(center:Position)
+    {
+
+    }
+
+    soldier(center: Position)
+    {
+        this.set_style(Renderer.STYLE_BLACK);
+        
+        let head_center = new Position(center.x, center.y - 10);
+        let head_size = 13;
+        let size_x = 17;
+        let size_y = 31;
+        let width = 2;
+
+        let corner_left = head_center.add(new PositionDelta(-size_x, size_y));
+        let corner_right = head_center.add(new PositionDelta(size_x, size_y));
+
+        this.ctx.lineWidth = width;
+        this.ctx.fillStyle = Renderer.STYLE_RED_LIGHT;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(head_center.x, head_center.y);
+        this.ctx.lineTo(corner_left.x, corner_left.y);
+        this.ctx.moveTo(head_center.x, head_center.y);
+        this.ctx.lineTo(corner_right.x, corner_right.y);
+        this.ctx.quadraticCurveTo(head_center.x, head_center.y + size_y + 10, corner_left.x, corner_left.y);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.circle(head_center, head_size, width, Renderer.STYLE_WHITE);
+    }
+
     knight(center: Position)
     {
         this.set_style(Renderer.STYLE_BLACK);
@@ -107,15 +141,21 @@
         let ear_top = center.add(new PositionDelta(body_size_x, -head_height - 20 - ear_size));
 
         this.ctx.lineWidth = width;
+        this.ctx.fillStyle = Renderer.STYLE_RED_LIGHT;
+
         this.ctx.beginPath();
         this.ctx.moveTo(body_top.x, body_top.y);
         this.ctx.lineTo(body_left.x, body_left.y);
         this.ctx.moveTo(body_top.x, body_top.y);
         this.ctx.lineTo(body_right.x, body_right.y);
+        this.ctx.quadraticCurveTo(center.x, center.y + body_size_y + 10, body_left.x, body_left.y);
+        this.ctx.fill();
         this.ctx.stroke();
 
-        this.curve(body_left, center.add(new PositionDelta(0, body_size_y + 10)), body_right, width);
+        
         this.triangle(ear_left, ear_right, ear_top, width);
+
+        this.ctx.fillStyle = Renderer.STYLE_WHITE;
 
         this.ctx.beginPath();
         this.ctx.moveTo(head_right_down.x, head_right_down.y);
@@ -123,8 +163,6 @@
         this.ctx.lineTo(head_left_up.x, head_left_up.y);
         this.ctx.lineTo(head_right_up.x, head_right_up.y);
         this.ctx.closePath();
-        
-        this.ctx.fillStyle = Renderer.STYLE_WHITE;
         this.ctx.fill();
         this.ctx.stroke();
         
