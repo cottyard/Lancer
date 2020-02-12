@@ -317,8 +317,8 @@ class Lancer(Unit):
     display = "LAN"
     letter = "L"
 
-class Calvary(Unit):
-    display = "CAL"
+class Cavalry(Unit):
+    display = "CAV"
     letter = "C"
 
 class Swordsman(Unit):
@@ -348,7 +348,7 @@ def convert_skill_list_map_to_skillset_map(skill_list_map):
     }
 
 promotion_map = {
-    Knight: [Lancer, Calvary],
+    Knight: [Lancer, Cavalry],
     Soldier: [Swordsman, Spearman],
     Archer: [Warrior, Spearman],
     Barbarian: [Warrior, Swordsman]
