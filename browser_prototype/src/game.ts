@@ -1,6 +1,7 @@
 class Game
 {
     canvas: GameCanvas;
+    bounding_rectangle: DOMRect;
 
     layout_1st = ['Archer', 'Wagon', 'Archer', 'Knight', 'King', 'Knight', 'Archer', 'Wagon', 'Archer'];
     layout_2nd = ['Barbarian', 'Soldier', 'Barbarian', 'Soldier', 'Barbarian', 'Soldier', 'Barbarian', 'Soldier', 'Barbarian'];
@@ -16,6 +17,33 @@ class Game
             <HTMLCanvasElement>document.getElementById('background'),
             <HTMLCanvasElement>document.getElementById('static'), 
             <HTMLCanvasElement>document.getElementById('animate'));
+
+        // this.canvas.animate.addEventListener("mousedown", on_user_mousedown);
+        // this.canvas.animate.addEventListener("mouseup", on_user_mouseup);
+        this.canvas.animate.addEventListener("mousemove", this.get_mouse_position.bind(this));
+
+        // this.canvas.animate.addEventListener("touchstart", on_touch);
+        // this.canvas.animate.addEventListener("touchmove", on_touch);
+        // this.canvas.animate.addEventListener("touchend", on_touch);
+    }
+
+    get_mouse_position(event: MouseEvent): Position
+    {
+        let rect = this.canvas.background.getBoundingClientRect();
+        let mouse_x = event.clientX - rect.left - g.settings.cvs_border_width;
+        let mouse_y = event.clientY - rect.top - g.settings.cvs_border_width;
+
+        
+
+        let to_coord = function(pixel: number)
+        { 
+            let coord = Math.floor(pixel / g.settings.grid_size) + 1;
+            if (coord <= 1) { return 1 };
+            if (coord >= g.settings.grid_count ) { return g.settings.grid_count };
+            return coord;
+        };
+
+        return new Position(to_coord(mouse_x), to_coord(mouse_y));
     }
 
     run()

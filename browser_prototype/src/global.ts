@@ -1,6 +1,10 @@
 class Module
 {
     settings: any;
+    board_size_x: number = 9;
+    board_size_y: number = 9;
+    grid_count: number = 9;
+    skill_range: number = 2;
 }
 let g: Module = new Module();
 
