@@ -1,6 +1,3 @@
-
-
-
 // class PlayerMove:
 //     @classmethod
 //     def from_literal(self, player, literal):
@@ -153,9 +150,9 @@ class SkillSet
     constructor(skills: Skill[] = []) {
         this.map = [];
 
-        for (let i: number = -g.skill_range; i <= g.skill_range; i++) {
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
             this.map[i] = [];
-            for (let j: number = -g.skill_range; j <= g.skill_range; j++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++) {
                 this.map[i][j] = false;
             }
         }
@@ -299,6 +296,7 @@ abstract class Unit
 }
 
 type AdvancedUnitConstructor = new (...args: any[]) => AdvancedUnit;
+type UnitConstructor = new (...args: any[]) => Unit;
 
 abstract class BasicUnit extends Unit
 {

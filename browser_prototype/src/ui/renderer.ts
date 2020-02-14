@@ -5,6 +5,11 @@
         this.ctx.save();
     }
 
+    translate(position: Position)
+    {
+        this.ctx.translate(position.x, position.y);
+    }
+
     line(from: Position, to: Position, width: number): void
     {
         this.ctx.lineWidth = width;

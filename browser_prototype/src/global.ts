@@ -5,11 +5,13 @@ class Module
     board_size_y: number = 9;
     grid_count: number = 9;
     skill_range: number = 2;
+    layout_1st: UnitConstructor[] = [Archer, Wagon, Archer, Rider, King, Rider, Archer, Wagon, Archer];
+    layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
     settings = {
         'cvs_size': this.cvs_size,
         'cvs_border_width': 3,
         'grid_size': this.cvs_size / 9,
-        'piece_font': "40px Courier New"
+        'piece_font': "40px Courier New",
     };
     const = {
         'STYLE_GREY': "rgb(228, 228, 228)",

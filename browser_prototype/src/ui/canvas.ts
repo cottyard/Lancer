@@ -79,48 +79,6 @@ class GameCanvas
             renderer.line(upleft, new Position(upleft.x + size, upleft.y), width);
         });
     }
-    
-    paint_soldier(center: Position)
-    {
-        let s = new Soldier(Player.P1, true);
-        let cs = new CanvasSoldier(s);
-        cs.paint(this.bg_ctx, center);
-    }
-
-    paint_king(center: Position, color: string)
-    {
-        let s = new King(Player.P1);
-        let cs = new CanvasKing(s);
-        cs.paint(this.bg_ctx, center);
-    }
-
-    paint_archer(center: Position, color: string, halo_angles: [Angle])
-    {
-        let s = new Archer(Player.P1, true);
-        let cs = new CanvasArcher(s);
-        cs.paint(this.bg_ctx, center);
-    }
-
-    paint_barbarian(center: Position, color: string, halo_angles: [Angle])
-    {
-        let s = new Barbarian(Player.P1, true);
-        let cs = new CanvasBarbarian(s);
-        cs.paint(this.bg_ctx, center);
-    }
-
-    paint_rider(center: Position, color: string, halo_angles: [Angle])
-    {
-        let s = new Rider(Player.P1, true);
-        let cs = new CanvasRider(s);
-        cs.paint(this.bg_ctx, center);
-    }
-
-    paint_wagon(center: Position, color: string)
-    {
-        let s = new Wagon(Player.P1);
-        let cs = new CanvasWagon(s);
-        cs.paint(this.bg_ctx, center);
-    }
 }
 
 class Position
