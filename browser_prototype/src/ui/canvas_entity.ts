@@ -1,37 +1,17 @@
 type CanvasUnitConstructor = new (...args: any[]) => CanvasUnit;
 
-let CanvasUnitFactory = function(unit: Unit)
+let CanvasUnitFactory = function(unit: Unit): CanvasUnit
 {
-    let constructor: CanvasUnitConstructor;
-    if (unit instanceof Rider)
-    {
-        constructor = CanvasRider;
-    }
-    else if (unit instanceof Soldier)
-    {
-        constructor = CanvasSoldier;
-    }
-    else if (unit instanceof Archer)
-    {
-        constructor = CanvasArcher;
-    }
-    else if (unit instanceof Barbarian)
-    {
-        constructor = CanvasBarbarian;
-    }
-    else if (unit instanceof King)
-    {
-        constructor = CanvasKing;
-    }
-    else if (unit instanceof Wagon)
-    {
-        constructor = CanvasWagon;
-    }
-    else
-    {
-        throw Error("CanvasUnitFactory");
-    }
+    let cmap: Map<UnitConstructor, CanvasUnitConstructor> = new Map([
+        [Rider, CanvasRider],
+        [Soldier, CanvasSoldier],
+        [Archer, CanvasArcher],
+        [Barbarian, CanvasBarbarian],
+        [King, CanvasKing],
+        [Wagon, CanvasWagon]
+    ]);
 
+    let constructor = cmap.get(<UnitConstructor>unit.constructor)!;
     return new constructor(unit);
 }
 
@@ -54,7 +34,7 @@ abstract class CanvasUnit
             renderer.translate(center);
             this.paint_unit(renderer);
         });
-        
+
         using(new Renderer(ctx), (renderer) => {
             renderer.translate(center);
             this.paint_halo(renderer);
