@@ -1,90 +1,26 @@
 class Module
 {
-    settings: any;
+    cvs_size: number = 720;
     board_size_x: number = 9;
     board_size_y: number = 9;
     grid_count: number = 9;
     skill_range: number = 2;
+    settings = {
+        'cvs_size': this.cvs_size,
+        'cvs_border_width': 3,
+        'grid_size': this.cvs_size / 9,
+        'piece_font': "40px Courier New"
+    };
+    const = {
+        'STYLE_GREY': "rgb(228, 228, 228)",
+        'STYLE_BLACK': "#000",
+        'STYLE_WHITE': "#FFF",
+        'STYLE_CYAN': '#01cdfe',
+        'STYLE_RED_LIGHT': '#ff8080',
+        'STYLE_GOLD': '#ffd700',
+        'STYLE_BLUE_LIGHT': '#80ccff',
+        'STYLE_CYAN_T': "rgba(1, 205, 254, 0.5)"
+    };
 }
+
 let g: Module = new Module();
-
-class Position
-{
-    x: number;
-    y: number;
-
-    constructor(x: number, y: number)
-    {
-        this.x = x;
-        this.y = y;
-    }
-
-    add(d: PositionDelta) : Position
-    {
-        return new Position(this.x + d.dx, this.y + d.dy);
-    }
-}
-
-class PositionDelta
-{
-    dx: number;
-    dy: number;
-
-    constructor(dx: number, dy: number)
-    {
-        this.dx = dx;
-        this.dy = dy;
-    }
-
-    opposite() : PositionDelta
-    {
-        return new PositionDelta(-this.dx, -this.dy);
-    }
-}
-
-enum Direction {
-    Up = -90,
-    Down = 90,
-    Left = 180,
-    Right = 0,
-    UpLeft = -135,
-    UpRight = -45,
-    DownLeft = 135,
-    DownRight = 45,
-    UpLeftLeft = -157.5,
-    UpLeftRight = -112.5,
-    UpRightLeft = -67.5,
-    UpRightRight = -22.5,
-    DownLeftLeft = 157.5,
-    DownLeftRight = 112.5,
-    DownRightLeft = 67.5,
-    DownRightRight = 22.5
-};
-
-class Angle
-{
-    start: number;
-    end: number;
-    is_radian: boolean = false;
-
-    constructor(start: number, end: number)
-    {
-        this.start = start;
-        this.end = end;
-    }
-
-    static create(direction: Direction, size: number) : Angle
-    {
-        return new Angle(direction - size / 2, direction + size / 2);
-    }
-
-    as_radian()
-    {
-        if (!this.is_radian)
-        {
-            this.start = this.start / 180 * Math.PI;
-            this.end = this.end / 180 * Math.PI;
-            this.is_radian = true;
-        }
-    }
-}

@@ -36,22 +36,29 @@ class GameCanvas
         return ctx;
     }
 
+    static get_grid_center(coord: Coordinate): Position
+    {
+        return new Position(
+            coord.x * g.settings.grid_size + g.settings.grid_size / 2, 
+            coord.y * g.settings.grid_size + g.settings.grid_size / 2);
+    }
+
     paint_background()
     {
         let grid_size = g.settings.grid_size;
-        let grids = g.settings.grid_count;
+        let grids = g.grid_count;
 
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.set_style(Renderer.STYLE_GREY);
-
+            renderer.set_style(g.const.STYLE_GREY);
+            
             for (let i = 0; i < grids; ++i) {
                 for (let j = 0; j < grids; ++j) {
                     if ((i + j) % 2 != 0) {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size), 
-                            grid_size, grid_size, Renderer.STYLE_GREY);
+                            grid_size, grid_size, g.const.STYLE_GREY);
                     }
-                }   
+                }
             }
         });
 
@@ -60,107 +67,139 @@ class GameCanvas
         // let piece_x = 20, piece_y = 10;
         // this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
-
-    paint_soldier(center: Position, color: string, halo_angles: Angle[])
+    
+    paint_indicator(center: Position)
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.soldier(center, color);
-            for (let angle of halo_angles)
-            {
-                renderer.halo(center, angle, color);
-            }
+        let width = 2;
+        let size = 20;
+        using(new Renderer(this.am_ctx), (renderer) => {
+            renderer.set_style(g.const.STYLE_BLUE_LIGHT);
+            let upleft = center.add(new PositionDelta(-g.settings.grid_size / 2, -g.settings.grid_size / 2));
+            renderer.line(upleft, new Position(upleft.x, upleft.y + size), width);
+            renderer.line(upleft, new Position(upleft.x + size, upleft.y), width);
         });
+    }
+    
+    paint_soldier(center: Position)
+    {
+        let s = new Soldier(Player.P1, true);
+        let cs = new CanvasSoldier(s);
+        cs.paint(this.bg_ctx, center);
     }
 
     paint_king(center: Position, color: string)
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.soldier(center, color);
-            renderer.crown(center);
-        });
+        let s = new King(Player.P1);
+        let cs = new CanvasKing(s);
+        cs.paint(this.bg_ctx, center);
     }
 
     paint_archer(center: Position, color: string, halo_angles: [Angle])
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.soldier(center, color);
-            this.render_hat(new Position(center.x + 3, center.y - 30), renderer);
-            for (let angle of halo_angles)
-            {
-                renderer.halo(center, angle, color);
-            }
-        });
+        let s = new Archer(Player.P1, true);
+        let cs = new CanvasArcher(s);
+        cs.paint(this.bg_ctx, center);
     }
 
     paint_barbarian(center: Position, color: string, halo_angles: [Angle])
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            this.render_horns(new Position(center.x, center.y - 15), renderer);
-            renderer.soldier(center, color);
-            for (let angle of halo_angles)
-            {
-                renderer.halo(center, angle, color);
-            }
-        });
+        let s = new Barbarian(Player.P1, true);
+        let cs = new CanvasBarbarian(s);
+        cs.paint(this.bg_ctx, center);
     }
 
-    paint_knight(center: Position, color: string, halo_angles: [Angle])
+    paint_rider(center: Position, color: string, halo_angles: [Angle])
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.knight(center, color);
-            for (let angle of halo_angles)
-            {
-                renderer.halo(center, angle, color);
-            }
-        });
+        let s = new Rider(Player.P1, true);
+        let cs = new CanvasRider(s);
+        cs.paint(this.bg_ctx, center);
     }
 
     paint_wagon(center: Position, color: string)
     {
-        using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.wagon(center, color);
-        });
+        let s = new Wagon(Player.P1);
+        let cs = new CanvasWagon(s);
+        cs.paint(this.bg_ctx, center);
+    }
+}
+
+class Position
+{
+    x: number;
+    y: number;
+
+    constructor(x: number, y: number)
+    {
+        this.x = x;
+        this.y = y;
     }
 
-    render_hat(hat_top: Position, renderer: Renderer)
+    add(d: PositionDelta) : Position
     {
-        renderer.set_style(Renderer.STYLE_BLACK);
-        let hat_size = 18
-        renderer.triangle(
-            hat_top, 
-            new Position(hat_top.x - hat_size * 1.2, hat_top.y + hat_size),
-            new Position(hat_top.x + hat_size * 0.8, hat_top.y + hat_size),
-            2, Renderer.STYLE_WHITE);
+        return new Position(this.x + d.dx, this.y + d.dy);
+    }
+}
+
+class PositionDelta
+{
+    dx: number;
+    dy: number;
+
+    constructor(dx: number, dy: number)
+    {
+        this.dx = dx;
+        this.dy = dy;
     }
 
-    render_horns(center: Position, renderer: Renderer)
+    opposite() : PositionDelta
     {
-        renderer.set_style(Renderer.STYLE_BLACK);
-        let width = 2;
-        let horn_size = 10;
+        return new PositionDelta(-this.dx, -this.dy);
+    }
+}
 
-        renderer.curve(
-            center, 
-            center.add(new PositionDelta(-horn_size, 0)),
-            center.add(new PositionDelta(-horn_size * 1.5, -horn_size)),
-            width);
-        
-        renderer.curve(
-            center, 
-            new Position(center.x - horn_size - horn_size, center.y + horn_size),
-            new Position(center.x - horn_size * 1.5, center.y - horn_size),
-            width);
-        
-        renderer.curve(
-            center, 
-            new Position(center.x + horn_size, center.y),
-            new Position(center.x + horn_size * 1.5, center.y - horn_size),
-            width);
-        
-        renderer.curve(
-            center, 
-            new Position(center.x + horn_size + horn_size, center.y + horn_size),
-            new Position(center.x + horn_size * 1.5, center.y - horn_size),
-            width);
+enum Direction {
+    Up = -90,
+    Down = 90,
+    Left = 180,
+    Right = 0,
+    UpLeft = -135,
+    UpRight = -45,
+    DownLeft = 135,
+    DownRight = 45,
+    UpLeftLeft = -157.5,
+    UpLeftRight = -112.5,
+    UpRightLeft = -67.5,
+    UpRightRight = -22.5,
+    DownLeftLeft = 157.5,
+    DownLeftRight = 112.5,
+    DownRightLeft = 67.5,
+    DownRightRight = 22.5
+};
+
+class Angle
+{
+    start: number;
+    end: number;
+    is_radian: boolean = false;
+
+    constructor(start: number, end: number)
+    {
+        this.start = start;
+        this.end = end;
+    }
+
+    static create(direction: Direction, size: number) : Angle
+    {
+        return new Angle(direction - size / 2, direction + size / 2);
+    }
+
+    as_radian()
+    {
+        if (!this.is_radian)
+        {
+            this.start = this.start / 180 * Math.PI;
+            this.end = this.end / 180 * Math.PI;
+            this.is_radian = true;
+        }
     }
 }

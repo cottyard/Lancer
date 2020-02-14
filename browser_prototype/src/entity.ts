@@ -146,20 +146,71 @@ class Skill
     }
 }
 
-
 class SkillSet
 {
     private map: boolean[][];
 
-    constructor() {
+    constructor(skills: Skill[] = []) {
         this.map = [];
 
-        for(var i: number = -g.skill_range; i <= g.skill_range; i++) {
+        for (let i: number = -g.skill_range; i <= g.skill_range; i++) {
             this.map[i] = [];
-            for(var j: number = -g.skill_range; j <= g.skill_range; j++) {
+            for (let j: number = -g.skill_range; j <= g.skill_range; j++) {
                 this.map[i][j] = false;
             }
         }
+
+        for (let skill of skills)
+        {
+            this.add(skill);
+        }
+    }
+
+    add(skill: Skill)
+    {
+        this.map[skill.delta.dx][skill.delta.dy] = true;
+    }
+
+    static from_literal(matrix: string): SkillSet
+    {
+        let rows = matrix.split('\n');
+        rows = rows.map((row: string) => { return row.trim(); });
+
+        let skills: Skill[] = [];
+        for (let dy = -g.skill_range; dy <= g.skill_range; dy++)
+        {
+            for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
+            {
+                 if (rows[dy + g.skill_range][dx + g.skill_range] == 'x')
+                 {
+                    skills.push(new Skill(new CoordinateDelta(dx, dy)));
+                 }
+            }
+        }
+
+        return new SkillSet(skills);
+    }
+
+    as_list(): Skill[]
+    {
+        let skills: Skill[] = [];
+        for (let dy = -g.skill_range; dy <= g.skill_range; dy++)
+        {
+            for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
+            {
+                 if (this.map[dx][dy])
+                 {
+                    skills.push(new Skill(new CoordinateDelta(dy, dx)));
+                 }
+            }
+        }
+
+        return skills;
+    }
+
+    copy(): SkillSet
+    {
+        return new SkillSet(this.as_list());
     }
 }
 
@@ -196,19 +247,11 @@ class SkillSet
 //     def flip(self):
 //         self.map = [list(reversed(col)) for col in self.map]
 
-//     def add(self, skill):
-//         self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset] = True
 
 //     def has(self, skill):
 //         return self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset]
 
-//     def list_skills(self):
-//         return [
-//             Skill(PositionDelta(x - skillset_offset, y - skillset_offset))
-//             for x in range(skillset_size)
-//             for y in range(skillset_size)
-//             if self.map[x][y]
-//         ]
+
 
 class Move
 {
@@ -242,73 +285,84 @@ enum Player
 
 abstract class Unit
 {
-    constructor(
-        public owner: Player,
-        public readonly perfect: SkillSet, 
-        public current: SkillSet,
-        public readonly is_advanced: boolean = false
-        )
+    readonly perfect: SkillSet;
+    current: SkillSet;
+
+    constructor(public owner: Player)
     {
         this.display = this.constructor.name;
+        this.perfect = SkillSet.from_literal(perfect_skills_map[this.display]);
+        this.current = new SkillSet();
     }
 
     display: string;
 }
 
-class Knight extends Unit
-{
-}
+type AdvancedUnitConstructor = new (...args: any[]) => AdvancedUnit;
 
-class Soldier extends Unit
+abstract class BasicUnit extends Unit
 {
-}
-
-class Archer extends Unit
-{
-}
-
-class Barbarian extends Unit
-{
-}
-
-class Lancer extends Unit
-{
-    constructor(owner: Player)
+    readonly promotion_options: AdvancedUnitConstructor[];
+    constructor(
+        owner: Player, 
+        endow_inborn: boolean = true)
     {
-        super(owner, new SkillSet(), new SkillSet(), true);
+        super(owner);
+        if (endow_inborn)
+        {
+            this.current = SkillSet.from_literal(
+                inborn_skills_map[this.constructor.name]);
+        }
     }
 }
 
-class Cavalry extends Unit
+abstract class AdvancedUnit extends Unit
 {
-    constructor(owner: Player)
+    constructor(owner: Player, was: BasicUnit)
     {
-        super(owner, new SkillSet(), new SkillSet(), true);
+        super(owner);
+        this.current = was.current.copy();
     }
 }
 
-class Swordsman extends Unit
+class Rider extends BasicUnit
 {
-    constructor(owner: Player)
-    {
-        super(owner, new SkillSet(), new SkillSet(), true);
-    }
+    readonly promotion_options = [ Lancer, Knight ];
 }
 
-class Spearman extends Unit
+class Soldier extends BasicUnit
 {
-    constructor(owner: Player)
-    {
-        super(owner, new SkillSet(), new SkillSet(), true);
-    }
+    readonly promotion_options = [Swordsman, Spearman];
 }
 
-class Warrior extends Unit
+class Archer extends BasicUnit
 {
-    constructor(owner: Player)
-    {
-        super(owner, new SkillSet(), new SkillSet(), true);
-    }
+    readonly promotion_options = [Warrior, Spearman];
+}
+
+class Barbarian extends BasicUnit
+{
+    readonly promotion_options = [Warrior, Swordsman];
+}
+
+class Lancer extends AdvancedUnit
+{
+}
+
+class Knight extends AdvancedUnit
+{
+}
+
+class Swordsman extends AdvancedUnit
+{
+}
+
+class Spearman extends AdvancedUnit
+{
+}
+
+class Warrior extends AdvancedUnit
+{
 }
 
 class King extends Unit
@@ -319,12 +373,122 @@ class Wagon extends Unit
 {
 }
 
+let perfect_skills_map: { [unit_name: string]: string; } =
+{
+    'King':
+        `-----
+        -xxx-
+        -x-x-
+        -xxx-
+        -----`,
+    'Rider':
+        `-x-x-
+        x---x
+        -----
+        x---x
+        -x-x-`,
+    'Lancer':
+        `-xxx-
+        x---x
+        x---x
+        x---x
+        -xxx-`,
+    'Knight':
+        `-x-x-
+        xx-xx
+        -----
+        xx-xx
+        -x-x-`,
+    'Soldier':
+        `-----
+        --x--
+        -x-x-
+        --x--
+        -----`,
+    'Swordsman':
+        `-----
+        -xxx-
+        -x-x-
+        -xxx-
+        -----`,
+    'Spearman':
+        `--x--
+        --x--
+        xx-xx
+        --x--
+        --x--`,
+    'Archer':
+        `--x--
+        -----
+        x---x
+        -----
+        --x--`,
+    'Barbarian':
+        `-----
+        -x-x-
+        -----
+        -x-x-
+        -----`,
+    'Warrior':
+        `--x--
+        -x-x-
+        x---x
+        -x-x-
+        --x--`,
+    'Wagon':
+        `-----
+        --x--
+        -xxx-
+        --x--
+        -----`
+}
+
+let inborn_skills_map: { [unit_name: string]: string; } =
+{
+    'King':
+        `-----
+        -xxx-
+        -x-x-
+        -xxx-
+        -----`,
+    'Rider':
+        `-x-x-
+        -----
+        -----
+        -----
+        -----`,
+    'Soldier':
+        `-----
+        --x--
+        -----
+        --x--
+        -----`,
+    'Archer':
+        `--x--
+        -----
+        -----
+        -----
+        --x--`,
+    'Barbarian':
+        `-----
+        -x-x-
+        -----
+        -----
+        -----`,
+    'Wagon':
+        `-----
+        -----
+        --x--
+        -----
+        -----`
+}
+
     // def endow(self, skill):
     //     if self.perfect_skillset.has(skill):
     //         self.skillset.add(skill)
     //         return True
     //     return False
-        
+
     // def has_skill(self, skill):
     //     return self.skillset.has(skill)
     
@@ -336,7 +500,6 @@ class Wagon extends Unit
 
     // def is_promotion_ready(self):
     //     return not self.is_advanced() and self.is_perfect()
-
 
     // def potential_skillset(self):
     //     return self.ultimate_skillset().subtract(self.skillset)
@@ -377,13 +540,5 @@ class Wagon extends Unit
 
 
 
-// promotion_map = {
-//     Knight: [Lancer, Cavalry],
-//     Soldier: [Swordsman, Spearman],
-//     Archer: [Warrior, Spearman],
-//     Barbarian: [Warrior, Swordsman]
-// }
 
-// potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)
-// inborn_skillset_map = convert_skill_list_map_to_skillset_map(skills.inborn_skill_list_map)
 
