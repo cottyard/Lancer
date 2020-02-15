@@ -1,18 +1,3 @@
-// class PlayerMove:
-//     @classmethod
-//     def from_literal(self, player, literal):
-//         try:
-//             return PlayerMove(player, [Move.from_literal(lit) for lit in literal.split()])
-//         except:
-//             raise InvalidParameter("player move literal")
-
-//     def __init__(self, player, move_list):
-//         self.player = player
-//         self.move_list = move_list
-    
-//     def __repr__(self):
-//         return ','.join([str(m) for m in self.move_list])
-
 // class Action:
 //     def __init__(self, move, type_, unit_type):
 //         self.move = move
@@ -92,21 +77,17 @@ class Coordinate
         }
     }
 
-    // def from_literal(self, literal):
-    //     try:
-    //         x, y = literal
-    //         x, y = map(int, [x, y])
-    //     except:
-    //         raise InvalidParameter("move literal")
-    //     else:
-    //         return Position(x - 1, y - 1)
-
     // def get_delta(self, position):
     //     return PositionDelta(position.x - self.x, position.y - self.y)
     
     equals(other: Coordinate): boolean
     {
         return this.x == other.x && this.y == other.y;
+    }
+
+    copy(): Coordinate
+    {
+        return new Coordinate(this.x, this.y);
     }
 
     // def get_new_position(self, position_delta):
@@ -249,13 +230,8 @@ class SkillSet
 //             for i in range(skillset_size)
 //             for j in range(skillset_size)
 //         )
-
-
-
 //     def has(self, skill):
 //         return self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset]
-
-
 
 class Move
 {
@@ -279,6 +255,18 @@ class Move
 
     // def __repr__(self):
     //     return str(self.position_from) + '->' + str(self.position_to)
+}
+
+class PlayerMove
+{
+    constructor(public player: Player, public moves: Move[] = [])
+    {
+    }
+
+    append(move: Move): void
+    {
+        this.moves.push(move);
+    }
 }
 
 enum Player

@@ -43,7 +43,7 @@ abstract class CanvasUnit
 
 abstract class CanvasHaloUnit extends CanvasUnit
 {
-    abstract skill_direction: HashMap;
+    abstract skill_direction: HashMap<Direction>;
     abstract halo_size: number;
 
     constructor(protected unit: Unit)
@@ -89,10 +89,10 @@ abstract class CanvasHaloUnit extends CanvasUnit
 class CanvasSoldier extends CanvasHaloUnit
 {
     skill_direction = new HashMap([
-        [new Skill(0, -1), Direction.Up],
-        [new Skill(0, 1), Direction.Down],
-        [new Skill(-1, 0), Direction.Left],
-        [new Skill(1, 0), Direction.Right]
+        [new Skill(0, -1), HaloDirection.Up],
+        [new Skill(0, 1), HaloDirection.Down],
+        [new Skill(-1, 0), HaloDirection.Left],
+        [new Skill(1, 0), HaloDirection.Right]
     ]);
     halo_size = GameCanvas.halo_size_large;
 
@@ -105,10 +105,10 @@ class CanvasSoldier extends CanvasHaloUnit
 class CanvasArcher extends CanvasHaloUnit
 {
     skill_direction = new HashMap([
-        [new Skill(0, -2), Direction.Up],
-        [new Skill(0, 2), Direction.Down],
-        [new Skill(-2, 0), Direction.Left],
-        [new Skill(2, 0), Direction.Right]
+        [new Skill(0, -2), HaloDirection.Up],
+        [new Skill(0, 2), HaloDirection.Down],
+        [new Skill(-2, 0), HaloDirection.Left],
+        [new Skill(2, 0), HaloDirection.Right]
     ]);
     halo_size = GameCanvas.halo_size_large;
 
@@ -123,10 +123,10 @@ class CanvasArcher extends CanvasHaloUnit
 class CanvasBarbarian extends CanvasHaloUnit
 {
     skill_direction = new HashMap([
-        [new Skill(-1, 1), Direction.DownLeft],
-        [new Skill(1, 1), Direction.DownRight],
-        [new Skill(-1, -1), Direction.UpLeft],
-        [new Skill(1, -1), Direction.UpRight]
+        [new Skill(-1, 1), HaloDirection.DownLeft],
+        [new Skill(1, 1), HaloDirection.DownRight],
+        [new Skill(-1, -1), HaloDirection.UpLeft],
+        [new Skill(1, -1), HaloDirection.UpRight]
     ]);
     halo_size = GameCanvas.halo_size_large;
 
@@ -142,14 +142,14 @@ class CanvasBarbarian extends CanvasHaloUnit
 class CanvasRider extends CanvasHaloUnit
 {
     skill_direction = new HashMap([
-        [new Skill(-1, -2), Direction.UpLeftRight],
-        [new Skill(1, -2), Direction.UpRightLeft],
-        [new Skill(-1, 2), Direction.DownLeftRight],
-        [new Skill(1, 2), Direction.DownRightLeft],
-        [new Skill(-2, -1), Direction.UpLeftLeft],
-        [new Skill(2, -1), Direction.UpRightRight],
-        [new Skill(-2, 1), Direction.DownLeftLeft],
-        [new Skill(2, 1), Direction.DownRightRight]
+        [new Skill(-1, -2), HaloDirection.UpLeftRight],
+        [new Skill(1, -2), HaloDirection.UpRightLeft],
+        [new Skill(-1, 2), HaloDirection.DownLeftRight],
+        [new Skill(1, 2), HaloDirection.DownRightLeft],
+        [new Skill(-2, -1), HaloDirection.UpLeftLeft],
+        [new Skill(2, -1), HaloDirection.UpRightRight],
+        [new Skill(-2, 1), HaloDirection.DownLeftLeft],
+        [new Skill(2, 1), HaloDirection.DownRightRight]
     ]);
     halo_size = GameCanvas.halo_size_small;
 
@@ -162,10 +162,10 @@ class CanvasRider extends CanvasHaloUnit
 class CanvasWagon extends CanvasHaloUnit
 {
     skill_direction = new HashMap([
-        [new Skill(0, -1), Direction.Up],
-        [new Skill(0, 1), Direction.Down],
-        [new Skill(-1, 0), Direction.Left],
-        [new Skill(1, 0), Direction.Right]
+        [new Skill(0, -1), HaloDirection.Up],
+        [new Skill(0, 1), HaloDirection.Down],
+        [new Skill(-1, 0), HaloDirection.Left],
+        [new Skill(1, 0), HaloDirection.Right]
     ]);
     halo_size = GameCanvas.halo_size_large;
 

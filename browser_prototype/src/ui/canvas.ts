@@ -108,9 +108,14 @@ class Position
         this.y = y;
     }
 
-    add(d: PositionDelta) : Position
+    add(d: PositionDelta): Position
     {
         return new Position(this.x + d.dx, this.y + d.dy);
+    }
+
+    delta(other: Position): PositionDelta
+    {
+        return new PositionDelta(other.x - this.x, other.y - this.y);
     }
 }
 
@@ -131,32 +136,59 @@ class PositionDelta
     }
 }
 
-enum Direction {
-    Up = -90,
-    Down = 90,
-    Left = 180,
-    Right = 0,
-    UpLeft = -135,
-    UpRight = -45,
-    DownLeft = 135,
-    DownRight = 45,
-    UpLeftLeft = -157.5,
-    UpLeftRight = -112.5,
-    UpRightLeft = -67.5,
-    UpRightRight = -22.5,
-    DownLeftLeft = 157.5,
-    DownLeftRight = 112.5,
-    DownRightLeft = 67.5,
-    DownRightRight = 22.5
+class Direction
+{
+    constructor(public value: number)
+    {
+    }
+
+    to_radian(): Direction
+    {
+        return new Direction(this.value / 180 * Math.PI);
+    }
+
+    add(value: number): Direction
+    {
+        return new Direction(this.value + value);
+    }
+
+    opposite() : Direction
+    {
+        return new Direction((this.value + 180) % 360);
+    }
+
+    static from_radian(value: number): Direction
+    {
+        return new Direction(value * 180 / Math.PI);
+    }
+}
+
+class HaloDirection {
+    static Up = new Direction(-90);
+    static Down = new Direction(90);
+    static Left = new Direction(180);
+    static Right = new Direction(0);
+    static UpLeft = new Direction(-135);
+    static UpRight = new Direction(-45);
+    static DownLeft = new Direction(135);
+    static DownRight = new Direction(45);
+    static UpLeftLeft = new Direction(-157.5);
+    static UpLeftRight = new Direction(-112.5);
+    static UpRightLeft = new Direction(-67.5);
+    static UpRightRight = new Direction(-22.5);
+    static DownLeftLeft = new Direction(157.5);
+    static DownLeftRight = new Direction(112.5);
+    static DownRightLeft = new Direction(67.5);
+    static DownRightRight = new Direction(22.5);
 };
 
 class Angle
 {
-    start: number;
-    end: number;
+    start: Direction;
+    end: Direction;
     is_radian: boolean = false;
 
-    constructor(start: number, end: number)
+    constructor(start: Direction, end: Direction)
     {
         this.start = start;
         this.end = end;
@@ -164,15 +196,15 @@ class Angle
 
     static create(direction: Direction, size: number) : Angle
     {
-        return new Angle(direction - size / 2, direction + size / 2);
+        return new Angle(direction.add(-size / 2), direction.add(size / 2));
     }
 
     as_radian()
     {
         if (!this.is_radian)
         {
-            this.start = this.start / 180 * Math.PI;
-            this.end = this.end / 180 * Math.PI;
+            this.start = this.start.to_radian();
+            this.end = this.end.to_radian();
             this.is_radian = true;
         }
     }

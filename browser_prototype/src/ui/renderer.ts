@@ -37,7 +37,7 @@
         this.ctx.lineWidth = width;
         angle.as_radian();
         this.ctx.beginPath();
-        this.ctx.arc(position.x, position.y, radius, angle.start, angle.end, false);
+        this.ctx.arc(position.x, position.y, radius, angle.start.value, angle.end.value, false);
         this.ctx.stroke();
     }
 
@@ -274,6 +274,67 @@
             new Position(horn_size + horn_size, horn_size),
             new Position(horn_size * 1.5, -horn_size),
             width);
+    }
+
+    arrow(from: Position, to: Position, fill_style: string, shrink_length: number)
+    {
+        let size = 3, width = 3;
+
+        from = this.go_towards(from, to, shrink_length);
+        to = this.go_towards(to, from, shrink_length);
+
+        this.line(from, to, width);
+
+        let direction = this.get_direction(from, to);
+        this.ctx.save();
+        this.ctx.translate(to.x, to.y);
+        this.ctx.rotate(direction.add(90).to_radian().value);
+        this.triangle(
+            new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size), 
+            width, fill_style);
+        this.ctx.restore();
+    }
+
+    go_towards(from: Position, to: Position, length: number): Position
+    {
+        let direction = this.get_direction(from, to);
+        let dy = length * Math.sin(direction.to_radian().value);
+        let dx = length * Math.cos(direction.to_radian().value);
+        return from.add(new PositionDelta(dx, dy));
+    }
+
+    get_direction(from: Position, to: Position): Direction
+    {
+        let delta = from.delta(to);
+        
+        if (delta.dx == 0)
+        {
+            if (delta.dy > 0)
+            {
+                return new Direction(90);
+            }
+            else if (delta.dy < 0)
+            {
+                return new Direction(270);
+            }
+            else
+            {
+                return new Direction(0);
+            }
+        }
+        else
+        {
+            let direction = Direction.from_radian(Math.atan(delta.dy / delta.dx));
+            
+            if (delta.dx < 0)
+            {
+                return direction.opposite();
+            }
+            else
+            {
+                return direction;
+            }
+        }
     }
 
     set_style(style: string): void
