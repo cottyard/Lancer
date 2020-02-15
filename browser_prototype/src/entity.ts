@@ -1,70 +1,3 @@
-// class Action:
-//     def __init__(self, move, type_, unit_type):
-//         self.move = move
-//         self.type = type_
-//         self.unit_type = unit_type
-
-//     def __repr__(self):
-//         return f'{self.move}({ActionType.show(self.type)})'
-
-//     def get_cost(self):
-//         return ActionType.cost(self.type, self.unit_type)
-
-// class PlayerAction:
-//     def __init__(self, player, action_list):
-//         self.player = player
-//         self.action_list = action_list
-    
-//     def extract_actions(self, filter):
-//         extracted = [a for a in self.action_list if filter(a)]
-//         remaining = [a for a in self.action_list if not filter(a)]
-//         self.action_list = remaining
-//         return extracted
-
-//     def copy(self):
-//         return PlayerAction(self.player, self.action_list.copy())
-
-//     def get_cost(self):
-//         return sum([action.get_cost() for action in self.action_list])
-
-//     def __repr__(self):
-//         return ','.join([str(a) for a in self.action_list])
-
-// class ActionType(Enum):
-//     Upgrade = 1
-//     Defend = 2
-//     Move = 3
-//     Attack = 4
-//     Recruit = 5
-
-//     @classmethod
-//     def show(self, action_type):
-//         return {
-//             ActionType.Upgrade: 'UPG',
-//             ActionType.Defend: 'DEF',
-//             ActionType.Move: 'MOV',
-//             ActionType.Attack: 'ATK',
-//             ActionType.Recruit: 'REC'
-//         }[action_type]
-
-//     @classmethod
-//     def cost(self, action_type, unit_type):
-//         try:
-//             return {
-//                 ActionType.Upgrade: 4,
-//                 ActionType.Defend: 2,
-//                 ActionType.Move: 3,
-//                 ActionType.Attack: 5,
-//             }[action_type]
-//         except KeyError:
-//             return {
-//                 Soldier: 10,
-//                 Barbarian: 10,
-//                 Archer: 10,
-//                 Knight: 15,
-//                 Wagon: 30
-//             }[unit_type]
-
 class InvalidParameter extends Error {}
 
 class Coordinate
@@ -233,6 +166,13 @@ class SkillSet
 //     def has(self, skill):
 //         return self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset]
 
+        
+enum Player
+{
+    P1 = 1,
+    P2 = 2
+}
+
 class Move
 {
     constructor(public from: Coordinate, public to: Coordinate)
@@ -250,8 +190,10 @@ class Move
     // def is_to_same(self, move):
     //     return self.position_to == move.position_to
 
-    // def get_skill(self):
-    //     return Skill(self.position_from.get_delta(self.position_to))
+    get_skill(): Skill
+    {
+        return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
+    }
 
     // def __repr__(self):
     //     return str(self.position_from) + '->' + str(self.position_to)
@@ -269,10 +211,60 @@ class PlayerMove
     }
 }
 
-enum Player
+class Action
 {
-    P1 = 1,
-    P2 = 2
+    constructor(public move: Move, public type: ActionType, public unit_type: typeof Unit)
+    {
+    }
+
+    cost(): number
+    {
+        switch(this.type)
+        {
+            case ActionType.Upgrade:
+                return 4;
+            case ActionType.Defend:
+                return 2;
+            case ActionType.Move:
+                return 3;
+            case ActionType.Attack:
+                return 5;
+            case ActionType.Recruit:
+                switch(this.unit_type)
+                {
+                    case Soldier:
+                    case Barbarian:
+                    case Archer:
+                        return 10;
+                    case Rider:
+                        return 15;
+                    case Wagon:
+                        return 30;
+                }
+            throw new Error("Action cost");
+        }
+    }
+}
+
+enum ActionType
+{
+    Upgrade,
+    Defend,
+    Move,
+    Attack,
+    Recruit
+}
+
+class PlayerAction
+{
+    constructor(public player: Player, public actions: Action[])
+    {
+    }
+
+    cost(): number
+    {
+        return this.actions.map((a) => {return a.cost();}).reduce((a, b) => a + b, 0)
+    }
 }
 
 abstract class Unit
