@@ -18,14 +18,37 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
 abstract class CanvasUnit
 {
     color: string;
+
     static readonly color_map = new Map<Player, string>([
         [Player.P1, g.const.STYLE_RED_LIGHT],
         [Player.P2, g.const.STYLE_BLUE_LIGHT]
     ]);
 
-    constructor(private unit: Unit)
+    constructor(protected unit: Unit)
     {
         this.color = CanvasUnit.color_map.get(this.unit.owner)!;
+    }
+
+    paint(ctx: CanvasRenderingContext2D, center: Position): void
+    {
+        using(new Renderer(ctx), (renderer) => {
+            renderer.translate(center);
+            this.paint_unit(renderer);
+        });
+    }
+
+    abstract paint_unit(renderer: Renderer): void;
+}
+
+
+abstract class CanvasHaloUnit extends CanvasUnit
+{
+    abstract skill_direction: HashMap;
+    abstract halo_size: number;
+
+    constructor(protected unit: Unit)
+    {
+        super(unit);
     }
 
     paint(ctx: CanvasRenderingContext2D, center: Position): void
@@ -41,11 +64,17 @@ abstract class CanvasUnit
         });
     }
 
-    abstract paint_unit(renderer: Renderer): void;
-
     get_halo_angles(): Angle[]
     {
-        return [];
+        return this.unit.current.as_list().map(
+            (skill: Skill) => {
+                return this.skill_direction.get(skill);
+            }
+        ).map(
+            (dir: Direction) => {
+                return Angle.create(dir, this.halo_size);
+            }
+        )
     }
 
     paint_halo(renderer: Renderer): void
@@ -57,42 +86,50 @@ abstract class CanvasUnit
     }
 }
 
-class CanvasSoldier extends CanvasUnit
+class CanvasSoldier extends CanvasHaloUnit
 {
-    paint_unit(renderer: Renderer): void 
+    skill_direction = new HashMap([
+        [new Skill(0, -1), Direction.Up],
+        [new Skill(0, 1), Direction.Down],
+        [new Skill(-1, 0), Direction.Left],
+        [new Skill(1, 0), Direction.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
+    paint_unit(renderer: Renderer): void
     {
         renderer.soldier(this.color);
     }
-
-    get_halo_angles()
-    {
-        return [
-            Angle.create(Direction.Up, GameCanvas.halo_size_large), 
-            Angle.create(Direction.Down, GameCanvas.halo_size_large)
-        ];
-    }
 }
 
-class CanvasArcher extends CanvasUnit
+class CanvasArcher extends CanvasHaloUnit
 {
+    skill_direction = new HashMap([
+        [new Skill(0, -2), Direction.Up],
+        [new Skill(0, 2), Direction.Down],
+        [new Skill(-2, 0), Direction.Left],
+        [new Skill(2, 0), Direction.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
     paint_unit(renderer: Renderer): void 
     {
         renderer.soldier(this.color);
         renderer.translate(new Position(3, -30));
         renderer.hat();
     }
-
-    get_halo_angles()
-    {
-        return [
-            Angle.create(Direction.Up, GameCanvas.halo_size_large), 
-            Angle.create(Direction.Down, GameCanvas.halo_size_large)
-        ];
-    }
 }
 
-class CanvasBarbarian extends CanvasUnit
+class CanvasBarbarian extends CanvasHaloUnit
 {
+    skill_direction = new HashMap([
+        [new Skill(-1, 1), Direction.DownLeft],
+        [new Skill(1, 1), Direction.DownRight],
+        [new Skill(-1, -1), Direction.UpLeft],
+        [new Skill(1, -1), Direction.UpRight]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
     paint_unit(renderer: Renderer): void 
     {
         renderer.translate(new Position(0, -15));
@@ -100,34 +137,38 @@ class CanvasBarbarian extends CanvasUnit
         renderer.translate(new Position(0, 15));
         renderer.soldier(this.color);
     }
-
-    get_halo_angles()
-    {
-        return [
-            Angle.create(Direction.DownLeft, GameCanvas.halo_size_large), 
-            Angle.create(Direction.DownRight, GameCanvas.halo_size_large)
-        ];
-    }
 }
 
-class CanvasRider extends CanvasUnit
+class CanvasRider extends CanvasHaloUnit
 {
+    skill_direction = new HashMap([
+        [new Skill(-1, -2), Direction.UpLeftRight],
+        [new Skill(1, -2), Direction.UpRightLeft],
+        [new Skill(-1, 2), Direction.DownLeftRight],
+        [new Skill(1, 2), Direction.DownRightLeft],
+        [new Skill(-2, -1), Direction.UpLeftLeft],
+        [new Skill(2, -1), Direction.UpRightRight],
+        [new Skill(-2, 1), Direction.DownLeftLeft],
+        [new Skill(2, 1), Direction.DownRightRight]
+    ]);
+    halo_size = GameCanvas.halo_size_small;
+
     paint_unit(renderer: Renderer): void 
     {
         renderer.rider(this.color);
     }
-
-    get_halo_angles()
-    {
-        return [
-            Angle.create(Direction.UpLeftRight, GameCanvas.halo_size_small), 
-            Angle.create(Direction.UpRightLeft, GameCanvas.halo_size_small)
-        ];
-    }
 }
 
-class CanvasWagon extends CanvasUnit
+class CanvasWagon extends CanvasHaloUnit
 {
+    skill_direction = new HashMap([
+        [new Skill(0, -1), Direction.Up],
+        [new Skill(0, 1), Direction.Down],
+        [new Skill(-1, 0), Direction.Left],
+        [new Skill(1, 0), Direction.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
     paint_unit(renderer: Renderer): void 
     {
         renderer.wagon(this.color);

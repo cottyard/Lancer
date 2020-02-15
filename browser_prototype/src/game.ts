@@ -54,26 +54,26 @@ class Game
         for (let i = 0; i < grids; ++i) {
             let p = new Position(i * grid_size + 40, 40);
             let constructor = g.layout_1st[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
+            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
             canvas_unit.paint(this.canvas.am_ctx, p);
         }
         for (let i = 0; i < grids; ++i) {
             let p = new Position(i * grid_size + 40, grid_size + 40);
             let constructor = g.layout_2nd[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
+            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
             canvas_unit.paint(this.canvas.am_ctx, p);
         }
 
         for (let i = 0; i < grids; ++i) {
             let p = new Position(i * grid_size + 40, grid_size * 8 + 40);
             let constructor = g.layout_1st[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
+            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
             canvas_unit.paint(this.canvas.am_ctx, p);
         }
         for (let i = 0; i < grids; ++i) {
             let p = new Position(i * grid_size + 40, grid_size * 7 + 40);
             let constructor = g.layout_2nd[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
+            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
             canvas_unit.paint(this.canvas.am_ctx, p);
         }
     }

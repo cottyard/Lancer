@@ -122,21 +122,17 @@ class Coordinate
     //     return self.x * 10 + self.y
 }
 
-class CoordinateDelta
+class Skill implements IHashable
 {
-    constructor(public dx: number, public dy: number)
+    hash(): string 
     {
+        return `Skill(${this.x},${this.y})`;
     }
-// def __eq__(self, other):
-//     return self.dx == other.dx and self.dy == other.dy
-}
-    
-class Skill
-{
-    constructor(public delta: CoordinateDelta)
+
+    constructor(public x: number, public y: number)
     { 
-        if (! (-g.skill_range <= delta.dx && delta.dx <= g.skill_range && 
-               -g.skill_range <= delta.dy && delta.dy <= g.skill_range))
+        if (! (-g.skill_range <= x && x <= g.skill_range && 
+               -g.skill_range <= y && y <= g.skill_range))
         {
             throw new InvalidParameter("Skill");
         }
@@ -165,23 +161,23 @@ class SkillSet
 
     add(skill: Skill)
     {
-        this.map[skill.delta.dx][skill.delta.dy] = true;
+        this.map[skill.x][skill.y] = true;
     }
 
     static from_literal(matrix: string): SkillSet
     {
+        
         let rows = matrix.split('\n');
         rows = rows.map((row: string) => { return row.trim(); });
-
         let skills: Skill[] = [];
         for (let dy = -g.skill_range; dy <= g.skill_range; dy++)
         {
             for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
             {
-                 if (rows[dy + g.skill_range][dx + g.skill_range] == 'x')
-                 {
-                    skills.push(new Skill(new CoordinateDelta(dx, dy)));
-                 }
+                if (rows[dy + g.skill_range][dx + g.skill_range] == 'x')
+                {
+                    skills.push(new Skill(dx, dy));
+                }
             }
         }
 
@@ -195,10 +191,10 @@ class SkillSet
         {
             for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
             {
-                 if (this.map[dx][dy])
-                 {
-                    skills.push(new Skill(new CoordinateDelta(dy, dx)));
-                 }
+                if (this.map[dx][dy])
+                {
+                    skills.push(new Skill(dx, dy));
+                }
             }
         }
 
@@ -208,6 +204,19 @@ class SkillSet
     copy(): SkillSet
     {
         return new SkillSet(this.as_list());
+    }
+
+    flip(): SkillSet
+    {
+        let flipped = this.copy();
+        
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+            for (let j = -g.skill_range; j < 0; j++) {
+                let c = flipped.map[i];
+                [c[j], c[-j]] = [c[-j], c[j]]
+            }
+        }
+        return flipped;
     }
 }
 
@@ -241,8 +250,6 @@ class SkillSet
 //             for j in range(skillset_size)
 //         )
 
-//     def flip(self):
-//         self.map = [list(reversed(col)) for col in self.map]
 
 
 //     def has(self, skill):
@@ -308,8 +315,13 @@ abstract class BasicUnit extends Unit
         super(owner);
         if (endow_inborn)
         {
-            this.current = SkillSet.from_literal(
+            let inborn = SkillSet.from_literal(
                 inborn_skills_map[this.constructor.name]);
+            if (owner == Player.P2)
+            {
+                inborn = inborn.flip();
+            }
+            this.current = inborn;
         }
     }
 }
