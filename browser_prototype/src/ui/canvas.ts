@@ -68,16 +68,32 @@ class GameCanvas
         // this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
     
-    paint_indicator(center: Position)
+    paint_indicator(coordinate: Coordinate)
     {
+        let center = GameCanvas.get_grid_center(coordinate);
         let width = 2;
         let size = 20;
-        using(new Renderer(this.am_ctx), (renderer) => {
-            renderer.set_style(g.const.STYLE_BLUE_LIGHT);
-            let upleft = center.add(new PositionDelta(-g.settings.grid_size / 2, -g.settings.grid_size / 2));
-            renderer.line(upleft, new Position(upleft.x, upleft.y + size), width);
-            renderer.line(upleft, new Position(upleft.x + size, upleft.y), width);
-        });
+        let p: number, q: number;
+        let half_grid = g.settings.grid_size / 2;
+        for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
+        {
+            using(new Renderer(this.am_ctx), (renderer) => {
+                renderer.set_style(g.const.STYLE_BLACK);
+                renderer.translate(center);
+                renderer.translate(new Position(p * half_grid, q * half_grid));
+                let zero = new Position(0, 0);
+                renderer.line(zero, new Position(-p * size, 0), width);
+                renderer.line(zero, new Position(0, -q * size), width);
+            });
+        }
+    }
+
+    clear_canvas(ctx: CanvasRenderingContext2D)
+    {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.restore();
     }
 }
 
