@@ -1,58 +1,80 @@
 class Board<T>
 {
-    private board: T[][];
+    private board: (T | null)[][];
 
-    constructor(constructor: () => T)
+    constructor(initializer: () => (T | null))
     {
         this.board = [];
 
         for (let i = 0; i <= g.board_size_x; i++) {
             this.board[i] = [];
             for (let j = 0; j <= g.board_size_y; j++) {
-                this.board[i][j] = constructor();
+                this.board[i][j] = initializer();
+            }
+        }
+    }
+
+    at(coord: Coordinate): T | null
+    {
+        return this.board[coord.x][coord.y];
+    }
+
+    put(coord: Coordinate, unit: T): void
+    {
+        this.board[coord.x][coord.y] = unit;
+    }
+    
+    remove(coord: Coordinate): T | null
+    {
+        let unit = this.board[coord.x][coord.y];
+        this.board[coord.x][coord.y] = null;
+        return unit;
+    }
+        
+    move(move: Move): void
+    {
+        let unit = this.at(move.from);
+        if (unit != null)
+        {
+            this.put(move.to, unit);
+            this.remove(move.from);
+        }
+    }
+
+    iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
+    {
+        for (let i = 0; i <= g.board_size_x; i++) {
+            for (let j = 0; j <= g.board_size_y; j++) {
+                if (this.board[i][j] != null)
+                {
+                    foreach(this.board[i][j]!, new Coordinate(i, j));
+                }
             }
         }
     }
 }
 
-let set_out = function(board: Board<UnitConstructor>): void
+let set_out = function(board: Board<Unit>): void
 {
+    let board_layout: [number, UnitConstructor[], Player][] = [
+        [0, g.layout_1st, Player.P2],
+        [1, g.layout_2nd, Player.P2],
+        [g.board_size_y - 1, g.layout_1st, Player.P1],
+        [g.board_size_y - 2, g.layout_2nd, Player.P1]
+    ];
+
     let row, setting, player;
-    for ([row, setting, player] of [
-        [0, g.layout_1st, Player.P1],
-        [1, g.layout_2nd, Player.P1],
-        [g.board_size_y - 1, g.layout_1st, Player.P2],
-        [g.board_size_y - 2, g.layout_2nd, Player.P2]
-    ])
+    for ([row, setting, player] of board_layout)
     {
         for (let i = 0; i < g.board_size_x; i++)
         {
-            this.board[i][<number>row] = new (<UnitConstructor[]>setting)[i](player);
+            board.put(
+                new Coordinate(i, row),
+                new setting[i](player));
         }
     }
 }
-    // def at(self, position):
-    //     return self.board[position.x][position.y]
-    
-    // def put(self, position, unit):
-    //     self.board[position.x][position.y] = unit
 
-    // def remove(self, position):
-    //     unit = self.board[position.x][position.y]
-    //     self.board[position.x][position.y] = None
-    //     return unit
 
-    // def move(self, move):
-    //     unit = self.at(move.position_from)
-    //     self.put(move.position_to, unit)
-    //     self.remove(move.position_from)
-
-    // def iterate_units(self, func):
-    //     for i in range(board_size_x):
-    //         for j in range(board_size_y):
-    //             u = self.board[i][j]
-    //             if u is not None:
-    //                 func(u, Position(i, j))
-    
     // def copy(self):
     //     return deepcopy(self)

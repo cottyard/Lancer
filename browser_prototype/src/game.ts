@@ -56,31 +56,13 @@ class Game
         let grid_size = g.settings.grid_size;
         let grids = g.grid_count;
 
-        for (let i = 0; i < grids; ++i) {
-            let p = new Position(i * grid_size + 40, 40);
-            let constructor = g.layout_1st[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
-            canvas_unit.paint(this.canvas.st_ctx, p);
-        }
-        for (let i = 0; i < grids; ++i) {
-            let p = new Position(i * grid_size + 40, grid_size + 40);
-            let constructor = g.layout_2nd[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P2));
-            canvas_unit.paint(this.canvas.st_ctx, p);
-        }
+        let board = new Board<Unit>(() => null);
+        set_out(board);
 
-        for (let i = 0; i < grids; ++i) {
-            let p = new Position(i * grid_size + 40, grid_size * 8 + 40);
-            let constructor = g.layout_1st[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
-            canvas_unit.paint(this.canvas.st_ctx, p);
-        }
-        for (let i = 0; i < grids; ++i) {
-            let p = new Position(i * grid_size + 40, grid_size * 7 + 40);
-            let constructor = g.layout_2nd[i];
-            let canvas_unit = CanvasUnitFactory(new constructor(Player.P1));
-            canvas_unit.paint(this.canvas.st_ctx, p);
-        }
+        board.iterate_units((unit, coord) => {
+            let canvas_unit = CanvasUnitFactory(unit);
+            canvas_unit.paint(this.canvas.st_ctx, GameCanvas.get_grid_center(coord));
+        });
     }
 }
 

@@ -72,7 +72,7 @@ class GameCanvas
     {
         let center = GameCanvas.get_grid_center(coordinate);
         let width = 2;
-        let size = 20;
+        let size = 15;
         let p: number, q: number;
         let half_grid = g.settings.grid_size / 2;
         for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
