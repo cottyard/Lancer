@@ -1,8 +1,8 @@
 from const import board_size_x, board_size_y, player_1, player_2
 from copy import deepcopy
-from entity import Position, Wagon, Archer, Knight, King, Soldier, Barbarian
+from entity import Position, Wagon, Archer, Rider, King, Soldier, Barbarian
 
-board_setting_1st_row = [Wagon, Archer, Archer, Knight, King, Knight, Archer, Archer, Wagon]
+board_setting_1st_row = [Wagon, Archer, Archer, Rider, King, Rider, Archer, Archer, Wagon]
 board_setting_2nd_row = [Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier]
 
 class Board:

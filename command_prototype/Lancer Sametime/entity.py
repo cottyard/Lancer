@@ -114,7 +114,7 @@ class ActionType(Enum):
                 Soldier: 10,
                 Barbarian: 10,
                 Archer: 10,
-                Knight: 15,
+                Rider: 15,
                 Wagon: 30
             }[unit_type]
             
@@ -219,7 +219,7 @@ class Unit:
     @classmethod
     def create_from_skill(self, player, skill):
         creator = self.which_creator_has_skill(
-            [Knight, Soldier, Barbarian, Archer, Wagon], skill)
+            [Rider, Soldier, Barbarian, Archer, Wagon], skill)
         if creator is None:
             return None
         created = creator(player, SkillSet())
@@ -298,10 +298,11 @@ class SkillSet:
             if self.map[x][y]
         ]
 
-class Knight(Unit):
-    display = "KNT"
-    letter = "N"
-    
+
+class Rider(Unit):
+    display = "RDR"
+    letter = "R"
+
 class Soldier(Unit):
     display = "SLD"
     letter = "D"
@@ -318,9 +319,9 @@ class Lancer(Unit):
     display = "LAN"
     letter = "L"
 
-class Cavalry(Unit):
-    display = "CAV"
-    letter = "C"
+class Knight(Unit):
+    display = "KNT"
+    letter = "N"
 
 class Swordsman(Unit):
     display = "SWD"
@@ -349,7 +350,7 @@ def convert_skill_list_map_to_skillset_map(skill_list_map):
     }
 
 promotion_map = {
-    Knight: [Lancer, Cavalry],
+    Rider: [Lancer, Knight],
     Soldier: [Swordsman, Spearman],
     Archer: [Warrior, Spearman],
     Barbarian: [Warrior, Swordsman]

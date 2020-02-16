@@ -1,7 +1,7 @@
 import paint
 import renderer
 from game import Game
-from entity import Soldier, Knight, Barbarian, Position, PlayerMove, Move
+from entity import Soldier, Rider, Barbarian, Position, PlayerMove, Move
 from const import player_1, player_2
 from board import Board
 import rule
@@ -74,7 +74,7 @@ def assert_move_conflict():
     b.put(p1p1, Soldier(player_1))
     b.put(p2p1, Soldier(player_2))
     b.put(p1p2, Soldier(player_1))
-    b.put(p1p3, Knight(player_1))
+    b.put(p1p3, Rider(player_1))
     b.put(p2p2, Soldier(player_2))
     g = Game(b)
     g.replenish(100)
@@ -104,13 +104,13 @@ def assert_attack_defend():
     p1u5 = Position.from_literal('56')
 
     b.put(p2u1, Soldier(player_2))
-    b.put(p2u2, Knight(player_2, flip_skillset=True))
+    b.put(p2u2, Rider(player_2, flip_skillset=True))
     b.put(p2u3, Soldier(player_2))
     #b.put(p2u4, Barbarian(player_2, flip_skillset=True)))
 
-    b.put(p1u1, Knight(player_1))
+    b.put(p1u1, Rider(player_1))
     b.put(p1u2, Soldier(player_1))
-    b.put(p1u3, Knight(player_1))
+    b.put(p1u3, Rider(player_1))
     b.put(p1u4, Soldier(player_1))
     b.put(p1u5, Soldier(player_1))
 

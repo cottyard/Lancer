@@ -6,7 +6,7 @@ KING
 -xxx-
 -----
 
-KNT
+RDR
 -x-x-
 x---x
 -----
@@ -20,7 +20,7 @@ x---x
 x---x
 -xxx-
 
-CAL
+KNT
 -x-x-
 xx-xx
 -----
@@ -85,7 +85,7 @@ KING
 -xxx-
 -----
 
-KNT
+RDR
 -x-x-
 -----
 -----
