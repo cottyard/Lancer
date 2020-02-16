@@ -86,34 +86,30 @@ class Game
     {
         if (this.selected && this.current)
         {
-            this.player_move.append(
-                new Move(this.selected, this.current)
-            );
-            
-            if (!this.update_player_action())
+            let selected = this.selected;
+            this.player_move.moves = this.player_move.moves.filter(
+                (move) => !move.from.equals(selected));
+
+            this.player_move.append(new Move(this.selected, this.current));
+
+            try
             {
-                this.player_move.pop();
+                this.update_player_action();
             }
-            else
+            catch (e)
             {
-                this.render_indicators();
+                console.log(e);
+                this.player_move.pop();
+                this.update_player_action();
             }
         }
         this.selected = null;
+        this.render_indicators();
     }
 
     update_player_action()
     {
-        try
-        {
-            this.player_action = Rule.validate_player_move(this.board, this.player_move);
-        }
-        catch (e)
-        {
-            console.log(e);
-            return false;
-        }
-        return true;
+        this.player_action = Rule.validate_player_move(this.board, this.player_move);
     }
 
     to_coord = function(pixel: number): number

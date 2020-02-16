@@ -276,11 +276,22 @@
             width);
     }
 
-    arrow(from: Position, to: Position, style: string, shrink_length: number)
+    arrow(from: Position, to: Position, style: string, shrink_length: number): void
     {
         this.set_style(style);
-
         let size = 3, width = 3;
+
+        if (from.equals(to))
+        {
+            shrink_length *= 0.6;
+            size *= 2;
+            this.triangle(
+                new Position(to.x, to.y - shrink_length),
+                new Position(to.x - size / 1.5, to.y - shrink_length - size), 
+                new Position(to.x + size / 1.5, to.y - shrink_length - size), 
+                width, style);
+            return;
+        }
 
         from = this.go_towards(from, to, shrink_length);
         to = this.go_towards(to, from, shrink_length);

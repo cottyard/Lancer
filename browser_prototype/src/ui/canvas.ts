@@ -139,6 +139,11 @@ class Position
     {
         return new PositionDelta(other.x - this.x, other.y - this.y);
     }
+
+    equals(other: Position): boolean
+    {
+        return this.x == other.x && this.y == other.y;
+    }
 }
 
 class PositionDelta

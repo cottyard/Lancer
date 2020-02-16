@@ -332,8 +332,7 @@ abstract class Unit
         return unit;
     }
 
-    static which_has_skill(cons: (UnitConstructor)[], skill: Skill)
-        : UnitConstructor | null
+    static which_has_skill(cons: (UnitConstructor)[], skill: Skill): UnitConstructor | null
     {
         for (let c of cons)
         {
