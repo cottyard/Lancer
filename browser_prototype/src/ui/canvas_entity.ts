@@ -11,7 +11,7 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
         [Wagon, CanvasWagon]
     ]);
 
-    let constructor = cmap.get(<UnitConstructor>unit.constructor)!;
+    let constructor = cmap.get(unit.type())!;
     return new constructor(unit);
 }
 
@@ -43,7 +43,7 @@ abstract class CanvasUnit
 
 abstract class CanvasHaloUnit extends CanvasUnit
 {
-    abstract skill_direction: HashMap<Direction>;
+    abstract skill_direction: HashMap<Skill, Direction>;
     abstract halo_size: number;
 
     constructor(protected unit: Unit)

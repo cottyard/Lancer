@@ -11,6 +11,7 @@ class Game
 
     constructor()
     {
+        g.initialize();
         this.initialize();
     }
 

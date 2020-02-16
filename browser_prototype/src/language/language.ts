@@ -14,10 +14,10 @@ interface IHashable {
     hash(): string;
 }
 
-class HashMap<V>
+class HashMap<K extends IHashable, V>
 {
     private map = new Map<string, V>();
-    constructor(init: [IHashable, V][] = [])
+    constructor(init: [K, V][] = [])
     {
         let key, value;
         for ([key, value] of init)
@@ -26,12 +26,12 @@ class HashMap<V>
         }
     }
 
-    put(key: IHashable, value: V): void
+    put(key: K, value: V): void
     {
         this.map.set(key.hash(), value);
     }
 
-    get(key: IHashable): V | undefined
+    get(key: K): V | undefined
     {
         return this.map.get(key.hash());
     }

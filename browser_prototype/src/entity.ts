@@ -1,6 +1,6 @@
 class InvalidParameter extends Error {}
 
-class Coordinate
+class Coordinate implements IHashable
 {
     constructor(public x: number, public y: number)
     {
@@ -9,9 +9,6 @@ class Coordinate
             throw new InvalidParameter("Coordinate");
         }
     }
-
-    // def get_delta(self, position):
-    //     return PositionDelta(position.x - self.x, position.y - self.y)
     
     equals(other: Coordinate): boolean
     {
@@ -23,26 +20,14 @@ class Coordinate
         return new Coordinate(this.x, this.y);
     }
 
-    // def get_new_position(self, position_delta):
-    //     try:
-    //         return Position(self.x + position_delta.dx, self.y + position_delta.dy)
-    //     except InvalidParameter:
-    //         return None
-
-    // def __str__(self):
-    //     return f'{self.x + 1}{self.y + 1}'
-
-    // def __hash__(self):
-    //     return self.x * 10 + self.y
+    hash(): string
+    {
+        return `Coordinate(${this.x},${this.y})`;
+    }
 }
 
 class Skill implements IHashable
 {
-    hash(): string 
-    {
-        return `Skill(${this.x},${this.y})`;
-    }
-
     constructor(public x: number, public y: number)
     { 
         if (! (-g.skill_range <= x && x <= g.skill_range && 
@@ -50,6 +35,11 @@ class Skill implements IHashable
         {
             throw new InvalidParameter("Skill");
         }
+    }
+
+    hash(): string 
+    {
+        return `Skill(${this.x},${this.y})`;
     }
 }
 
@@ -78,9 +68,13 @@ class SkillSet
         this.map[skill.x][skill.y] = true;
     }
 
+    has(skill: Skill): boolean
+    {
+        return this.map[skill.x][skill.y];
+    }
+
     static from_literal(matrix: string): SkillSet
     {
-        
         let rows = matrix.split('\n');
         rows = rows.map((row: string) => { return row.trim(); });
         let skills: Skill[] = [];
@@ -101,10 +95,8 @@ class SkillSet
     as_list(): Skill[]
     {
         let skills: Skill[] = [];
-        for (let dy = -g.skill_range; dy <= g.skill_range; dy++)
-        {
-            for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
-            {
+        for (let dy = -g.skill_range; dy <= g.skill_range; dy++) {
+            for (let dx = -g.skill_range; dx <= g.skill_range; dx++) {
                 if (this.map[dx][dy])
                 {
                     skills.push(new Skill(dx, dy));
@@ -117,7 +109,47 @@ class SkillSet
 
     copy(): SkillSet
     {
-        return new SkillSet(this.as_list());
+        return new SkillSet().union(this);
+    }
+
+    static op_union = (a: boolean, b: boolean) => a || b;
+    static op_subtract = (a: boolean, b: boolean) => a && !b;
+
+    apply(operator: (a: boolean, b: boolean) => boolean, other: SkillSet): SkillSet
+    {
+        let result = new SkillSet();
+        
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+            result.map[i] = [];
+            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+                result.map[i][j] = operator(this.map[i][j], other.map[i][j]);
+            }
+        }
+
+        return result;
+    }
+
+    union(other: SkillSet): SkillSet
+    {
+        return this.apply(SkillSet.op_union, other);
+    }
+    
+    subtract(other: SkillSet): SkillSet
+    {
+        return this.apply(SkillSet.op_subtract, other);
+    }
+
+    equals(other: SkillSet): boolean
+    {
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+            for (let j = -g.skill_range; j < g.skill_range; j++) {
+                if (this.map[i][j] != other.map[i][j])
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     flip(): SkillSet
@@ -133,39 +165,6 @@ class SkillSet
         return flipped;
     }
 }
-
-//     op_union = lambda a, b: a or b
-//     op_common = lambda a, b: a and b
-//     op_subtract = lambda a, b: a and not b
-
-//     def apply(self, operator, skillset):
-//         self.map = [
-//             [
-//                 operator(self.map[i][j], skillset.map[i][j]) 
-//                 for j in range(skillset_size)
-//             ]
-//             for i in range(skillset_size)
-//         ]
-//         return self
-
-//     def copy(self):
-//         return SkillSet().union(self)
-
-//     def union(self, skillset):
-//         return self.apply(SkillSet.op_union, skillset)
-
-//     def subtract(self, skillset):
-//         return self.apply(SkillSet.op_subtract, skillset)
-
-//     def __eq__(self, other):
-//         return all(
-//             self.map[i][j] == other.map[i][j]
-//             for i in range(skillset_size)
-//             for j in range(skillset_size)
-//         )
-//     def has(self, skill):
-//         return self.map[skill.delta.dx + skillset_offset][skill.delta.dy + skillset_offset]
-
         
 enum Player
 {
@@ -184,19 +183,10 @@ class Move
         return this.from.equals(other.from) && this.to.equals(other.to);
     }
 
-    // def is_from_same(self, move):
-    //     return self.position_from == move.position_from
-
-    // def is_to_same(self, move):
-    //     return self.position_to == move.position_to
-
     get_skill(): Skill
     {
         return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
     }
-
-    // def __repr__(self):
-    //     return str(self.position_from) + '->' + str(self.position_to)
 }
 
 class PlayerMove
@@ -213,7 +203,7 @@ class PlayerMove
 
 class Action
 {
-    constructor(public move: Move, public type: ActionType, public unit_type: typeof Unit)
+    constructor(public move: Move, public type: ActionType, public unit_type: UnitConstructor)
     {
     }
 
@@ -271,32 +261,90 @@ abstract class Unit
 {
     readonly perfect: SkillSet;
     current: SkillSet;
+    display: string;
 
     constructor(public owner: Player)
     {
         this.display = this.constructor.name;
-        this.perfect = SkillSet.from_literal(perfect_skills_map[this.display]);
+        this.perfect = g.perfect_skills.get(this.type())!;
         this.current = new SkillSet();
     }
 
-    display: string;
+    type(): UnitConstructor
+    {
+        return <UnitConstructor>this.constructor;
+    }
+
+    endow(skill: Skill): boolean
+    {
+        if (this.perfect.has(skill))
+        {
+            this.current.add(skill);
+            return true;
+        }
+        return false;
+    }
+
+    capable(skill: Skill): boolean
+    {
+        return this.current.has(skill);
+    }
+
+    potential(): SkillSet
+    {
+        return this.perfect.subtract(this.current);
+    }
+
+    is_promotion_ready(): boolean
+    {
+        return false;
+    }
+
+    is_perfect(): boolean
+    {
+        return this.current.equals(this.perfect);
+    }
+
+    static from_skill(player: Player, skill: Skill): Unit | null
+    {
+        let cons = this.which_has_skill(g.spawnable_unit_types, skill);
+        if (cons == null)
+        {
+            return null;
+        }
+        let unit = new cons(player);
+        unit.endow(skill);
+        return unit;
+    }
+
+    static which_has_skill(cons: (UnitConstructor)[], skill: Skill)
+        : UnitConstructor | null
+    {
+        for (let c of cons)
+        {
+            if (g.perfect_skills.get(c)!.has(skill))
+            {
+                return c;
+            }
+        }
+        return null;
+    }
 }
 
-type AdvancedUnitConstructor = new (...args: any[]) => AdvancedUnit;
-type UnitConstructor = new (...args: any[]) => Unit;
+type AdvancedUnitConstructor = new (owner: Player, was: BasicUnit) => AdvancedUnit;
+type UnitConstructor = new (owner: Player) => Unit;
 
 abstract class BasicUnit extends Unit
 {
     readonly promotion_options: AdvancedUnitConstructor[];
     constructor(
         owner: Player, 
-        endow_inborn: boolean = true)
+        endow_inborn: boolean = false)
     {
         super(owner);
         if (endow_inborn)
         {
-            let inborn = SkillSet.from_literal(
-                inborn_skills_map[this.constructor.name]);
+            let inborn = g.inborn_skills.get(this.type())!;
             if (owner == Player.P2)
             {
                 inborn = inborn.flip();
@@ -304,14 +352,37 @@ abstract class BasicUnit extends Unit
             this.current = inborn;
         }
     }
+
+    is_promotion_ready(): boolean
+    {
+        return this.is_perfect();
+    }
+
+    potential(): SkillSet
+    {
+        let potentials = super.potential();
+        if (this.is_promotion_ready())
+        {
+            for (let future_type of this.promotion_options)
+            {
+                potentials = potentials.union(g.perfect_skills.get(
+                    <UnitConstructor>future_type)!);
+            }
+        }
+            
+        return potentials;
+    }
 }
 
 abstract class AdvancedUnit extends Unit
 {
-    constructor(owner: Player, was: BasicUnit)
+    constructor(owner: Player, was: BasicUnit | null = null)
     {
         super(owner);
-        this.current = was.current.copy();
+        if (was != null)
+        {
+            this.current = was.current.copy();
+        }
     }
 }
 
@@ -362,173 +433,3 @@ class King extends Unit
 class Wagon extends Unit
 {
 }
-
-let perfect_skills_map: { [unit_name: string]: string; } =
-{
-    'King':
-        `-----
-        -xxx-
-        -x-x-
-        -xxx-
-        -----`,
-    'Rider':
-        `-x-x-
-        x---x
-        -----
-        x---x
-        -x-x-`,
-    'Lancer':
-        `-xxx-
-        x---x
-        x---x
-        x---x
-        -xxx-`,
-    'Knight':
-        `-x-x-
-        xx-xx
-        -----
-        xx-xx
-        -x-x-`,
-    'Soldier':
-        `-----
-        --x--
-        -x-x-
-        --x--
-        -----`,
-    'Swordsman':
-        `-----
-        -xxx-
-        -x-x-
-        -xxx-
-        -----`,
-    'Spearman':
-        `--x--
-        --x--
-        xx-xx
-        --x--
-        --x--`,
-    'Archer':
-        `--x--
-        -----
-        x---x
-        -----
-        --x--`,
-    'Barbarian':
-        `-----
-        -x-x-
-        -----
-        -x-x-
-        -----`,
-    'Warrior':
-        `--x--
-        -x-x-
-        x---x
-        -x-x-
-        --x--`,
-    'Wagon':
-        `-----
-        --x--
-        -xxx-
-        --x--
-        -----`
-}
-
-let inborn_skills_map: { [unit_name: string]: string; } =
-{
-    'King':
-        `-----
-        -xxx-
-        -x-x-
-        -xxx-
-        -----`,
-    'Rider':
-        `-x-x-
-        -----
-        -----
-        -----
-        -----`,
-    'Soldier':
-        `-----
-        --x--
-        -----
-        --x--
-        -----`,
-    'Archer':
-        `--x--
-        -----
-        -----
-        -----
-        --x--`,
-    'Barbarian':
-        `-----
-        -x-x-
-        -----
-        -----
-        -----`,
-    'Wagon':
-        `-----
-        -----
-        --x--
-        -----
-        -----`
-}
-
-    // def endow(self, skill):
-    //     if self.perfect_skillset.has(skill):
-    //         self.skillset.add(skill)
-    //         return True
-    //     return False
-
-    // def has_skill(self, skill):
-    //     return self.skillset.has(skill)
-    
-    // def has_potential_skill(self, skill):
-    //     return self.potential_skillset().has(skill)
-
-    // def is_perfect(self):
-    //     return self.skillset == self.perfect_skillset
-
-    // def is_promotion_ready(self):
-    //     return not self.is_advanced() and self.is_perfect()
-
-    // def potential_skillset(self):
-    //     return self.ultimate_skillset().subtract(self.skillset)
-    
-    // def ultimate_skillset(self):
-    //     ultimate = self.perfect_skillset.copy()
-    //     if self.is_promotion_ready():
-    //         for creator in promotion_map[type(self)]:
-    //             ultimate.union(potential_skillset_map[creator.display])
-
-    //     return ultimate
-
-    // def get_promoted(self, skill):
-    //     if not self.is_promotion_ready():
-    //         return None
-
-    //     creator = Unit.which_creator_has_skill(promotion_map[type(self)], skill)
-    //     if creator is None:
-    //         return None
-    //     promoted = creator(self.owner, skillset=self.skillset)
-    //     promoted.endow(skill)
-    //     return promoted
-        
-    // @classmethod
-    // def which_creator_has_skill(self, creator_list, skill):
-    //     for creator in creator_list:
-    //         if potential_skillset_map[creator.display].has(skill):
-    //             return creator
-                
-    // @classmethod
-    // def create_from_skill(self, player, skill):
-    //     creator = self.which_creator_has_skill(
-    //         [Knight, Soldier, Warrior, Archer, Wagon], skill)
-    //     assert(creator is not None)
-    //     created = creator(player)
-    //     created.endow(skill)
-    //     return created
-
-
-
-
-
