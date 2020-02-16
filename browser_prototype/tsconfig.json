@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        //"outDir": "target",
         "outFile": "target/lancer.js",
         "rootDir": "src",
         "noImplicitAny": true,

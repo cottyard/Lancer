@@ -88,6 +88,28 @@ class GameCanvas
         }
     }
 
+    paint_actions(actions: Action[])
+    {
+        let action_style = new Map<ActionType, string>([
+            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
+            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+            [ActionType.Move, g.const.STYLE_BLACK],
+            [ActionType.Upgrade, g.const.STYLE_CYAN],
+            [ActionType.Recruit, g.const.STYLE_CYAN]
+        ])
+
+        for (let action of actions)
+        {
+            using(new Renderer(this.am_ctx), (renderer) => {
+                renderer.arrow(
+                    GameCanvas.get_grid_center(action.move.from),
+                    GameCanvas.get_grid_center(action.move.to),
+                    action_style.get(action.type)!,
+                    g.settings.grid_size / 2 - 5);
+            });
+        }
+    }
+
     clear_canvas(ctx: CanvasRenderingContext2D)
     {
         ctx.save();

@@ -276,8 +276,10 @@
             width);
     }
 
-    arrow(from: Position, to: Position, fill_style: string, shrink_length: number)
+    arrow(from: Position, to: Position, style: string, shrink_length: number)
     {
+        this.set_style(style);
+
         let size = 3, width = 3;
 
         from = this.go_towards(from, to, shrink_length);
@@ -291,7 +293,7 @@
         this.ctx.rotate(direction.add(90).to_radian().value);
         this.triangle(
             new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size), 
-            width, fill_style);
+            width, style);
         this.ctx.restore();
     }
 

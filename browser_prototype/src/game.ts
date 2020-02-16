@@ -7,7 +7,9 @@ class Game
     selected: Coordinate | null = null;
 
     player_move: PlayerMove;
+    player_action: PlayerAction;
     player: Player;
+    board: Board<Unit>;
 
     constructor()
     {
@@ -31,6 +33,8 @@ class Game
         // this.canvas.animate.addEventListener("touchend", on_touch);
         this.player = Player.P1;
         this.player_move = new PlayerMove(this.player);
+
+        this.board = new Board<Unit>(() => null);
     }
 
     render_indicators(): void
@@ -45,15 +49,9 @@ class Game
             this.canvas.paint_indicator(this.selected);
         }
 
-        for (let move of this.player_move.moves)
+        if (this.player_action)
         {
-            using(new Renderer(this.canvas.am_ctx), (renderer) => {
-                renderer.arrow(
-                    GameCanvas.get_grid_center(move.from),
-                    GameCanvas.get_grid_center(move.to),
-                    g.const.STYLE_BLACK,
-                    g.settings.grid_size / 2 - 5);
-            });
+            this.canvas.paint_actions(this.player_action.actions);
         }
     }
 
@@ -91,9 +89,31 @@ class Game
             this.player_move.append(
                 new Move(this.selected, this.current)
             );
-            this.render_indicators();
+            
+            if (!this.update_player_action())
+            {
+                this.player_move.pop();
+            }
+            else
+            {
+                this.render_indicators();
+            }
         }
         this.selected = null;
+    }
+
+    update_player_action()
+    {
+        try
+        {
+            this.player_action = Rule.validate_player_move(this.board, this.player_move);
+        }
+        catch (e)
+        {
+            console.log(e);
+            return false;
+        }
+        return true;
     }
 
     to_coord = function(pixel: number): number
@@ -108,13 +128,9 @@ class Game
     {
         this.canvas.paint_background();
         
-        let grid_size = g.settings.grid_size;
-        let grids = g.grid_count;
+        set_out(this.board);
 
-        let board = new Board<Unit>(() => null);
-        set_out(board);
-
-        board.iterate_units((unit, coord) => {
+        this.board.iterate_units((unit, coord) => {
             let canvas_unit = CanvasUnitFactory(unit);
             canvas_unit.paint(this.canvas.st_ctx, GameCanvas.get_grid_center(coord));
         });

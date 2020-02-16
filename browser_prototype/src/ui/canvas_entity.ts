@@ -40,7 +40,6 @@ abstract class CanvasUnit
     abstract paint_unit(renderer: Renderer): void;
 }
 
-
 abstract class CanvasHaloUnit extends CanvasUnit
 {
     abstract skill_direction: HashMap<Skill, Direction>;
@@ -66,15 +65,16 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     get_halo_angles(): Angle[]
     {
-        return this.unit.current.as_list().map(
+        let directions: Direction[] = this.unit.current.as_list().map(
             (skill: Skill) => {
                 return this.skill_direction.get(skill);
             }
-        ).map(
+        ).filter((d: Direction | undefined): d is Direction => !!d);
+        
+        return directions.map(
             (dir: Direction) => {
                 return Angle.create(dir, this.halo_size);
-            }
-        )
+            })
     }
 
     paint_halo(renderer: Renderer): void
@@ -169,7 +169,7 @@ class CanvasWagon extends CanvasHaloUnit
     ]);
     halo_size = GameCanvas.halo_size_large;
 
-    paint_unit(renderer: Renderer): void 
+    paint_unit(renderer: Renderer): void
     {
         renderer.wagon(this.color);
     }

@@ -14,7 +14,6 @@ class Module
     readonly spawnable_unit_types: UnitConstructor[] = [
         Rider, Soldier, Barbarian, Archer, Wagon
     ];
-    
     settings = {
         'cvs_size': this.cvs_size,
         'cvs_border_width': 3,
@@ -29,7 +28,8 @@ class Module
         'STYLE_RED_LIGHT': '#ff8080',
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
-        'STYLE_CYAN_T': "rgba(1, 205, 254, 0.5)"
+        'STYLE_CYAN_T': "rgba(1, 205, 254, 0.5)",
+        'STYLE_GREEN_LIGHT': '#80ff80'
     };
 
     readonly perfect_skills_literal: { [unit_name: string]: string; } =

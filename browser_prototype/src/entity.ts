@@ -199,6 +199,11 @@ class PlayerMove
     {
         this.moves.push(move);
     }
+
+    pop(): void
+    {
+        this.moves.pop();
+    }
 }
 
 class Action
@@ -270,6 +275,16 @@ abstract class Unit
         this.current = new SkillSet();
     }
 
+    endow_inborn(): void
+    {
+        let inborn = g.inborn_skills.get(this.type());
+        if (!inborn)
+        {
+            return;
+        }
+        this.current = this.owner == Player.P1 ? inborn : inborn.flip();
+    }
+
     type(): UnitConstructor
     {
         return <UnitConstructor>this.constructor;
@@ -337,21 +352,6 @@ type UnitConstructor = new (owner: Player) => Unit;
 abstract class BasicUnit extends Unit
 {
     readonly promotion_options: AdvancedUnitConstructor[];
-    constructor(
-        owner: Player, 
-        endow_inborn: boolean = false)
-    {
-        super(owner);
-        if (endow_inborn)
-        {
-            let inborn = g.inborn_skills.get(this.type())!;
-            if (owner == Player.P2)
-            {
-                inborn = inborn.flip();
-            }
-            this.current = inborn;
-        }
-    }
 
     is_promotion_ready(): boolean
     {

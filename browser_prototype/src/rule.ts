@@ -77,29 +77,33 @@ class Rule
             throw new InvalidMove("not a valid skill");
         }
 
-        if (!unit.potential().has(skill))
+        if (unit.capable(skill))
         {
-            throw new InvalidMove("skill not available");
-        }
-
-        if (!unit.capable(skill))
-        {
-            return new Action(move, ActionType.Upgrade, unit.type());
-        }
-
-        let target = board.at(move.to);
-        if (target == null)
-        {
-            return new Action(move, ActionType.Move, unit.type());
-        }
-        
-        if (unit.owner == target.owner)
-        {
-            return new Action(move, ActionType.Defend, unit.type());
+            let target = board.at(move.to);
+            if (target == null)
+            {
+                return new Action(move, ActionType.Move, unit.type());
+            }
+            
+            if (unit.owner == target.owner)
+            {
+                return new Action(move, ActionType.Defend, unit.type());
+            }
+            else
+            {
+                return new Action(move, ActionType.Attack, unit.type());
+            }
         }
         else
         {
-            return new Action(move, ActionType.Attack, unit.type());
+            if (unit.potential().has(skill))
+            {
+                return new Action(move, ActionType.Upgrade, unit.type());
+            }
+            else
+            {
+                throw new InvalidMove(`skill not available ${skill.hash()}`);
+            }
         }
     }
 

@@ -68,13 +68,9 @@ let set_out = function(board: Board<Unit>): void
     {
         for (let i = 0; i < g.board_size_x; i++)
         {
-            board.put(
-                new Coordinate(i, row),
-                new setting[i](player));
+            let unit = new setting[i](player);
+            unit.endow_inborn();
+            board.put(new Coordinate(i, row), unit);
         }
     }
 }
-
-
-    // def copy(self):
-    //     return deepcopy(self)
