@@ -6,9 +6,9 @@ class Board<T>
     {
         this.board = [];
 
-        for (let i = 0; i <= g.board_size_x; i++) {
+        for (let i = 0; i < g.board_size_x; i++) {
             this.board[i] = [];
-            for (let j = 0; j <= g.board_size_y; j++) {
+            for (let j = 0; j < g.board_size_y; j++) {
                 this.board[i][j] = initializer();
             }
         }
@@ -43,8 +43,8 @@ class Board<T>
 
     iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
     {
-        for (let i = 0; i <= g.board_size_x; i++) {
-            for (let j = 0; j <= g.board_size_y; j++) {
+        for (let i = 0; i < g.board_size_x; i++) {
+            for (let j = 0; j < g.board_size_y; j++) {
                 if (this.board[i][j] != null)
                 {
                     foreach(this.board[i][j]!, new Coordinate(i, j));
