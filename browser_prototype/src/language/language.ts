@@ -1,8 +1,10 @@
-interface IDisposable {
+interface IDisposable 
+{
     dispose(): void;
 }
 
-function using<T extends IDisposable>(resource: T, func: (resource: T) => void) {
+function using<T extends IDisposable>(resource: T, func: (resource: T) => void) 
+{
     try {
         func(resource);
     } finally {
@@ -10,7 +12,8 @@ function using<T extends IDisposable>(resource: T, func: (resource: T) => void) 
     }
 }
 
-interface IHashable {
+interface IHashable 
+{
     hash(): string;
 }
 

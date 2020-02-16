@@ -236,7 +236,7 @@ class Action
                     case Wagon:
                         return 30;
                 }
-            throw new Error("Action cost");
+            throw new Error("Action.cost");
         }
     }
 }
@@ -332,7 +332,7 @@ abstract class Unit
         return unit;
     }
 
-    static which_has_skill(cons: (UnitConstructor)[], skill: Skill): UnitConstructor | null
+    static which_has_skill(cons: UnitConstructor[], skill: Skill): UnitConstructor | null
     {
         for (let c of cons)
         {
@@ -387,7 +387,7 @@ abstract class AdvancedUnit extends Unit
 
 class Rider extends BasicUnit
 {
-    readonly promotion_options = [ Lancer, Knight ];
+    readonly promotion_options = [Lancer, Knight];
 }
 
 class Soldier extends BasicUnit

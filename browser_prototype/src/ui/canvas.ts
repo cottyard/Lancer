@@ -43,6 +43,19 @@ class GameCanvas
             coord.y * g.settings.grid_size + g.settings.grid_size / 2);
     }
 
+    static to_coordinate(pixel_x: number, pixel_y: number): Coordinate
+    { 
+        function gridify(pixel: number)
+        {
+            let i = Math.floor(pixel / g.settings.grid_size);
+            if (i < 0) { return 0 };
+            if (i >= g.grid_count ) { return g.grid_count - 1 };
+            return i;
+        }
+
+        return new Coordinate(gridify(pixel_x), gridify(pixel_y));
+    }
+
     paint_background()
     {
         let grid_size = g.settings.grid_size;
@@ -61,11 +74,6 @@ class GameCanvas
                 }
             }
         });
-
-        // let img = document.getElementById("soldier_white");
-        // let piece_width = 30, piece_height = 50;
-        // let piece_x = 20, piece_y = 10;
-        // this.bg_ctx.drawImage(img as CanvasImageSource, piece_x, piece_y, piece_width, piece_height);
     }
     
     paint_indicator(coordinate: Coordinate)

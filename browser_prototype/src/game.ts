@@ -27,14 +27,16 @@ class Game
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
+        this.canvas.animate.addEventListener("touchstart", this.on_mouse_down.bind(this));
+        this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
+        this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
 
-        // this.canvas.animate.addEventListener("touchstart", on_touch);
-        // this.canvas.animate.addEventListener("touchmove", on_touch);
-        // this.canvas.animate.addEventListener("touchend", on_touch);
         this.player = Player.P1;
         this.player_move = new PlayerMove(this.player);
 
         this.board = new Board<Unit>(() => null);
+
+        this.canvas.paint_background();
     }
 
     render_indicators(): void
@@ -52,6 +54,7 @@ class Game
         if (this.player_action)
         {
             this.canvas.paint_actions(this.player_action.actions);
+            console.log('Total cost:', this.player_action.cost());
         }
     }
 
@@ -61,7 +64,7 @@ class Game
         let mouse_x = event.clientX - rect.left - g.settings.cvs_border_width;
         let mouse_y = event.clientY - rect.top - g.settings.cvs_border_width;
 
-        return new Coordinate(this.to_coord(mouse_x), this.to_coord(mouse_y));
+        return GameCanvas.to_coordinate(mouse_x, mouse_y);
     }
 
     on_mouse_move(event: MouseEvent): void
@@ -112,18 +115,8 @@ class Game
         this.player_action = Rule.validate_player_move(this.board, this.player_move);
     }
 
-    to_coord = function(pixel: number): number
-    { 
-        let coord = Math.floor(pixel / g.settings.grid_size);
-        if (coord < 0) { return 0 };
-        if (coord >= g.grid_count ) { return g.grid_count - 1 };
-        return coord;
-    }
-
     run()
     {
-        this.canvas.paint_background();
-        
         set_out(this.board);
 
         this.board.iterate_units((unit, coord) => {
