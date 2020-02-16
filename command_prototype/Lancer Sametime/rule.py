@@ -327,8 +327,10 @@ def validate_move(board, move, player):
             try:
                 skill = move.get_skill()
             except InvalidParameter:
-                raise InvalidMoveException("this skill recruits nothing")
+                raise InvalidMoveException("not a valid skill")
             unit_recruited = Unit.create_from_skill(player, skill)
+            if unit_recruited is None:
+                raise InvalidMoveException("this skill recruits nothing")
             return Action(move, ActionType.Recruit, type(unit_recruited))
 
     if unit.owner != player:

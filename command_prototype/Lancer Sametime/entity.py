@@ -215,13 +215,14 @@ class Unit:
         for creator in creator_list:
             if potential_skillset_map[creator.display].has(skill):
                 return creator
-                
+
     @classmethod
     def create_from_skill(self, player, skill):
         creator = self.which_creator_has_skill(
-            [Knight, Soldier, Warrior, Archer, Wagon], skill)
-        assert(creator is not None)
-        created = creator(player)
+            [Knight, Soldier, Barbarian, Archer, Wagon], skill)
+        if creator is None:
+            return None
+        created = creator(player, SkillSet())
         created.endow(skill)
         return created
 
