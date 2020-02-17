@@ -11,7 +11,11 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
         [Wagon, CanvasWagon]
     ]);
 
-    let constructor = cmap.get(unit.type())!;
+    let constructor = cmap.get(unit.type());
+    if (!constructor)
+    {
+        throw new Error(`Canvas ${unit.type().name} missing`);
+    }
     return new constructor(unit);
 }
 

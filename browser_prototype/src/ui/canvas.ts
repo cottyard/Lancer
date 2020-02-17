@@ -90,7 +90,7 @@ class GameCanvas
                 renderer.translate(center);
                 renderer.translate(new Position(p * half_grid, q * half_grid));
                 let zero = new Position(0, 0);
-                renderer.line(zero, new Position(-p * size, 0), width);
+                renderer.line(zero.add(new PositionDelta(p * width / 2, 0)), new Position(-p * size, 0), width);
                 renderer.line(zero, new Position(0, -q * size), width);
             });
         }
