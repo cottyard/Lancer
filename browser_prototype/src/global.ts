@@ -20,7 +20,7 @@ class Module
         'grid_size': this.cvs_size / 9,
         'piece_font': "40px Courier New"
     };
-    const = {
+    readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
         'STYLE_BLACK': "#000",
         'STYLE_WHITE': "#FFF",
@@ -102,7 +102,7 @@ class Module
             -----`
     };
 
-    inborn_skills_literal: { [unit_name: string]: string | undefined } =
+    readonly inborn_skills_literal: { [unit_name: string]: string | undefined } =
     {
         'King':
             `-----
