@@ -1,6 +1,7 @@
 class Game
 {
     canvas: GameCanvas;
+    action_panel: ActionPanel;
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -19,6 +20,9 @@ class Game
             <HTMLCanvasElement>document.getElementById('background'),
             <HTMLCanvasElement>document.getElementById('static'), 
             <HTMLCanvasElement>document.getElementById('animate'));
+        this.action_panel = new ActionPanel(
+            <HTMLDivElement>document.getElementById('action-panel'),
+            this);
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
@@ -129,6 +133,7 @@ class Game
     update_player_action()
     {
         this.player_action = Rule.validate_player_move(this.board, this.player_move);
+        this.action_panel.render();
     }
 
     run()
@@ -139,6 +144,8 @@ class Game
             let canvas_unit = CanvasUnitFactory(unit);
             canvas_unit.paint(this.canvas.st_ctx, GameCanvas.get_grid_center(coord));
         });
+
+        this.action_panel.render();
     }
 }
 

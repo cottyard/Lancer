@@ -29,8 +29,15 @@ class Module
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
         'STYLE_CYAN_T': "rgba(1, 205, 254, 0.5)",
-        'STYLE_GREEN_LIGHT': '#80ff80'
+        'STYLE_GREEN_LIGHT': '#80e080'
     };
+    private _action_style: Map<ActionType, string> | undefined;
+    get action_style():  Map<ActionType, string> {
+        if (this._action_style == null) {
+            throw new Error("Not initialized.");
+        }
+        return this._action_style;
+    }
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined } =
     {
@@ -169,6 +176,14 @@ class Module
                 );
             }
         });
+
+        this._action_style = new Map<ActionType, string>([
+            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
+            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+            [ActionType.Move, g.const.STYLE_BLACK],
+            [ActionType.Upgrade, g.const.STYLE_CYAN],
+            [ActionType.Recruit, g.const.STYLE_CYAN]
+        ]);
     }
 }
 
