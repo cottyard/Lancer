@@ -32,7 +32,7 @@ class Module
         'STYLE_GREEN_LIGHT': '#80ff80'
     };
 
-    readonly perfect_skills_literal: { [unit_name: string]: string } =
+    readonly perfect_skills_literal: { [unit_name: string]: string | undefined } =
     {
         'King':
             `-----
@@ -102,7 +102,7 @@ class Module
             -----`
     };
 
-    inborn_skills_literal: { [unit_name: string]: string; } =
+    inborn_skills_literal: { [unit_name: string]: string | undefined } =
     {
         'King':
             `-----
@@ -149,14 +149,19 @@ class Module
     {
         this.all_unit_types.forEach((type: UnitConstructor) =>
         {
+            let literal = this.perfect_skills_literal[type.name];
+            if (!literal)
+            {
+                throw new Error(`${type.name} not found`);
+            }
             this.perfect_skills.set(
                 type, 
-                SkillSet.from_literal(this.perfect_skills_literal[type.name])
+                SkillSet.from_literal(literal)
             );
         
             let inborn = this.inborn_skills_literal[type.name];
         
-            if (inborn != undefined)
+            if (inborn)
             {
                 this.inborn_skills.set(
                     type, 
