@@ -111,14 +111,14 @@ class ActionPanel {
         div.addEventListener("mousedown", (e: MouseEvent) => {
             this.dragging = {
                 action,
-                offsetX: e.clientX - div.getBoundingClientRect().left,
-                offsetY: e.clientY - div.getBoundingClientRect().top,                
+                offsetX: e.clientX - div.getBoundingClientRect().left + ActionPanel.margin,
+                offsetY: e.clientY - div.getBoundingClientRect().top + ActionPanel.margin,
                 clientY: e.clientY,
                 pos_offset: 0,
                 placeholder: this.dom_element.insertBefore(
                     DomHelper.createDiv({
                         height: ActionPanel.item_height.toString() + "px",
-                        order: index,
+                        order: (index * 2).toString(),
                     }),
                     div,
                 ),
