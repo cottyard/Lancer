@@ -350,7 +350,7 @@ type UnitConstructor = new (owner: Player) => Unit;
 
 abstract class BasicUnit extends Unit
 {
-    readonly promotion_options: AdvancedUnitConstructor[];
+    abstract readonly promotion_options: AdvancedUnitConstructor[];
 
     is_promotion_ready(): boolean
     {

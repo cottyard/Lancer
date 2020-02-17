@@ -3,11 +3,12 @@
         "target": "ES6",
         "outFile": "target/lancer.js",
         "rootDir": "src",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
         "removeComments": true,
-        "preserveConstEnums": true,
         "sourceMap": true,
-        "strictNullChecks": true
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "strict": true
     }
 }

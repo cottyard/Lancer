@@ -1,7 +1,6 @@
 class Game
 {
     canvas: GameCanvas;
-    bounding_rectangle: DOMRect;
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -14,11 +13,7 @@ class Game
     constructor()
     {
         g.initialize();
-        this.initialize();
-    }
 
-    initialize()
-    {
         this.canvas = new GameCanvas(
             <HTMLCanvasElement>document.getElementById('background'),
             <HTMLCanvasElement>document.getElementById('static'), 
@@ -27,13 +22,13 @@ class Game
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
-        this.canvas.animate.addEventListener("touchstart", this.on_mouse_down.bind(this));
-        this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
-        this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
+        // this.canvas.animate.addEventListener("touchstart", this.on_mouse_down.bind(this));
+        // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
+        // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
 
         this.player = Player.P1;
         this.player_move = new PlayerMove(this.player);
-
+        this.player_action = new PlayerAction(this.player, []);
         this.board = new Board<Unit>(() => null);
 
         this.canvas.paint_background();
@@ -79,15 +74,13 @@ class Game
 
     on_mouse_down(event: MouseEvent): void
     {
-        if (this.current)
-        {
-            this.selected = this.current.copy();
-        }
+        this.selected = this.get_coordinate(event);
     }
     
     on_mouse_up(event: MouseEvent): void
     {
-        if (this.selected && this.current)
+        this.current = this.get_coordinate(event);
+        if (this.selected)
         {
             let selected = this.selected;
             this.player_move.moves = this.player_move.moves.filter(

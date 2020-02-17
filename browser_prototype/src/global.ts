@@ -32,7 +32,7 @@ class Module
         'STYLE_GREEN_LIGHT': '#80ff80'
     };
 
-    readonly perfect_skills_literal: { [unit_name: string]: string; } =
+    readonly perfect_skills_literal: { [unit_name: string]: string } =
     {
         'King':
             `-----
