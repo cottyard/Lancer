@@ -35,9 +35,9 @@
     arc(position: Position, radius: number, angle: Angle, width: number): void
     {
         this.ctx.lineWidth = width;
-        angle.as_radian();
+        let radian_angle = angle.to_radian();
         this.ctx.beginPath();
-        this.ctx.arc(position.x, position.y, radius, angle.start.value, angle.end.value, false);
+        this.ctx.arc(position.x, position.y, radius, radian_angle.start.value, radian_angle.end.value, false);
         this.ctx.stroke();
     }
 

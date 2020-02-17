@@ -177,9 +177,9 @@ class Direction
     {
     }
 
-    to_radian(): Direction
+    to_radian(): RadianDirection
     {
-        return new Direction(this.value / 180 * Math.PI);
+        return new RadianDirection(this.value / 180 * Math.PI);
     }
 
     add(value: number): Direction
@@ -195,6 +195,13 @@ class Direction
     static from_radian(value: number): Direction
     {
         return new Direction(value * 180 / Math.PI);
+    }
+}
+
+class RadianDirection
+{
+    constructor(public value: number)
+    {
     }
 }
 
@@ -221,7 +228,6 @@ class Angle
 {
     start: Direction;
     end: Direction;
-    is_radian: boolean = false;
 
     constructor(start: Direction, end: Direction)
     {
@@ -234,13 +240,20 @@ class Angle
         return new Angle(direction.add(-size / 2), direction.add(size / 2));
     }
 
-    as_radian()
+    to_radian()
     {
-        if (!this.is_radian)
-        {
-            this.start = this.start.to_radian();
-            this.end = this.end.to_radian();
-            this.is_radian = true;
-        }
+        return new RadianAngle(this.start.to_radian(),  this.end.to_radian())
+    }
+}
+
+class RadianAngle
+{
+    start: RadianDirection;
+    end: RadianDirection;
+
+    constructor(start: RadianDirection, end: RadianDirection)
+    {
+        this.start = start;
+        this.end = end;
     }
 }
