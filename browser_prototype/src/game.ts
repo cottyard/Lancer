@@ -45,7 +45,8 @@ class Game
         {
             this.canvas.paint_indicator(this.selected);
         }
-
+        // TODO: highlight first movers/attackers
+        // TODO: curly arrows for archers/riders
         if (this.player_action)
         {
             this.canvas.paint_actions(this.player_action.actions);
