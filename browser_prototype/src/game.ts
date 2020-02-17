@@ -4,6 +4,7 @@ class Game
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
+    options: Coordinate[] = [];
 
     player_move: PlayerMove;
     player_action: PlayerAction;
@@ -45,6 +46,11 @@ class Game
         {
             this.canvas.paint_indicator(this.selected);
         }
+        for (let option of this.options)
+        {
+            this.canvas.paint_indicator(option);
+        }
+
         // TODO: highlight first movers/attackers
         // TODO: curly arrows for archers/riders
         if (this.player_action)
@@ -75,7 +81,22 @@ class Game
 
     on_mouse_down(event: MouseEvent): void
     {
-        this.selected = this.get_coordinate(event);
+        let coord = this.get_coordinate(event);
+        let unit = this.board.at(coord);
+        if (unit)
+        {
+            this.selected = coord;
+            this.options = [];
+            for (let skill of unit.current.as_list())
+            {
+                let option = coord.add(skill.x, skill.y);
+                if (option)
+                {
+                    this.options.push(option);
+                }
+            }
+            this.render_indicators();
+        }
     }
     
     on_mouse_up(event: MouseEvent): void
@@ -101,6 +122,7 @@ class Game
             }
         }
         this.selected = null;
+        this.options = [];
         this.render_indicators();
     }
 

@@ -15,6 +15,18 @@ class Coordinate implements IHashable
         return this.x == other.x && this.y == other.y;
     }
 
+    add(dx: number, dy: number): Coordinate | null
+    {
+        try
+        {
+            return new Coordinate(this.x + dx, this.y + dy);
+        }
+        catch 
+        {
+            return null;
+        }
+    }
+
     copy(): Coordinate
     {
         return new Coordinate(this.x, this.y);
