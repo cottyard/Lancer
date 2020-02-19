@@ -17,16 +17,18 @@ class GameCanvas
         this.static = static_;
         this.animate = animate;
         
-        this.bg_ctx = this.set_canvas_attr(this.background, 1, g.settings.cvs_size, g.settings.cvs_border_width);
-        this.st_ctx = this.set_canvas_attr(this.static, 2, g.settings.cvs_size, g.settings.cvs_border_width);
-        this.am_ctx = this.set_canvas_attr(this.animate, 3, g.settings.cvs_size, g.settings.cvs_border_width);
+        this.bg_ctx = this.set_canvas_attr(this.background, 1, g.settings.cvs_size, g.settings.cvs_border_width, false);
+        this.st_ctx = this.set_canvas_attr(this.static, 2, g.settings.cvs_size, g.settings.cvs_border_width, true);
+        this.am_ctx = this.set_canvas_attr(this.animate, 3, g.settings.cvs_size, g.settings.cvs_border_width, true);
     }
 
-    set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number): CanvasRenderingContext2D
+    set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number, absolute: boolean): CanvasRenderingContext2D
     {
         cvs.style.border = `solid #000 ${border_width}px`;
-        cvs.style.position = "absolute";
-        cvs.style.setProperty("z-index", `${z_index}`);
+        if (absolute) {
+            cvs.style.position = "absolute";
+            cvs.style.setProperty("z-index", `${z_index}`);
+        }
         cvs.width = cvs.height = size;
         let ctx = cvs.getContext('2d');
         if (ctx == null)

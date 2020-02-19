@@ -2,6 +2,7 @@ class Game
 {
     canvas: GameCanvas;
     action_panel: ActionPanel;
+    status_bar: StatusBar;
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -23,11 +24,14 @@ class Game
         this.action_panel = new ActionPanel(
             <HTMLDivElement>document.getElementById('action-panel'),
             this);
+        this.status_bar = new StatusBar(
+            <HTMLDivElement>document.getElementById('status-bar'),
+            this);
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
-        // this.canvas.animate.addEventListener("touchstart", this.on_mouse_down.bind(this));
+        // this.canvas.animate.addEventListener("touchstart",  this.on_mouse_down.bind(this));
         // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
         // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
 
@@ -134,6 +138,7 @@ class Game
     {
         this.player_action = Rule.validate_player_move(this.board, this.player_move);
         this.action_panel.render();
+        this.status_bar.render();
     }
 
     run()
@@ -146,6 +151,22 @@ class Game
         });
 
         this.action_panel.render();
+        this.status_bar.render();
+    }
+
+    get_player_name(player: Player): string {
+        // TODO: placeholder
+        return player === Player.P1 ? "zc" : "xyt";
+    }
+
+    get_player_supply(player: Player): number {
+        // TODO: placeholder
+        return 20 + player;
+    }
+
+    get_player_supply_income(player: Player): number {
+        // TODO: placeholder
+        return 18 + player;
     }
 }
 

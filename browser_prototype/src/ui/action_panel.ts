@@ -28,7 +28,6 @@ class ActionPanel {
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
-            width: "300px",
             userSelect: "none",
         });
     }

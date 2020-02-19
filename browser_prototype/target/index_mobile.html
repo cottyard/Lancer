@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Lancer</title>
+    <link rel="stylesheet" href="app_mobile.css" type="text/css" />
+    <script src="lancer.js"></script>
+    <script>
+        window.onload = () => {
+            g.game = new Game()
+            g.game.run();
+        };
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        <div>
+            <canvas id="animate" tabindex="1"></canvas>
+            <canvas id="static"></canvas>
+            <canvas id="background"></canvas>
+        </div>
+        <div id="status-bar"></div>
+        <div id="action-panel"></div>
+    </div>
+</body>
+
+</html>
