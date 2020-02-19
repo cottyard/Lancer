@@ -47,21 +47,21 @@ class Game
     render_indicators(): void
     {
         this.canvas.clear_canvas(this.canvas.am_ctx);
-        if (this.current)
+        for (let option of this.options_upgrade)
         {
-            this.canvas.paint_indicator(this.current, null, 3);
-        }
-        if (this.selected)
-        {
-            this.canvas.paint_indicator(this.selected);
+            this.canvas.paint_indicator(option, g.const.STYLE_CYAN, 2);
         }
         for (let option of this.options_capable)
         {
             this.canvas.paint_indicator(option);
         }
-        for (let option of this.options_upgrade)
+        if (this.current)
         {
-            this.canvas.paint_indicator(option, g.const.STYLE_CYAN);
+            this.canvas.paint_indicator(this.current);
+        }
+        if (this.selected)
+        {
+            this.canvas.paint_indicator(this.selected);
         }
 
         // TODO: highlight first movers/attackers
@@ -179,6 +179,7 @@ class Game
         let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
         knight.endow(new Skill(1, -1));
         this.board.put(new Coordinate(4,2), knight);
+        this.board.remove(new Coordinate(0, 8));
 
         this.board.iterate_units((unit, coord) => {
             let canvas_unit = CanvasUnitFactory(unit);

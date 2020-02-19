@@ -62,6 +62,8 @@ class ActionPanel {
             this.getActionTypeText(action.type),
             {
                 color: g.action_style.get(action.type) || "black",
+                'font-weight': 'bold',
+                padding: "10px"
             }
         ));
 
@@ -244,15 +246,15 @@ class ActionPanel {
     getActionTypeText(type: ActionType): string {
         switch (type) {
             case ActionType.Upgrade:
-                return "Upgrade";
+                return "upgrading";
             case ActionType.Defend:
-                return "Defend";
+                return "defends";
             case ActionType.Move:
-                return "Move";
+                return "moving";
             case ActionType.Attack:
-                return "Attack";
+                return "attacks";
             case ActionType.Recruit:
-                return "Recruit";
+                return "recruited";
         }
     }
 }
