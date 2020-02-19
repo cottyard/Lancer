@@ -6,7 +6,8 @@ class Game
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
-    options: Coordinate[] = [];
+    options_capable: Coordinate[] = [];
+    options_upgrade: Coordinate[] = [];
 
     player_move: PlayerMove;
     player_action: PlayerAction;
@@ -48,19 +49,22 @@ class Game
         this.canvas.clear_canvas(this.canvas.am_ctx);
         if (this.current)
         {
-            this.canvas.paint_indicator(this.current, 3);
+            this.canvas.paint_indicator(this.current, null, 3);
         }
         if (this.selected)
         {
             this.canvas.paint_indicator(this.selected);
         }
-        for (let option of this.options)
+        for (let option of this.options_capable)
         {
             this.canvas.paint_indicator(option);
         }
+        for (let option of this.options_upgrade)
+        {
+            this.canvas.paint_indicator(option, g.const.STYLE_CYAN);
+        }
 
         // TODO: highlight first movers/attackers
-        // TODO: curly arrows for archers/riders
         if (this.player_action)
         {
             this.canvas.paint_actions(this.player_action.actions);
@@ -131,7 +135,8 @@ class Game
 
     update_options(coord: Coordinate)
     {
-        this.options = [];
+        this.options_capable = [];
+        this.options_upgrade = [];
         let unit = this.board.at(coord);
         if (!unit || unit.owner != this.player)
         {
@@ -142,7 +147,15 @@ class Game
             let option = coord.add(skill.x, skill.y);
             if (option)
             {
-                this.options.push(option);
+                this.options_capable.push(option);
+            }
+        }
+        for (let skill of unit.potential().as_list())
+        {
+            let option = coord.add(skill.x, skill.y);
+            if (option)
+            {
+                this.options_upgrade.push(option);
             }
         }
     }

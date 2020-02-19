@@ -78,21 +78,30 @@ class GameCanvas
         });
     }
     
-    paint_indicator(coordinate: Coordinate, width: number = 2)
+    paint_indicator(coordinate: Coordinate, style: string | null = null, width: number = 2)
     {
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 15;
         let p: number, q: number;
         let half_grid = g.settings.grid_size / 2;
+        if (!style)
+        {
+            style = g.const.STYLE_BLACK;
+        }
+        let style_ = style;
         for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
         {
             using(new Renderer(this.am_ctx), (renderer) => {
-                renderer.set_style(g.const.STYLE_BLACK);
+                renderer.set_style(style_);        
                 renderer.translate(center);
                 renderer.translate(new Position(p * half_grid, q * half_grid));
-                let zero = new Position(0, 0);
-                renderer.line(zero.add(new PositionDelta(p * width / 2, 0)), new Position(-p * size, 0), width);
-                renderer.line(zero, new Position(0, -q * size), width);
+                let zero = new Position(-p * (width / 2 + 1), -q * (width / 2 + 1));
+                renderer.line(
+                    zero.add(new PositionDelta(p * width / 2, 0)), 
+                    zero.add(new PositionDelta(-p * size, 0)), width);
+                renderer.line(
+                    zero, 
+                    zero.add(new PositionDelta(0, -q * size)), width);
             });
         }
     }
