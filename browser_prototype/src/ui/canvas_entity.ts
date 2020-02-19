@@ -8,7 +8,9 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
         [Archer, CanvasArcher],
         [Barbarian, CanvasBarbarian],
         [King, CanvasKing],
-        [Wagon, CanvasWagon]
+        [Wagon, CanvasWagon],
+        [Spearman, CanvasSpearman],
+        [Swordsman, CanvasSwordsman]
     ]);
 
     let constructor = cmap.get(unit.type());
@@ -75,10 +77,9 @@ abstract class CanvasHaloUnit extends CanvasUnit
             }
         ).filter((d: Direction | undefined): d is Direction => !!d);
         
-        return directions.map(
-            (dir: Direction) => {
-                return Angle.create(dir, this.halo_size);
-            })
+        return directions.map(dir => {
+            return Angle.create(dir, this.halo_size);
+        });
     }
 
     paint_halo(renderer: Renderer): void
@@ -160,6 +161,70 @@ class CanvasRider extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.rider(this.color);
+    }
+}
+
+class CanvasSpearman extends CanvasHaloUnit
+{
+    skill_direction = new HashMap([
+        [new Skill(0, -2), HaloDirection.Up],
+        [new Skill(0, 2), HaloDirection.Down],
+        [new Skill(-2, 0), HaloDirection.Left],
+        [new Skill(2, 0), HaloDirection.Right],
+        [new Skill(0, -1), HaloDirection.Up],
+        [new Skill(0, 1), HaloDirection.Down],
+        [new Skill(-1, 0), HaloDirection.Left],
+        [new Skill(1, 0), HaloDirection.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
+    paint_unit(renderer: Renderer): void 
+    {
+        renderer.soldier(this.color, true);
+        renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 3));
+        renderer.rotate(new Direction(-30).to_radian().value);
+        renderer.spear();
+    }
+
+    get_halo_angles(): Angle[]
+    {
+        let directions: Direction[] = this.unit.current.as_list().map(
+            (skill: Skill) => {
+                return this.skill_direction.get(skill);
+            }
+        ).filter((d: Direction | undefined): d is Direction => !!d
+        ).filter((dir, _, self) =>
+            self.filter(d => d == dir).length == 2
+        ).filter((dir, index, self) =>
+            self.indexOf(dir) == index
+        );
+
+        return directions.map(dir => {
+            return Angle.create(dir, this.halo_size);
+        });
+    }
+}
+
+class CanvasSwordsman extends CanvasHaloUnit
+{
+    skill_direction = new HashMap([
+        [new Skill(0, -1), HaloDirection.Up],
+        [new Skill(0, 1), HaloDirection.Down],
+        [new Skill(-1, 0), HaloDirection.Left],
+        [new Skill(1, 0), HaloDirection.Right],
+        [new Skill(-1, 1), HaloDirection.DownLeft],
+        [new Skill(1, 1), HaloDirection.DownRight],
+        [new Skill(-1, -1), HaloDirection.UpLeft],
+        [new Skill(1, -1), HaloDirection.UpRight]
+    ]);
+    halo_size = GameCanvas.halo_size_small;
+
+    paint_unit(renderer: Renderer): void 
+    {
+        renderer.soldier(this.color, true);
+        renderer.translate(new Position(-g.settings.grid_size / 4, -3));
+        renderer.rotate(new Direction(-30).to_radian().value);
+        renderer.sword();
     }
 }
 

@@ -71,7 +71,7 @@ class GameCanvas
                     if ((i + j) % 2 != 0) {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size), 
-                            grid_size, grid_size, g.const.STYLE_GREY);
+                            grid_size, grid_size, 0, g.const.STYLE_GREY);
                     }
                 }
             }

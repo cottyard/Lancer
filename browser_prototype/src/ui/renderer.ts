@@ -10,6 +10,11 @@
         this.ctx.translate(position.x, position.y);
     }
 
+    rotate(radian: number)
+    {
+        this.ctx.rotate(radian);
+    }
+
     line(from: Position, to: Position, width: number): void
     {
         this.ctx.lineWidth = width;
@@ -67,14 +72,15 @@
         this.ctx.stroke();
     }
 
-    rectangle(position: Position, width: number, height: number, fill_style: string | null = null): void
+    rectangle(position: Position, width: number, height: number, border_width: number, fill_style: string | null = null): void
     {
+        this.ctx.lineWidth = border_width;
         if (fill_style != null)
         {
             this.ctx.fillStyle = fill_style;
             this.ctx.fillRect(position.x, position.y, width, height);
         }
-        else
+        if (border_width != 0)
         {
             this.ctx.strokeRect(position.x, position.y, width, height);
         }
@@ -109,7 +115,7 @@
         this.ctx.stroke();
     }
 
-    soldier(color: string)
+    soldier(color: string, with_ribbon: boolean = false)
     {
         this.set_style(g.const.STYLE_BLACK);
         
@@ -135,6 +141,85 @@
         this.ctx.stroke();
 
         this.circle(head_center, head_size, width, g.const.STYLE_WHITE);
+        if (with_ribbon)
+        {
+            this.ctx.save();
+            this.ctx.clip();
+            this.rectangle(new Position(-15, -17), 30, 5, 2, color);
+            this.circle(head_center, head_size, width);
+            this.ctx.restore();
+        }
+    }
+
+    spear()
+    {
+        this.set_style(g.const.STYLE_BLACK);
+        let head_size = 9;
+        let body_size = 5;
+        let width = 2;
+        let overlay_size = body_size - width;
+        this.rectangle(
+            new Position(-body_size / 2, 0),
+            body_size,
+            body_size * 5,
+            width,
+            g.const.STYLE_WHITE);
+
+        this.triangle(
+            new Position(0,  -head_size), 
+            new Position(-head_size / 2, 0), 
+            new Position(head_size / 2, 0), 
+            width, g.const.STYLE_WHITE);
+
+        this.rectangle(
+            new Position(-overlay_size / 2, -width),
+            overlay_size,
+            width * 2,
+            0,
+            g.const.STYLE_WHITE);
+    }
+
+    sword()
+    {
+        this.set_style(g.const.STYLE_BLACK);
+        let size = 6;
+        let guard_size = 5;
+        let handle_size = 2;
+        let width = 2;
+        let overlay_size = size - width;
+        this.rectangle(
+            new Position(-size / 2, 0),
+            size,
+            size * 3,
+            width,
+            g.const.STYLE_WHITE);
+
+        this.triangle(
+            new Position(0,  -size), 
+            new Position(-size / 2, 0), 
+            new Position(size / 2, 0), 
+            width, g.const.STYLE_WHITE);
+
+        this.rectangle(
+            new Position(-overlay_size / 2, -width / 2),
+            overlay_size,
+            width * 1.5,
+            0,
+            g.const.STYLE_WHITE);
+
+        this.rectangle(
+            new Position(-guard_size, size * 3 - guard_size * 0.8),
+            guard_size * 2,
+            guard_size * 0.8,
+            width,
+            g.const.STYLE_WHITE);
+
+        this.rectangle(
+            new Position(-handle_size, size * 3),
+            handle_size * 2,
+            handle_size * 2,
+            width,
+            g.const.STYLE_WHITE);
     }
 
     rider(color: string)

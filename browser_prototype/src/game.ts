@@ -64,7 +64,6 @@ class Game
         if (this.player_action)
         {
             this.canvas.paint_actions(this.player_action.actions);
-            console.log('Total cost:', this.player_action.cost());
         }
     }
 
@@ -144,6 +143,11 @@ class Game
     run()
     {
         set_out(this.board);
+
+        let man = new Spearman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        this.board.put(new Coordinate(1,2), man);
+        let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        this.board.put(new Coordinate(2,2), man2);
 
         this.board.iterate_units((unit, coord) => {
             let canvas_unit = CanvasUnitFactory(unit);
