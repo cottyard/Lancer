@@ -10,7 +10,9 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
         [King, CanvasKing],
         [Wagon, CanvasWagon],
         [Spearman, CanvasSpearman],
-        [Swordsman, CanvasSwordsman]
+        [Swordsman, CanvasSwordsman],
+        [Lancer, CanvasLancer],
+        [Knight, CanvasKnight]
     ]);
 
     let constructor = cmap.get(unit.type());
@@ -161,6 +163,44 @@ class CanvasRider extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.rider(this.color);
+    }
+}
+
+class CanvasLancer extends CanvasHaloUnit
+{
+    skill_direction = new HashMap([
+        [new Skill(0, -2), HaloDirection.Up],
+        [new Skill(0, 2), HaloDirection.Down],
+        [new Skill(-2, 0), HaloDirection.Left],
+        [new Skill(2, 0), HaloDirection.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
+    paint_unit(renderer: Renderer): void 
+    {
+        renderer.rider(this.color, true);
+        renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 7));
+        renderer.rotate(new Direction(-30).to_radian().value);
+        renderer.spear();
+    }
+}
+
+class CanvasKnight extends CanvasHaloUnit
+{
+    skill_direction = new HashMap([
+        [new Skill(-1, 1), HaloDirection.DownLeft],
+        [new Skill(1, 1), HaloDirection.DownRight],
+        [new Skill(-1, -1), HaloDirection.UpLeft],
+        [new Skill(1, -1), HaloDirection.UpRight]
+    ]);
+    halo_size = GameCanvas.halo_size_large;
+
+    paint_unit(renderer: Renderer): void 
+    {
+        renderer.rider(this.color, true);
+        renderer.translate(new Position(-g.settings.grid_size / 4, 5));
+        renderer.rotate(new Direction(-30).to_radian().value);
+        renderer.sword();
     }
 }
 

@@ -222,7 +222,7 @@
             g.const.STYLE_WHITE);
     }
 
-    rider(color: string)
+    rider(color: string, with_muzzle: boolean = false)
     {
         this.set_style(g.const.STYLE_BLACK);
         
@@ -257,7 +257,6 @@
         this.ctx.quadraticCurveTo(0, body_size_y + 10, body_left.x, body_left.y);
         this.ctx.fill();
         this.ctx.stroke();
-
         
         this.triangle(ear_left, ear_right, ear_top, width);
 
@@ -271,6 +270,23 @@
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
+
+        if (with_muzzle)
+        {
+            this.ctx.save();
+            this.ctx.clip();
+            this.rotate(new Direction(-15).to_radian().value);
+            this.rectangle(new Position(-body_size_x + 9, -head_height - head_size - 10), 5, 25, width, color);
+            this.ctx.restore();
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(head_right_down.x, head_right_down.y);
+            this.ctx.lineTo(head_left_down.x, head_left_down.y);
+            this.ctx.lineTo(head_left_up.x, head_left_up.y);
+            this.ctx.lineTo(head_right_up.x, head_right_up.y);
+            this.ctx.closePath();
+            this.ctx.stroke();
+        }
         
         this.circle(new Position(4, -13), 1, width, g.const.STYLE_BLACK);
     }

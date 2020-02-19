@@ -145,9 +145,17 @@ class Game
         set_out(this.board);
 
         let man = new Spearman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        man.endow(new Skill(0, -2));
         this.board.put(new Coordinate(1,2), man);
         let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        man2.endow(new Skill(1, -1));
         this.board.put(new Coordinate(2,2), man2);
+        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
+        lancer.endow(new Skill(0, -2));
+        this.board.put(new Coordinate(3,2), lancer);
+        let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
+        knight.endow(new Skill(1, -1));
+        this.board.put(new Coordinate(4,2), knight);
 
         this.board.iterate_units((unit, coord) => {
             let canvas_unit = CanvasUnitFactory(unit);
