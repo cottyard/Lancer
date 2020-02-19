@@ -78,10 +78,9 @@ class GameCanvas
         });
     }
     
-    paint_indicator(coordinate: Coordinate)
+    paint_indicator(coordinate: Coordinate, width: number = 2)
     {
         let center = GameCanvas.get_grid_center(coordinate);
-        let width = 2;
         let size = 15;
         let p: number, q: number;
         let half_grid = g.settings.grid_size / 2;

@@ -48,7 +48,7 @@ class Game
         this.canvas.clear_canvas(this.canvas.am_ctx);
         if (this.current)
         {
-            this.canvas.paint_indicator(this.current);
+            this.canvas.paint_indicator(this.current, 3);
         }
         if (this.selected)
         {
@@ -82,28 +82,17 @@ class Game
         if (!this.current?.equals(coord))
         {
             this.current = coord;
+            if (!this.selected)
+            {
+                this.update_options(coord);
+            }
             this.render_indicators();
         }
     }
 
     on_mouse_down(event: MouseEvent): void
     {
-        let coord = this.get_coordinate(event);
-        let unit = this.board.at(coord);
-        if (unit)
-        {
-            this.selected = coord;
-            this.options = [];
-            for (let skill of unit.current.as_list())
-            {
-                let option = coord.add(skill.x, skill.y);
-                if (option)
-                {
-                    this.options.push(option);
-                }
-            }
-            this.render_indicators();
-        }
+        this.selected = this.get_coordinate(event);
     }
     
     on_mouse_up(event: MouseEvent): void
@@ -129,7 +118,7 @@ class Game
             }
         }
         this.selected = null;
-        this.options = [];
+        this.update_options(this.current);
         this.render_indicators();
     }
 
@@ -138,6 +127,24 @@ class Game
         this.player_action = Rule.validate_player_move(this.board, this.player_move);
         this.action_panel.render();
         this.status_bar.render();
+    }
+
+    update_options(coord: Coordinate)
+    {
+        this.options = [];
+        let unit = this.board.at(coord);
+        if (!unit || unit.owner != this.player)
+        {
+            return;
+        }
+        for (let skill of unit.current.as_list())
+        {
+            let option = coord.add(skill.x, skill.y);
+            if (option)
+            {
+                this.options.push(option);
+            }
+        }
     }
 
     run()
