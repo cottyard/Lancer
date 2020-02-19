@@ -3,8 +3,8 @@ class InvalidMove extends Error {}
 class Rule
 {
     static spawn_row = new Map<Player, number>([
-        [Player.P1, 0],
-        [Player.P2, g.board_size_y - 1]
+        [Player.P1, g.board_size_y - 1],
+        [Player.P2, 0]
     ]);
 
     static validate_player_move(board: Board<Unit>, player_move: PlayerMove): PlayerAction

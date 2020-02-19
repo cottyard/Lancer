@@ -106,9 +106,9 @@ class GameCanvas
         }
     }
 
-    paint_actions(actions: Action[])
+    paint_actions(player_action: PlayerAction, board: Board<Unit>)
     {
-        for (let action of actions)
+        for (let action of player_action.actions)
         {
             let skill = action.move.get_skill();
             let style = g.action_style.get(action.type)!;
@@ -117,8 +117,24 @@ class GameCanvas
             let from = GameCanvas.get_grid_center(action.move.from);
             let to = GameCanvas.get_grid_center(action.move.to);
 
+            let go_around = false;
+
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) && 
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
+            {
+                let middleground = action.move.from.add(skill.x / 2, skill.y / 2);
+                if (!middleground)
+                {
+                    throw Error("action move has no middleground");
+                }
+                let unit = board.at(middleground);
+                if (unit)
+                {
+                    go_around = true;
+                }
+            }
+            
+            if (go_around)
             {
                 let sx = Math.sign(skill.x);
                 let sy = Math.sign(skill.y);
@@ -143,7 +159,22 @@ class GameCanvas
                     );
                 });
             }
+
+            if (action.type == ActionType.Recruit)
+            {
+                this.paint_unit(CanvasUnitFactory(new action.unit_type(player_action.player)), action.move.from, true);
+            }
         }
+    }
+
+    paint_unit(unit: CanvasUnit, coordinate: Coordinate, hint: boolean = false)
+    {
+        let context = hint ? this.am_ctx : this.st_ctx;
+        using (new Renderer(context), (renderer) => {
+            renderer.translate(GameCanvas.get_grid_center(coordinate));
+            renderer.ctx.scale(0.9, 0.9);
+            unit.paint(renderer);
+        });
     }
 
     clear_canvas(ctx: CanvasRenderingContext2D)

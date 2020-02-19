@@ -67,7 +67,7 @@ class Game
         // TODO: highlight first movers/attackers
         if (this.player_action)
         {
-            this.canvas.paint_actions(this.player_action.actions);
+            this.canvas.paint_actions(this.player_action, this.board);
         }
     }
 
@@ -180,10 +180,12 @@ class Game
         knight.endow(new Skill(1, -1));
         this.board.put(new Coordinate(4,2), knight);
         this.board.remove(new Coordinate(0, 8));
+        this.board.remove(new Coordinate(1, 8));
+        this.board.remove(new Coordinate(2, 8));
+        this.board.remove(new Coordinate(3, 8));
 
         this.board.iterate_units((unit, coord) => {
-            let canvas_unit = CanvasUnitFactory(unit);
-            canvas_unit.paint(this.canvas.st_ctx, GameCanvas.get_grid_center(coord));
+            this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
         });
 
         this.action_panel.render();

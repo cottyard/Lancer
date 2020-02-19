@@ -37,13 +37,9 @@ abstract class CanvasUnit
         this.color = CanvasUnit.color_map.get(this.unit.owner)!;
     }
 
-    paint(ctx: CanvasRenderingContext2D, center: Position): void
+    paint(renderer: Renderer): void
     {
-        using(new Renderer(ctx), (renderer) => {
-            renderer.translate(center);
-            renderer.ctx.scale(0.9, 0.9);
-            this.paint_unit(renderer);
-        });
+        this.paint_unit(renderer);
     }
 
     abstract paint_unit(renderer: Renderer): void;
@@ -59,14 +55,12 @@ abstract class CanvasHaloUnit extends CanvasUnit
         super(unit);
     }
 
-    paint(ctx: CanvasRenderingContext2D, center: Position): void
+    paint(renderer: Renderer): void
     {
-        super.paint(ctx, center);
-
-        using(new Renderer(ctx), (renderer) => {
-            renderer.translate(center);
-            this.paint_halo(renderer);
-        });
+        renderer.record();
+        super.paint(renderer);
+        renderer.rewind();
+        this.paint_halo(renderer);
     }
 
     get_halo_angles(): Angle[]

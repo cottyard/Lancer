@@ -1,5 +1,6 @@
 ﻿class Renderer implements IDisposable
 {
+    transform_matrix: DOMMatrix | null = null;
     constructor(public ctx: CanvasRenderingContext2D)
     {
         this.ctx.save();
@@ -13,6 +14,19 @@
     rotate(radian: number)
     {
         this.ctx.rotate(radian);
+    }
+
+    record()
+    {
+        this.transform_matrix = this.ctx.getTransform();
+    }
+
+    rewind()
+    {
+        if (this.transform_matrix)
+        {
+            this.ctx.setTransform(this.transform_matrix);
+        }
     }
 
     line(from: Position, to: Position, width: number): void

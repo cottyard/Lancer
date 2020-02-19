@@ -78,8 +78,11 @@ class ActionPanel {
             flexGrow: "1",
         }));
 
-        // Supply.
-        div.appendChild(DomHelper.createText("🍞" + action.cost().toString()));
+        // cost.
+        div.appendChild(DomHelper.createText(
+            "🍞" + action.cost().toString(),
+            {'font-weight': 'bold'}
+        ));
 
         // Cross & callback.
         const cross = div.appendChild(DomHelper.createText("✘", {
@@ -104,7 +107,7 @@ class ActionPanel {
                 1);
             this.game.update_player_action();
             this.game.canvas.clear_canvas(this.game.canvas.am_ctx);
-            this.game.canvas.paint_actions(this.game.player_action.actions);
+            this.game.canvas.paint_actions(this.game.player_action, this.game.board);
             e.cancelBubble = true;
         });
 
@@ -239,7 +242,12 @@ class ActionPanel {
             throw new Error("Your browser is outdated.");
         }
         const canvas_unit = CanvasUnitFactory(unit);
-        canvas_unit.paint(context, new Position(g.settings.grid_size / 2, g.settings.grid_size / 2));
+        using(new Renderer(context), (renderer) =>
+        {
+            renderer.translate(new Position(g.settings.grid_size / 2, g.settings.grid_size / 2));
+            canvas_unit.paint(renderer);
+        });
+        
         return canvas;
     }
 
