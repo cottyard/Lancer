@@ -159,6 +159,9 @@ class Game
         this.board.put(new Coordinate(2,2), man2);
         let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
         lancer.endow(new Skill(0, -2));
+        lancer.endow(new Skill(0, 2));
+        lancer.endow(new Skill(-2, 0));
+        lancer.endow(new Skill(2, 0));
         this.board.put(new Coordinate(3,2), lancer);
         let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
         knight.endow(new Skill(1, -1));

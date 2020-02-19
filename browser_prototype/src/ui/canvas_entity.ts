@@ -41,6 +41,7 @@ abstract class CanvasUnit
     {
         using(new Renderer(ctx), (renderer) => {
             renderer.translate(center);
+            renderer.ctx.scale(0.9, 0.9);
             this.paint_unit(renderer);
         });
     }
@@ -60,10 +61,7 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     paint(ctx: CanvasRenderingContext2D, center: Position): void
     {
-        using(new Renderer(ctx), (renderer) => {
-            renderer.translate(center);
-            this.paint_unit(renderer);
-        });
+        super.paint(ctx, center);
 
         using(new Renderer(ctx), (renderer) => {
             renderer.translate(center);

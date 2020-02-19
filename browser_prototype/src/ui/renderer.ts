@@ -377,6 +377,26 @@
             width);
     }
 
+    curved_arrow(from: Position, control: Position, to: Position, style: string, shrink_length: number): void
+    {
+        this.set_style(style);
+        let size = 3, width = 3;
+
+        from = this.go_towards(from, control, shrink_length);
+        to = this.go_towards(to, control, shrink_length);
+
+        this.curve(from, control, to, width);
+
+        let direction = this.get_direction(control, to);
+        this.ctx.save();
+        this.ctx.translate(to.x, to.y);
+        this.ctx.rotate(direction.add(90).to_radian().value);
+        this.triangle(
+            new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size), 
+            width, style);
+        this.ctx.restore();
+    }
+
     arrow(from: Position, to: Position, style: string, shrink_length: number): void
     {
         this.set_style(style);

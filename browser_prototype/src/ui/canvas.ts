@@ -101,13 +101,39 @@ class GameCanvas
     {
         for (let action of actions)
         {
-            using(new Renderer(this.am_ctx), (renderer) => {
-                renderer.arrow(
-                    GameCanvas.get_grid_center(action.move.from),
-                    GameCanvas.get_grid_center(action.move.to),
-                    g.action_style.get(action.type)!,
-                    g.settings.grid_size / 2 - 5);
-            });
+            let skill = action.move.get_skill();
+            let style = g.action_style.get(action.type)!;
+            let shrink = g.settings.grid_size / 2 - 5;
+            let control_distance = g.settings.grid_size * 0.75;
+            let from = GameCanvas.get_grid_center(action.move.from);
+            let to = GameCanvas.get_grid_center(action.move.to);
+
+            if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) && 
+                (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
+            {
+                let sx = Math.sign(skill.x);
+                let sy = Math.sign(skill.y);
+                using(new Renderer(this.am_ctx), (renderer) => {
+                    renderer.curved_arrow(
+                        GameCanvas.get_grid_center(action.move.from),
+                        new Position(
+                            (from.x + to.x) / 2 - sy * control_distance,
+                            (from.y + to.y) / 2 + sx * control_distance),
+                        GameCanvas.get_grid_center(action.move.to),
+                        style, shrink
+                    );
+                });
+            }
+            else
+            {
+                using(new Renderer(this.am_ctx), (renderer) => {
+                    renderer.arrow(
+                        GameCanvas.get_grid_center(action.move.from),
+                        GameCanvas.get_grid_center(action.move.to),
+                        style, shrink
+                    );
+                });
+            }
         }
     }
 
