@@ -28,7 +28,6 @@ class Module
         'STYLE_RED_LIGHT': '#ff8080',
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
-        'STYLE_CYAN_T': "rgba(1, 205, 254, 0.5)",
         'STYLE_GREEN_LIGHT': '#80e080'
     };
     private _action_style: Map<ActionType, string> | undefined;

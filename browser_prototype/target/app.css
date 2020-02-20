@@ -27,3 +27,7 @@ span {
     width: 300px;
     align-self: flex-start;
 }
+
+#animate-transparent {
+    opacity: 0.3;
+}

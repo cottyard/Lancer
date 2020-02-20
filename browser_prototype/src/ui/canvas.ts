@@ -3,23 +3,27 @@ class GameCanvas
     background: HTMLCanvasElement;
     static: HTMLCanvasElement;
     animate: HTMLCanvasElement;
+    animate_transparent: HTMLCanvasElement;
 
     bg_ctx: CanvasRenderingContext2D;
     st_ctx: CanvasRenderingContext2D;
     am_ctx: CanvasRenderingContext2D;
+    am_ctx_t: CanvasRenderingContext2D;
 
     static halo_size_large = 45;
     static halo_size_small = 30;
 
-    constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement) 
+    constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement, animate_transparent: HTMLCanvasElement) 
     {
         this.background = background;
         this.static = static_;
         this.animate = animate;
+        this.animate_transparent = animate_transparent;
         
         this.bg_ctx = this.set_canvas_attr(this.background, 1, g.settings.cvs_size, g.settings.cvs_border_width, false);
         this.st_ctx = this.set_canvas_attr(this.static, 2, g.settings.cvs_size, g.settings.cvs_border_width, true);
-        this.am_ctx = this.set_canvas_attr(this.animate, 3, g.settings.cvs_size, g.settings.cvs_border_width, true);
+        this.am_ctx_t = this.set_canvas_attr(this.animate_transparent, 3, g.settings.cvs_size, g.settings.cvs_border_width, true);
+        this.am_ctx = this.set_canvas_attr(this.animate, 4, g.settings.cvs_size, g.settings.cvs_border_width, true);
     }
 
     set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number, absolute: boolean): CanvasRenderingContext2D
@@ -64,7 +68,7 @@ class GameCanvas
         let grids = g.grid_count;
 
         using(new Renderer(this.bg_ctx), (renderer) => {
-            renderer.set_style(g.const.STYLE_GREY);
+            renderer.set_color(g.const.STYLE_GREY);
             
             for (let i = 0; i < grids; ++i) {
                 for (let j = 0; j < grids; ++j) {
@@ -92,7 +96,8 @@ class GameCanvas
         for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
         {
             using(new Renderer(this.am_ctx), (renderer) => {
-                renderer.set_style(style_);        
+                renderer.set_alpha(0.8);
+                renderer.set_color(style_);        
                 renderer.translate(center);
                 renderer.translate(new Position(p * half_grid, q * half_grid));
                 let zero = new Position(-p * (width / 2 + 1), -q * (width / 2 + 1));
@@ -169,7 +174,7 @@ class GameCanvas
 
     paint_unit(unit: CanvasUnit, coordinate: Coordinate, hint: boolean = false)
     {
-        let context = hint ? this.am_ctx : this.st_ctx;
+        let context = hint ? this.am_ctx_t : this.st_ctx;
         using (new Renderer(context), (renderer) => {
             renderer.translate(GameCanvas.get_grid_center(coordinate));
             renderer.ctx.scale(0.9, 0.9);

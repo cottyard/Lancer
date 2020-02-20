@@ -1,4 +1,4 @@
-type CanvasUnitConstructor = new (...args: any[]) => CanvasUnit;
+type CanvasUnitConstructor = new (unit: Unit) => CanvasUnit;
 
 let CanvasUnitFactory = function(unit: Unit): CanvasUnit
 {

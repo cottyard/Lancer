@@ -21,7 +21,8 @@ class Game
         this.canvas = new GameCanvas(
             <HTMLCanvasElement>document.getElementById('background'),
             <HTMLCanvasElement>document.getElementById('static'), 
-            <HTMLCanvasElement>document.getElementById('animate'));
+            <HTMLCanvasElement>document.getElementById('animate'),
+            <HTMLCanvasElement>document.getElementById('animate-transparent'));
         this.action_panel = new ActionPanel(
             <HTMLDivElement>document.getElementById('action-panel'),
             this);
@@ -47,6 +48,8 @@ class Game
     render_indicators(): void
     {
         this.canvas.clear_canvas(this.canvas.am_ctx);
+        this.canvas.clear_canvas(this.canvas.am_ctx_t);
+
         for (let option of this.options_upgrade)
         {
             this.canvas.paint_indicator(option, g.const.STYLE_CYAN, 2);

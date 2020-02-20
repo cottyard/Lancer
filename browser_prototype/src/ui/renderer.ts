@@ -1,6 +1,7 @@
 ﻿class Renderer implements IDisposable
 {
     transform_matrix: DOMMatrix | null = null;
+    alpha: number = 1;
     constructor(public ctx: CanvasRenderingContext2D)
     {
         this.ctx.save();
@@ -45,7 +46,7 @@
         this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI, false);
         if (fill_style != null)
         {
-            this.ctx.fillStyle = fill_style;
+            this.set_fill_color(fill_style);
             this.ctx.fill();
         }
         this.ctx.stroke();
@@ -80,7 +81,7 @@
         this.ctx.closePath();
         if (fill_style != null)
         {
-            this.ctx.fillStyle = fill_style;
+            this.set_fill_color(fill_style);
             this.ctx.fill();
         }
         this.ctx.stroke();
@@ -91,7 +92,7 @@
         this.ctx.lineWidth = border_width;
         if (fill_style != null)
         {
-            this.ctx.fillStyle = fill_style;
+            this.set_fill_color(fill_style);
             this.ctx.fillRect(position.x, position.y, width, height);
         }
         if (border_width != 0)
@@ -114,7 +115,7 @@
         let pointy_3 = new Position(size + 2, -jewel_height);
 
         this.ctx.lineWidth = 2;
-        this.ctx.fillStyle = g.const.STYLE_GOLD;
+        this.set_fill_color(g.const.STYLE_GOLD);
 
         this.ctx.beginPath();
         this.ctx.moveTo(left.x, left.y);
@@ -131,7 +132,7 @@
 
     soldier(color: string, with_ribbon: boolean = false)
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         
         let head_center = new Position(0, -10);
         let head_size = 13;
@@ -143,7 +144,7 @@
         let corner_right = head_center.add(new PositionDelta(size_x, size_y));
 
         this.ctx.lineWidth = width;
-        this.ctx.fillStyle = color;
+        this.set_fill_color(color);
 
         this.ctx.beginPath();
         this.ctx.moveTo(head_center.x, head_center.y);
@@ -167,7 +168,7 @@
 
     spear()
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         let head_size = 9;
         let body_size = 5;
         let width = 2;
@@ -195,7 +196,7 @@
 
     sword()
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         let size = 6;
         let guard_size = 5;
         let handle_size = 2;
@@ -238,7 +239,7 @@
 
     rider(color: string, with_muzzle: boolean = false)
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         
         let head_height = 0;
         let head_size = 13;
@@ -261,7 +262,7 @@
         let ear_top = new Position(body_size_x, -head_height - 20 - ear_size);
 
         this.ctx.lineWidth = width;
-        this.ctx.fillStyle = color;
+        this.set_fill_color(color);
 
         this.ctx.beginPath();
         this.ctx.moveTo(body_top.x, body_top.y);
@@ -274,7 +275,7 @@
         
         this.triangle(ear_left, ear_right, ear_top, width);
 
-        this.ctx.fillStyle = g.const.STYLE_WHITE;
+        this.set_fill_color(g.const.STYLE_WHITE);
 
         this.ctx.beginPath();
         this.ctx.moveTo(head_right_down.x, head_right_down.y);
@@ -312,7 +313,7 @@
         let width = 2;
         let tyre_size = 8;
 
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         this.ctx.lineWidth = width;
 
         let upleft = new Position(-size_x * 1.3 / 2, -size_y / 2);
@@ -326,7 +327,7 @@
         this.ctx.lineTo(downright.x, downright.y);
         this.ctx.lineTo(downleft.x, downleft.y);
         this.ctx.closePath();
-        this.ctx.fillStyle = color;
+        this.set_fill_color(color);
         this.ctx.fill();
         this.ctx.stroke();
 
@@ -337,7 +338,7 @@
     halo(angle: Angle, color: string)
     {
         let width = 4;
-        this.set_style(color);
+        this.set_color(color);
         this.ctx.globalAlpha = 0.5;
 
         let halo_center = new Position(0, 0);
@@ -350,7 +351,7 @@
 
     hat()
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         let hat_size = 18
         this.triangle(
             new Position(0, 0), 
@@ -361,7 +362,7 @@
 
     horns()
     {
-        this.set_style(g.const.STYLE_BLACK);
+        this.set_color(g.const.STYLE_BLACK);
         let width = 2;
         let horn_size = 10;
 
@@ -393,7 +394,7 @@
 
     curved_arrow(from: Position, control: Position, to: Position, style: string, shrink_length: number): void
     {
-        this.set_style(style);
+        this.set_color(style);
         let size = 3, width = 3;
 
         from = this.go_towards(from, control, shrink_length);
@@ -413,7 +414,7 @@
 
     arrow(from: Position, to: Position, style: string, shrink_length: number): void
     {
-        this.set_style(style);
+        this.set_color(style);
         let size = 3, width = 3;
 
         if (from.equals(to))
@@ -485,12 +486,25 @@
         }
     }
 
-    set_style(style: string): void
+    set_color(style: string): void
     {
         this.ctx.strokeStyle = this.ctx.fillStyle = style;
+        this.ctx.globalAlpha = this.alpha;
     }
 
-    dispose() {
+    set_fill_color(style: string): void
+    {
+        this.ctx.fillStyle = style;
+        this.ctx.globalAlpha = this.alpha;
+    }
+
+    set_alpha(alpha: number): void
+    {
+        this.alpha = alpha;
+    }
+
+    dispose() 
+    {
         this.ctx.restore();
     }
 }
