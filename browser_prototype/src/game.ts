@@ -173,13 +173,10 @@ class Game
 
     run()
     {
-        set_out(this.board);
-
-        this.board.iterate_units((unit, coord) => {
-            this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
-        });
-
-        this.action_panel.render();
+        //set_out(this.board);
+        //console.log('standard', create_board_ctor(UnitConstructor).deserialize(this.board.serialize()).serialize());
+        
+        //this.action_panel.render();
         this.status_bar.render();
     }
 
@@ -194,6 +191,18 @@ class Game
             console.log('session', session)
             this.session_id = session;
         });
+    }
+
+    update_board(board: Board<Unit>)
+    {
+        this.board = board;
+        if (this.board)
+        {
+            this.canvas.clear_canvas(this.canvas.st_ctx);
+            this.board.iterate_units((unit, coord) => {
+                this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
+            });
+        }
     }
 
     update_game()
@@ -211,8 +220,28 @@ class Game
             if (this.latest_game_id != this.current_game_id)
             {
                 fetch_game(this.latest_game_id, (serialized_game) => {
-                    console.log(serialized_game);
+                    let game_payload: string;
+                    let game_id: string;
+                    let game_status: number;
+                    let player_name_map: any;
+
+                    [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
+                    console.log(game_payload)
+                    console.log(game_id)
+                    console.log(game_status)
+                    console.log(player_name_map)
+
+                    this.current_game_id = game_id;
+
+                    let round_count: number;
+                    let supply: any;
+                    let board_payload: string;
+                    [round_count, supply, board_payload] = JSON.parse(game_payload);
+
+                    this.update_board(<Board<Unit>>create_board_ctor(UnitConstructor).deserialize(board_payload));
+                    console.log(this.board);
                 });
+
             }
         }
     }

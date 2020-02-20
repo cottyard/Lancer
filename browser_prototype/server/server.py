@@ -44,9 +44,9 @@ def get_game(game_id):
         abort(404)
     else:
         return json.dumps([
-            server_game.game,
+            server_game.game.serialize(),
             str(server_game.game_id),
-            server_game.status,
+            server_game.status.value,
             server_game.player_name_map
         ])
 

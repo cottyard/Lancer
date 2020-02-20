@@ -1,5 +1,5 @@
 from entity import Position, Move, PlayerMove, Wagon
-from board import Board
+from board import Board, set_out
 from const import player_1, player_2, board_size_x
 import rule
 import random
@@ -22,7 +22,7 @@ class Game:
     def __init__(self, board=None):
         if board is None:
             self.board = Board()
-            self.board.set_out()
+            set_out(self.board)
         else:
             self.board = board
             

@@ -315,7 +315,7 @@ abstract class Unit
 
     serialize(): string
     {
-        return JSON.stringify([this.display, Player[this.owner], this.current.serialize()]);
+        return JSON.stringify([this.display, this.owner, this.current.serialize()]);
     }
     
     endow_inborn(): void
@@ -407,7 +407,7 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
         {
             throw new Error('Unit.deserialize: no constructor');
         }
-        let unit = new type(Player[<keyof typeof Player>owner]);
+        let unit = new type(Player[<keyof typeof Player>('P' + owner)]);
         unit.current = SkillSet.deserialize(current);
         return unit;
     }

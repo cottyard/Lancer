@@ -13,16 +13,6 @@ class Board:
             for j in range(board_size_y)]
             for i in range(board_size_x)]
 
-    def set_out(self):
-        for row, setting, player in [
-            (0, board_setting_1st_row, player_1),
-            (1, board_setting_2nd_row, player_1),
-            (board_size_y - 1, board_setting_1st_row, player_2),
-            (board_size_y - 2, board_setting_2nd_row, player_2)
-        ]:
-            for i in range(board_size_x):
-                self.board[i][row] = setting[i](player, flip_skillset=player==player_2)
-    
     def at(self, position):
         return self.board[position.x][position.y]
     
@@ -70,6 +60,16 @@ class Board:
                 if u != 0:
                     b.put(Position(i, j), Unit.deserialize(u))
         return b
+
+def set_out(board):
+    for row, setting, player in [
+        (0, board_setting_1st_row, player_2),
+        (1, board_setting_2nd_row, player_2),
+        (board_size_y - 1, board_setting_1st_row, player_1),
+        (board_size_y - 2, board_setting_2nd_row, player_1)
+    ]:
+        for i in range(board_size_x):
+            board.put(Position(i, row), setting[i](player, flip_skillset=player==player_1))
 
 class ArriverMap:
     def __init__(self):
