@@ -1,8 +1,8 @@
-class Board<T>
+class Board<T extends ISerializable> implements ISerializable
 {
     private board: (T | null)[][];
 
-    constructor(initializer: () => (T | null))
+    constructor(initializer: () => (T | null) = () => null)
     {
         this.board = [];
 
@@ -52,6 +52,57 @@ class Board<T>
             }
         }
     }
+
+    serialize(): string
+    {
+        let s: (string | null)[] = [];
+        for (let i = 0; i < g.board_size_x; i++) {
+            for (let j = 0; j < g.board_size_y; j++) {
+                let unit = this.board[i][j];
+                if (unit)
+                {
+                    s.push(unit.serialize());
+                }
+                else
+                {
+                    s.push(null);
+                }
+            }
+        }
+        return JSON.stringify(s);
+    }
+}
+
+interface BoardConstructor<T extends ISerializable, _C extends IDeserializable<T>> extends IDeserializable<Board<T>>
+{
+    deserialize(payload: string): Board<T>;
+}
+
+function create_board_ctor<T extends ISerializable, C extends IDeserializable<T>>(unit_ctor: C): BoardConstructor<T, C>
+{
+    return class _ extends Board<T>
+    {
+        constructor()
+        {
+            super();
+        }
+
+        static deserialize(payload: string): Board<T>
+        {
+            let board = new Board<T>();
+            let s: string[] = JSON.parse(payload);
+            for (let i = 0; i < g.board_size_x; i++) {
+                for (let j = 0; j < g.board_size_y; j++) {
+                    let unit_payload = s.shift();
+                    if (unit_payload)
+                    {
+                        board.put(new Coordinate(i, j), unit_ctor.deserialize(unit_payload));
+                    }
+                }
+            }
+            return board;
+        }
+    };
 }
 
 let set_out = function(board: Board<Unit>): void

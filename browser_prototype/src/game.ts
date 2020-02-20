@@ -40,7 +40,9 @@ class Game
         this.player = Player.P1;
         this.player_move = new PlayerMove(this.player);
         this.player_action = new PlayerAction(this.player, []);
-        this.board = new Board<Unit>(() => null);
+
+        let board_ctor = create_board_ctor<Unit, UnitConstructor>(UnitConstructor);
+        this.board = new board_ctor();
 
         this.canvas.paint_background();
     }

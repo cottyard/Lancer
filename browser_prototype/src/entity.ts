@@ -85,6 +85,32 @@ class SkillSet
         return this.map[skill.x][skill.y];
     }
 
+    serialize(): string
+    {
+        let map: boolean[][] = [];
+        
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+            map[i + g.skill_range] = [];
+            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+                map[i + g.skill_range][j + g.skill_range] = this.map[i][j];
+            }
+        }
+
+        return JSON.stringify(map);
+    }
+
+    static deserialize(payload: string): SkillSet
+    {
+        let map = JSON.parse(payload);
+        let sks = new SkillSet();
+        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+                sks.map[i][j] = map[i + g.skill_range][j + g.skill_range];
+            }
+        }
+        return sks;
+    }
+
     static from_literal(matrix: string): SkillSet
     {
         let rows = matrix.split('\n');
@@ -171,7 +197,7 @@ class SkillSet
         for (let i = -g.skill_range; i <= g.skill_range; i++) {
             for (let j = -g.skill_range; j < 0; j++) {
                 let c = flipped.map[i];
-                [c[j], c[-j]] = [c[-j], c[j]]
+                [c[j], c[-j]] = [c[-j], c[j]];
             }
         }
         return flipped;
@@ -282,11 +308,16 @@ abstract class Unit
 
     constructor(public owner: Player)
     {
-        this.display = this.constructor.name;
         this.perfect = g.perfect_skills.get(this.type())!;
         this.current = new SkillSet();
+        this.display = this.constructor.name;
     }
 
+    serialize(): string
+    {
+        return JSON.stringify([this.display, Player[this.owner], this.current.serialize()]);
+    }
+    
     endow_inborn(): void
     {
         let inborn = g.inborn_skills.get(this.type());
@@ -357,10 +388,34 @@ abstract class Unit
     }
 }
 
-type AdvancedUnitConstructor = new (owner: Player, was: BasicUnit) => AdvancedUnit;
-type UnitConstructor = new (owner: Player) => Unit;
+interface UnitConstructor extends IDeserializable<Unit>
+{
+    new (owner: Player): Unit;
+    deserialize(payload: string): Unit;
+}
 
-abstract class BasicUnit extends Unit
+const UnitConstructor: UnitConstructor = class _ extends Unit
+{
+    static deserialize(payload: string): Unit
+    {
+        console.log(payload);
+        let display: string, owner: string, current: string;
+        [display, owner, current] = <[string, string, string]>JSON.parse(payload);
+        
+        let type = g.unit_type_by_name.get(display);
+        if (!type)
+        {
+            throw new Error('Unit.deserialize: no constructor');
+        }
+        let unit = new type(Player[<keyof typeof Player>owner]);
+        unit.current = SkillSet.deserialize(current);
+        return unit;
+    }
+}
+
+type AdvancedUnitConstructor = new (owner: Player, was: BasicUnit) => AdvancedUnit;
+
+abstract class BasicUnit extends UnitConstructor
 {
     abstract readonly promotion_options: AdvancedUnitConstructor[];
 
@@ -385,7 +440,7 @@ abstract class BasicUnit extends Unit
     }
 }
 
-abstract class AdvancedUnit extends Unit
+abstract class AdvancedUnit extends UnitConstructor
 {
     constructor(owner: Player, was: BasicUnit | null = null)
     {
@@ -437,10 +492,10 @@ class Warrior extends AdvancedUnit
 {
 }
 
-class King extends Unit
+class King extends UnitConstructor
 {
 }
 
-class Wagon extends Unit
+class Wagon extends UnitConstructor
 {
 }

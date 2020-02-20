@@ -39,3 +39,14 @@ class HashMap<K extends IHashable, V>
         return this.map.get(key.hash());
     }
 }
+
+interface IDeserializable<T>
+{
+    new (...args: any[]): T;
+    deserialize(payload: string): T;
+}
+
+interface ISerializable 
+{
+    serialize(): string;
+}

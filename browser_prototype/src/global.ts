@@ -11,6 +11,7 @@ class Module
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
+    unit_type_by_name = new Map<string, UnitConstructor>();
     readonly spawnable_unit_types: UnitConstructor[] = [
         Rider, Soldier, Barbarian, Archer, Wagon
     ];
@@ -155,6 +156,8 @@ class Module
     {
         this.all_unit_types.forEach((type: UnitConstructor) =>
         {
+            this.unit_type_by_name.set(type.name, type);
+
             let literal = this.perfect_skills_literal[type.name];
             if (!literal)
             {
