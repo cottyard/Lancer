@@ -67,7 +67,6 @@ class Game
             this.canvas.paint_indicator(this.selected);
         }
 
-        // TODO: highlight first movers/attackers
         if (this.player_action)
         {
             this.canvas.paint_actions(this.player_action, this.board);
@@ -172,7 +171,15 @@ class Game
         this.board.put(new Coordinate(1,2), man);
         let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
         man2.endow(new Skill(1, -1));
+        man2.endow(new Skill(1, 0));
+        man2.endow(new Skill(1, 1));
+        man2.endow(new Skill(-1, -1));
+        man2.endow(new Skill(-1, 0));
+        man2.endow(new Skill(-1, 1));
         this.board.put(new Coordinate(2,2), man2);
+        let man3 = new Warrior(Player.P1, <BasicUnit>this.board.at(new Coordinate(0,7)));
+        man3.endow(new Skill(0, -2));
+        this.board.put(new Coordinate(0,2), man3);
         let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
         lancer.endow(new Skill(0, -2));
         lancer.endow(new Skill(0, 2));

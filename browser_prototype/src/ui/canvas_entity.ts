@@ -9,6 +9,7 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
         [Barbarian, CanvasBarbarian],
         [King, CanvasKing],
         [Wagon, CanvasWagon],
+        [Warrior, CanvasWarrior],
         [Spearman, CanvasSpearman],
         [Swordsman, CanvasSwordsman],
         [Lancer, CanvasLancer],
@@ -65,6 +66,11 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     get_halo_angles(): Angle[]
     {
+        if (this.unit.is_perfect())
+        {
+            return [];
+        }
+
         let directions: Direction[] = this.unit.current.as_list().map(
             (skill: Skill) => {
                 return this.skill_direction.get(skill);
@@ -97,7 +103,7 @@ class CanvasSoldier extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void
     {
-        renderer.soldier(this.color);
+        renderer.soldier(this.color, this.unit.is_perfect());
     }
 }
 
@@ -113,7 +119,7 @@ class CanvasArcher extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.soldier(this.color);
+        renderer.soldier(this.color, this.unit.is_perfect());
         renderer.translate(new Position(3, -30));
         renderer.hat();
     }
@@ -134,7 +140,30 @@ class CanvasBarbarian extends CanvasHaloUnit
         renderer.translate(new Position(0, -15));
         renderer.horns();
         renderer.translate(new Position(0, 15));
-        renderer.soldier(this.color);
+        renderer.soldier(this.color, this.unit.is_perfect());
+    }
+}
+
+class CanvasWarrior extends CanvasHaloUnit
+{
+    skill_direction = new HashMap([
+        [new Skill(-1, 1), HaloDirection.DownLeft],
+        [new Skill(1, 1), HaloDirection.DownRight],
+        [new Skill(-1, -1), HaloDirection.UpLeft],
+        [new Skill(1, -1), HaloDirection.UpRight],
+        [new Skill(0, -2), HaloDirection.Up],
+        [new Skill(0, 2), HaloDirection.Down],
+        [new Skill(-2, 0), HaloDirection.Left],
+        [new Skill(2, 0), HaloDirection.Right]
+    ]);
+    halo_size = GameCanvas.halo_size_small;
+
+    paint_unit(renderer: Renderer): void 
+    {
+        renderer.translate(new Position(0, -15));
+        renderer.horns();
+        renderer.translate(new Position(0, 15));
+        renderer.soldier(this.color, this.unit.is_perfect());
     }
 }
 
@@ -154,7 +183,7 @@ class CanvasRider extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.rider(this.color);
+        renderer.rider(this.color, this.unit.is_perfect());
     }
 }
 
@@ -170,7 +199,7 @@ class CanvasLancer extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.rider(this.color, true);
+        renderer.rider(this.color, this.unit.is_perfect());
         renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 7));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.spear();
@@ -189,7 +218,7 @@ class CanvasKnight extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.rider(this.color, true);
+        renderer.rider(this.color, this.unit.is_perfect());
         renderer.translate(new Position(-g.settings.grid_size / 4, 5));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.sword();
@@ -212,7 +241,7 @@ class CanvasSpearman extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.soldier(this.color, true);
+        renderer.soldier(this.color, this.unit.is_perfect());
         renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 3));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.spear();
@@ -253,7 +282,7 @@ class CanvasSwordsman extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.soldier(this.color, true);
+        renderer.soldier(this.color, this.unit.is_perfect());
         renderer.translate(new Position(-g.settings.grid_size / 4, -3));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.sword();
