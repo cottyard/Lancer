@@ -87,12 +87,12 @@ class SkillSet
 
     serialize(): string
     {
-        let map: boolean[][] = [];
+        let map: number[][] = [];
         
         for (let i = -g.skill_range; i <= g.skill_range; i++) {
             map[i + g.skill_range] = [];
             for (let j = -g.skill_range; j <= g.skill_range; j++) {
-                map[i + g.skill_range][j + g.skill_range] = this.map[i][j];
+                map[i + g.skill_range][j + g.skill_range] = this.map[i][j] ? 1 : 0;
             }
         }
 
@@ -105,7 +105,7 @@ class SkillSet
         let sks = new SkillSet();
         for (let i = -g.skill_range; i <= g.skill_range; i++) {
             for (let j = -g.skill_range; j <= g.skill_range; j++) {
-                sks.map[i][j] = map[i + g.skill_range][j + g.skill_range];
+                sks.map[i][j] = map[i + g.skill_range][j + g.skill_range] == 1;
             }
         }
         return sks;

@@ -1,5 +1,7 @@
 class Module
 {
+    game: Game | null = null;
+
     readonly cvs_size: number = 720;
     readonly board_size_x: number = 9;
     readonly board_size_y: number = 9;
@@ -19,7 +21,8 @@ class Module
         'cvs_size': this.cvs_size,
         'cvs_border_width': 3,
         'grid_size': this.cvs_size / 9,
-        'piece_font': "40px Courier New"
+        'piece_font': "40px Courier New",
+        'server_url': 'http://127.0.0.1:5000'
     };
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",

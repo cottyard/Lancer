@@ -55,7 +55,7 @@ class Board<T extends ISerializable> implements ISerializable
 
     serialize(): string
     {
-        let s: (string | null)[] = [];
+        let s: (string | number)[] = [];
         for (let i = 0; i < g.board_size_x; i++) {
             for (let j = 0; j < g.board_size_y; j++) {
                 let unit = this.board[i][j];
@@ -65,7 +65,7 @@ class Board<T extends ISerializable> implements ISerializable
                 }
                 else
                 {
-                    s.push(null);
+                    s.push(0);
                 }
             }
         }
@@ -90,12 +90,16 @@ function create_board_ctor<T extends ISerializable, C extends IDeserializable<T>
         static deserialize(payload: string): Board<T>
         {
             let board = new Board<T>();
-            let s: (string | null)[] = JSON.parse(payload);
+            let s: (string | number)[] = JSON.parse(payload);
             for (let i = 0; i < g.board_size_x; i++) {
                 for (let j = 0; j < g.board_size_y; j++) {
                     let unit_payload = s.shift();
                     if (unit_payload)
                     {
+                        if (typeof unit_payload == "number")
+                        {
+                            throw new Error("Board deserialize");
+                        }
                         board.put(new Coordinate(i, j), unit_ctor.deserialize(unit_payload));
                     }
                 }

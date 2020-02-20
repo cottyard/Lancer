@@ -14,6 +14,11 @@ class Game
     player: Player;
     board: Board<Unit>;
 
+    player_name: string | null = null;
+    session_id: string | null = null;
+    latest_game_id: string | null = null;
+    current_game_id: string | null = null;
+
     constructor()
     {
         g.initialize();
@@ -45,6 +50,8 @@ class Game
         this.board = new board_ctor();
 
         this.canvas.paint_background();
+
+        setInterval(this.update_game.bind(this), 2000);
     }
 
     render_indicators(): void
@@ -168,40 +175,46 @@ class Game
     {
         set_out(this.board);
 
-        let man = new Spearman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
-        man.endow(new Skill(0, -2));
-        this.board.put(new Coordinate(1,2), man);
-        let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
-        man2.endow(new Skill(1, -1));
-        man2.endow(new Skill(1, 0));
-        man2.endow(new Skill(1, 1));
-        man2.endow(new Skill(-1, -1));
-        man2.endow(new Skill(-1, 0));
-        man2.endow(new Skill(-1, 1));
-        this.board.put(new Coordinate(2,2), man2);
-        let man3 = new Warrior(Player.P1, <BasicUnit>this.board.at(new Coordinate(0,7)));
-        man3.endow(new Skill(0, -2));
-        this.board.put(new Coordinate(0,2), man3);
-        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
-        lancer.endow(new Skill(0, -2));
-        lancer.endow(new Skill(0, 2));
-        lancer.endow(new Skill(-2, 0));
-        lancer.endow(new Skill(2, 0));
-        this.board.put(new Coordinate(3,2), lancer);
-        let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
-        knight.endow(new Skill(1, -1));
-        this.board.put(new Coordinate(4,2), knight);
-        this.board.remove(new Coordinate(0, 8));
-        this.board.remove(new Coordinate(1, 8));
-        this.board.remove(new Coordinate(2, 8));
-        this.board.remove(new Coordinate(3, 8));
-
         this.board.iterate_units((unit, coord) => {
             this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
         });
 
         this.action_panel.render();
         this.status_bar.render();
+    }
+
+    new_match()
+    {
+        let player_name = (<HTMLTextAreaElement>document.getElementById('player-name'))?.value;
+        if (player_name)
+        {
+            this.player_name = player_name;
+        }
+        new_match(player_name, (session: string) => {
+            console.log('session', session)
+            this.session_id = session;
+        });
+    }
+
+    update_game()
+    {
+        if (this.session_id)
+        {
+            query_match(this.session_id, (game_id: string) => {
+                console.log('game', game_id)
+                this.latest_game_id = game_id;
+            });
+        }
+
+        if (this.latest_game_id)
+        {
+            if (this.latest_game_id != this.current_game_id)
+            {
+                fetch_game(this.latest_game_id, (serialized_game) => {
+                    console.log(serialized_game);
+                });
+            }
+        }
     }
 
     get_player_name(player: Player): string {

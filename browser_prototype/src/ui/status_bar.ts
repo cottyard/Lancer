@@ -15,8 +15,10 @@ class StatusBar {
             flexDirection: "row",
             justifyContent: "flex-end",
         });
+        this.dom_element.appendChild(DomHelper.createButton());
+        this.dom_element.appendChild(DomHelper.createTextArea());
         [Player.P1, Player.P2].forEach(player => {
-            this.dom_element.appendChild(this.renderPlayer(
+            this.dom_element.appendChild(this.render_player(
                 player,
                 this.game.get_player_name(player),
                 this.game.get_player_supply(player),
@@ -29,7 +31,7 @@ class StatusBar {
         
     }
 
-    renderPlayer(
+    render_player(
         player: Player,
         name: string,
         supply: number,
