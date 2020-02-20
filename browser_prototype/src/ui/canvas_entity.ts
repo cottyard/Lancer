@@ -164,6 +164,9 @@ class CanvasWarrior extends CanvasHaloUnit
         renderer.horns();
         renderer.translate(new Position(0, 15));
         renderer.soldier(this.color, this.unit.is_perfect());
+        renderer.translate(new Position(-g.settings.grid_size / 4, -1));
+        renderer.rotate(new Direction(-30).to_radian().value);
+        renderer.axe();
     }
 }
 

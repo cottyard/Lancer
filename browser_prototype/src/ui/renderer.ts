@@ -237,6 +237,44 @@
             g.const.STYLE_WHITE);
     }
 
+    axe()
+    {
+        this.set_color(g.const.STYLE_BLACK);
+        let size = 5;
+        let width = 2;
+
+        let mid = size * 2;
+        let handle_top = new Position(-size / 2, 0);
+        let handle_mid = new Position(-size / 2, mid);
+
+        let axe_top = new Position(-size * 2, -size);
+        let axe_bottom = new Position(-size * 2, mid * 1.5);
+        let control_1 = new Position(-size, mid / 2);
+        let control_2 = new Position(-size * 3, mid / 2);
+
+        this.rectangle(
+            handle_top,
+            size,
+            mid * 2,
+            width,
+            g.const.STYLE_WHITE);
+
+        this.ctx.lineWidth = width;
+        this.ctx.beginPath();
+        this.ctx.moveTo(handle_top.x, handle_top.y);
+        this.ctx.quadraticCurveTo(control_1.x, control_1.y, axe_top.x, axe_top.y);
+        this.ctx.quadraticCurveTo(control_2.x, control_2.y, axe_bottom.x, axe_bottom.y);
+        this.ctx.quadraticCurveTo(control_1.x, control_1.y, handle_mid.x, handle_mid.y);
+        this.ctx.stroke();
+        this.ctx.closePath();
+        
+        this.ctx.save();
+        this.ctx.clip();
+        this.ctx.translate(4, 0);
+        this.curve(axe_top, control_2, axe_bottom, width);
+        this.ctx.restore();
+    }
+
     rider(color: string, with_muzzle: boolean = false)
     {
         this.set_color(g.const.STYLE_BLACK);
