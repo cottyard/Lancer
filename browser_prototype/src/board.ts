@@ -73,7 +73,7 @@ class Board<T extends ISerializable> implements ISerializable
     }
 }
 
-interface BoardConstructor<T extends ISerializable, _C extends IDeserializable<T>> extends IDeserializable<Board<T>>
+interface BoardConstructor<T extends ISerializable, _> extends IDeserializable<Board<T>>
 {
     deserialize(payload: string): Board<T>;
 }
@@ -90,7 +90,7 @@ function create_board_ctor<T extends ISerializable, C extends IDeserializable<T>
         static deserialize(payload: string): Board<T>
         {
             let board = new Board<T>();
-            let s: string[] = JSON.parse(payload);
+            let s: (string | null)[] = JSON.parse(payload);
             for (let i = 0; i < g.board_size_x; i++) {
                 for (let j = 0; j < g.board_size_y; j++) {
                     let unit_payload = s.shift();
@@ -105,7 +105,7 @@ function create_board_ctor<T extends ISerializable, C extends IDeserializable<T>
     };
 }
 
-let set_out = function(board: Board<Unit>): void
+function set_out(board: Board<Unit>): void
 {
     let board_layout: [number, UnitConstructor[], Player][] = [
         [0, g.layout_1st, Player.P2],
