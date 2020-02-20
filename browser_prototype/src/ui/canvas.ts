@@ -113,14 +113,25 @@ class GameCanvas
 
     paint_actions(player_action: PlayerAction, board: Board<Unit>)
     {
+        let first_arriver = new HashMap<Coordinate, true>();
         for (let action of player_action.actions)
         {
+            let is_first = false;
+            if (action.type == ActionType.Attack || 
+                action.type == ActionType.Move)
+            {
+                let arriver = first_arriver.get(action.move.to);
+                first_arriver.put(action.move.to, true);
+                is_first = !arriver;
+            }
+
             let skill = action.move.get_skill();
-            let style = g.action_style.get(action.type)!;
+            let color = g.action_style.get(action.type)!;
             let shrink = g.settings.grid_size / 2 - 5;
             let control_distance = g.settings.grid_size * 0.75;
             let from = GameCanvas.get_grid_center(action.move.from);
             let to = GameCanvas.get_grid_center(action.move.to);
+            let width = is_first ? 5 : 3;
 
             let go_around = false;
 
@@ -150,7 +161,7 @@ class GameCanvas
                             (from.x + to.x) / 2 - sy * control_distance,
                             (from.y + to.y) / 2 + sx * control_distance),
                         GameCanvas.get_grid_center(action.move.to),
-                        style, shrink
+                        color, shrink, width
                     );
                 });
             }
@@ -160,7 +171,7 @@ class GameCanvas
                     renderer.arrow(
                         GameCanvas.get_grid_center(action.move.from),
                         GameCanvas.get_grid_center(action.move.to),
-                        style, shrink
+                        color, shrink, width
                     );
                 });
             }

@@ -392,10 +392,10 @@
             width);
     }
 
-    curved_arrow(from: Position, control: Position, to: Position, style: string, shrink_length: number): void
+    curved_arrow(from: Position, control: Position, to: Position, style: string, shrink_length: number, width: number = 3): void
     {
         this.set_color(style);
-        let size = 3, width = 3;
+        let size = 3;
 
         from = this.go_towards(from, control, shrink_length);
         to = this.go_towards(to, control, shrink_length);
@@ -412,10 +412,10 @@
         this.ctx.restore();
     }
 
-    arrow(from: Position, to: Position, style: string, shrink_length: number): void
+    arrow(from: Position, to: Position, style: string, shrink_length: number, width: number = 3): void
     {
         this.set_color(style);
-        let size = 3, width = 3;
+        let size = 3;
 
         if (from.equals(to))
         {
