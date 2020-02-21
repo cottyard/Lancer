@@ -21,67 +21,125 @@ class StatusBar {
             justifyContent: "flex-end",
         });
 
-        let btn = DomHelper.createButton();
-        let btn2 = DomHelper.createButton();
-        
-        if (supply)
+        console.log(this.game.status);
+        if (!this.game.is_playing())
         {
-            if (cost > supply)
+            let new_game = DomHelper.createButton();
+            new_game.onclick = () => { g.game?.new_game(); };
+            
+            this.dom_element.appendChild(new_game);
+
+            if (this.game.is_in_queue())
             {
-                btn2.disabled = true;
-                btn2.innerText = "not enough supply";
+                new_game.innerText = "Finding opponent..."
+                new_game.disabled = true;
             }
             else
             {
-                btn2.innerText = "submit move";
-                btn2.onclick = () => { g.game?.submit_move(); };
+                new_game.innerText = "Find Game";
             }
         }
-        else
+
+        if (this.game.is_playing())
         {
-            btn2.disabled = true;
-            btn2.innerText = "no game";
+            let submit_button = DomHelper.createButton();
+        
+            if (this.game.status == GameStatus.WaitingForPlayer)
+            {
+                if (!supply)
+                {
+                    throw new Error("cannot get game supply");
+                }
+
+                if (cost > supply)
+                {
+                    submit_button.disabled = true;
+                    submit_button.innerText = "Not enough supply";
+                }
+                else
+                {
+                    submit_button.innerText = "Submit Move";
+                    submit_button.onclick = () => { g.game?.submit_move(); };
+                }
+            }
+            else
+            {
+                submit_button.disabled = true;
+                submit_button.innerText = "Waiting for opponent...";
+            }
+    
+            this.dom_element.appendChild(submit_button);
+            this.submit_button = submit_button;
         }
-
-        this.dom_element.appendChild(btn2);
-        this.submit_button = btn2;
-
-        btn.onclick = () => { g.game?.new_game(); };
-        btn.innerText = "new game";
-        this.dom_element.appendChild(btn);
+        
         let player_name = DomHelper.createTextArea();
         player_name.textContent = this.game.player_name;
         player_name.style.width = "100px";
         player_name.style.resize = "none";
         this.dom_element.appendChild(player_name);
 
+        if (this.game.is_playing())
+        {
+            player_name.readOnly = true;
+        }
+        
+        if (this.game.is_finished())
+        {
+            let text: string;
+
+            if (this.game.status == GameStatus.Tied)
+            {
+                text = 'Game is tied.';
+            }
+            else if (this.game.status == GameStatus.WonByPlayer1 && this.game.player == Player.P1)
+            {
+                text = 'You are victorious!';
+            }
+            else
+            {
+                text = 'You are defeated.';
+            }
+
+            let status = DomHelper.createText(text, {
+                marginLeft: "10px",
+                fontWeight: "bold"
+            });
+            this.dom_element.appendChild(status);
+        }
+
         [Player.P1, Player.P2].forEach(player => {
-            this.dom_element.appendChild(this.render_player(
+            this.dom_element.appendChild(this.player_status(
                 player,
                 this.game.get_player_name(player) || "",
                 supply || 0,
                 this.game.get_player_supply_income(player),
-                player === this.game.player ? cost : null
+                cost,
+                player === this.game.player
             ));
         });
 
-        let btn3 = DomHelper.createButton();
-        btn3.innerText = "last round"
-        this.dom_element.appendChild(btn3);
-
-        let btn4 = DomHelper.createButton();
-        btn4.innerText = "heat map"
-        btn4.onmouseenter = () => { this.game?.render_heat(); };
-        btn4.onmouseleave = () => { this.game?.render_indicators(); };
-        this.dom_element.appendChild(btn4);
+        if (this.game.is_playing())
+        {
+            let last_round = DomHelper.createButton();
+            last_round.innerText = "Last Round"
+            this.dom_element.appendChild(last_round);
+    
+            let heap_map = DomHelper.createButton();
+            heap_map.innerText = "Heat Map"
+            heap_map.onmouseenter = () => { this.game?.render_heat(); };
+            heap_map.onmouseleave = () => { this.game?.render_indicators(); };
+            heap_map.onclick = () => { this.game.always_show_heat = !this.game.always_show_heat; };
+            this.dom_element.appendChild(heap_map);
+        }
     }
 
-    render_player(
+    player_status(
         player: Player,
         name: string,
         supply: number,
         income: number,
-        cost: number | null,
+        cost: number,
+        is_me: boolean
     ): HTMLElement {
         const div = DomHelper.createDiv({
             display: "flex",
@@ -89,20 +147,21 @@ class StatusBar {
             marginLeft: "10px",
             marginRight: "10px",
             alignItems: "center",
-            fontWeight: cost != null ? "bold" : "normal",
+            fontWeight: is_me ? "bold" : "normal",
         });
         div.appendChild(DomHelper.createText(name, {
             color: g.settings.player_color_map.get(player)!
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));
-        if (cost != null) {
-            div.appendChild(DomHelper.createText(cost.toString(), {
-                color: cost > supply ? "red" : "black"
-            }));
-            div.appendChild(DomHelper.createText("/"));
-        }
-        div.appendChild(DomHelper.createText(`${supply} (+${income})`));
+
+        let remaining = is_me ? supply - cost : supply;
+        div.appendChild(DomHelper.createText(remaining.toString(), {
+            color: remaining < 0 ? "red" : "black",
+            marginRight: "5px"
+        }));
+
+        div.appendChild(DomHelper.createText(`(+${income})`));
         return div;
     }
 

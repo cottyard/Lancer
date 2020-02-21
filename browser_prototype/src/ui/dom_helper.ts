@@ -16,7 +16,7 @@ class DomHelper
         return div;
     }
 
-    static createTextArea(style: Style = {}): HTMLElement
+    static createTextArea(style: Style = {}): HTMLTextAreaElement
     {
         const textarea = document.createElement("textarea");
         textarea.id = 'player-name';
