@@ -208,7 +208,7 @@ class Game
         this.board.remove(new Coordinate(2, 8));
         this.board.remove(new Coordinate(3, 8));
         set_out(this.board);
-        this.update_board(this.board);
+        this.render_board();
         this.canvas.paint_background();
         this.action_panel.render();
         this.status_bar.render();
@@ -244,9 +244,8 @@ class Game
         }
     }
 
-    update_board(board: Board<Unit>)
+    render_board()
     {
-        this.board = board;
         if (this.board)
         {
             this.canvas.clear_canvas(this.canvas.st_ctx);
@@ -285,6 +284,11 @@ class Game
         this.session_id = session;
         this.player_name = player_name;
         this.start_query_game();
+    }
+
+    view_last_round()
+    {
+
     }
 
     update_game()
@@ -355,7 +359,16 @@ class Game
                 let round_count: number;
                 let player_supply_map: any;
                 let board_payload: string;
-                [round_count, player_supply_map, board_payload] = JSON.parse(game_payload);
+                let player_actions: string[];
+                [round_count, player_supply_map, board_payload, player_actions] = JSON.parse(game_payload);
+
+                console.log('actions', player_actions);
+
+                for (let player_action_payload of player_actions)
+                {
+                    console.log(PlayerAction.deserialize(player_action_payload));
+                }
+
                 console.log('Round', round_count);
 
                 for (let player in player_supply_map)
@@ -363,7 +376,8 @@ class Game
                     this.player_supply_map.set(deserialize_player(player), player_supply_map[player]);
                 }
 
-                this.update_board(<SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload));
+                this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
+                this.render_board();
                 this.update_player_action();
                 this.stop_query_game();
             });

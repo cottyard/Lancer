@@ -322,15 +322,24 @@ class Action
             throw new Error("Action.cost");
         }
     }
+
+    static deserialize(payload: string): Action
+    {
+        let action_type: string;
+        let unit_type: string;
+        let move_literal: string;
+        [action_type, unit_type, move_literal] = JSON.parse(payload);
+        return new Action(Move.deserialize(move_literal), parseInt(action_type), g.unit_type_by_name.get(unit_type)!);
+    }
 }
 
 enum ActionType
 {
-    Upgrade,
-    Defend,
-    Move,
-    Attack,
-    Recruit
+    Upgrade = 1,
+    Defend = 2,
+    Move = 3,
+    Attack = 4,
+    Recruit = 5
 }
 
 class PlayerAction
@@ -342,6 +351,19 @@ class PlayerAction
     cost(): number
     {
         return this.actions.map((a) => {return a.cost();}).reduce((a, b) => a + b, 0)
+    }
+
+    static deserialize(payload: string): PlayerAction
+    {
+        let s = JSON.parse(payload);
+        let player = deserialize_player(s.shift());
+        let actions = [];
+        for (let action_literal of s)
+        {
+            actions.push(Action.deserialize(action_literal));
+        }
+
+        return new PlayerAction(player, actions);
     }
 }
 

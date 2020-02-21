@@ -37,6 +37,9 @@ class Move:
     def __repr__(self):
         return str(self.position_from) + '->' + str(self.position_to)
 
+    def serialize(self):
+        return self.position_from.serialize() + self.position_to.serialize()
+
 class PlayerMove:
     @classmethod
     def from_literal(self, player, literal):
@@ -63,6 +66,9 @@ class Action:
 
     def get_cost(self):
         return ActionType.cost(self.type, self.unit_type)
+    
+    def serialize(self):
+        return json.dumps([self.type.value, self.unit_type.__name__, self.move.serialize()])
 
 class PlayerAction:
     def __init__(self, player, action_list):
@@ -83,6 +89,10 @@ class PlayerAction:
 
     def __repr__(self):
         return ','.join([str(a) for a in self.action_list])
+    
+    def serialize(self):
+        return json.dumps([self.player] + [
+            action.serialize() for action in self.action_list])
 
 class ActionType(Enum):
     Upgrade = 1
@@ -153,6 +163,9 @@ class Position:
 
     def __hash__(self):
         return self.x * 10 + self.y
+
+    def serialize(self):
+        return f'{self.x}{self.y}'
 
 class Unit:
     display = ""

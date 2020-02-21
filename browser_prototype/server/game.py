@@ -111,8 +111,12 @@ class Game:
         return rule.count_unit(self.board, player)
 
     def serialize(self):
-        return json.dumps([self.round_count, self.supply, self.board.serialize()])
-        #self.last_player_action
+        return json.dumps([
+            self.round_count, 
+            self.supply, 
+            self.board.serialize(), 
+            [player_action.serialize() for player_action in self.last_player_action.values() if player_action is not None]
+        ])
     
     @classmethod
     def deserialize(cls, payload):

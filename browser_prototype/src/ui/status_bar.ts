@@ -20,7 +20,6 @@ class StatusBar {
             justifyContent: "flex-end",
         });
 
-        console.log(this.game.status);
         if (!this.game.is_playing())
         {
             let new_game = DomHelper.createButton();
@@ -123,13 +122,15 @@ class StatusBar {
         if (this.game.is_playing())
         {
             let last_round = DomHelper.createButton();
-            last_round.innerText = "Last Round"
+            last_round.innerText = "What Happend"
             this.dom_element.appendChild(last_round);
+            last_round.onmouseenter = () => { this.game.view_last_round(); };
+            last_round.onmouseleave = () => { this.game.render_board(); };
     
             let heap_map = DomHelper.createButton();
-            heap_map.innerText = "Heat Map"
-            heap_map.onmouseenter = () => { this.game?.render_heat(); };
-            heap_map.onmouseleave = () => { this.game?.render_indicators(); };
+            heap_map.innerText = "Heat"
+            heap_map.onmouseenter = () => { this.game.render_heat(); };
+            heap_map.onmouseleave = () => { this.game.render_indicators(); };
             heap_map.onclick = () => { this.game.always_show_heat = !this.game.always_show_heat; };
             this.dom_element.appendChild(heap_map);
         }
