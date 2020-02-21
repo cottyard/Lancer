@@ -154,7 +154,6 @@ def count_unit(board, player, unit_type=None):
 
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
-    print('moved:', move.position_from)
     board.iterate_units(lambda u, position: print(type(u), u.owner, position))
     if unit is None:
         if move.position_from.y != spawn_row[player]:
