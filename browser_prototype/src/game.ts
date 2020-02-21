@@ -226,6 +226,7 @@ class Game
             this.session_id = session;
             this.start_query_game();
             this.status = GameStatus.InQueue;
+            this.status_bar.render();
         });
     }
 
@@ -380,7 +381,6 @@ class Game
     is_in_queue(): boolean
     {
         return this.status == GameStatus.InQueue;
-        
     }
     
     is_finished(): boolean

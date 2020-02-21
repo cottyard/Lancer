@@ -1,5 +1,4 @@
 class StatusBar {
-
     dom_element: HTMLDivElement;
     game: Game;
     submit_button: HTMLButtonElement | null = null;
@@ -107,16 +106,19 @@ class StatusBar {
             this.dom_element.appendChild(status);
         }
 
-        [Player.P1, Player.P2].forEach(player => {
-            this.dom_element.appendChild(this.player_status(
-                player,
-                this.game.get_player_name(player) || "",
-                supply || 0,
-                this.game.get_player_supply_income(player),
-                cost,
-                player === this.game.player
-            ));
-        });
+        if (!this.game.is_not_started() && !this.game.is_in_queue())
+        {
+            [Player.P1, Player.P2].forEach(player => {
+                this.dom_element.appendChild(this.player_status(
+                    player,
+                    this.game.get_player_name(player) || "",
+                    supply || 0,
+                    this.game.get_player_supply_income(player),
+                    cost,
+                    player === this.game.player
+                ));
+            });
+        }
 
         if (this.game.is_playing())
         {
@@ -149,7 +151,7 @@ class StatusBar {
             alignItems: "center",
             fontWeight: is_me ? "bold" : "normal",
         });
-        div.appendChild(DomHelper.createText(name, {
+        div.appendChild(DomHelper.createText(is_me ? 'Me' : name, {
             color: g.settings.player_color_map.get(player)!
         }));
         div.appendChild(DomHelper.createText("🍞", {
