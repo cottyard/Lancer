@@ -327,11 +327,9 @@ class Game
                 let game_id: string;
                 let game_status: number;
                 let player_name_map: any;
-                let brief: string;
 
-                [game_payload, game_id, game_status, player_name_map, brief] = JSON.parse(serialized_game);
+                [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
                 console.log('loading game', game_id)
-                console.log(brief)
 
                 switch (game_status)
                 {

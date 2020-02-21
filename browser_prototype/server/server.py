@@ -5,7 +5,6 @@ import uuid
 import os
 import sys
 import logging
-import net
 import json
 import entity
 
@@ -44,20 +43,11 @@ def get_game(game_id):
     except KeyError:
         abort(404)
     else:
-        round_briefs = []
-        if server_game.game.round_brief is not None:
-            for clash_brief in server_game.game.round_brief.clash_briefs:
-                round_briefs.append(clash_brief.brief())
-
-            for battle_brief in server_game.game.round_brief.battle_briefs:
-                round_briefs.append(battle_brief.brief())
-
         return json.dumps([
             server_game.game.serialize(),
             str(server_game.game_id),
             server_game.status.value,
-            server_game.player_name_map,
-            '\n'.join(round_briefs)
+            server_game.player_name_map
         ])
 
 @app.route('/session/<string:session_id>/rollback', methods=['POST'])

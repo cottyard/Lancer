@@ -36,7 +36,6 @@ class Game:
             player_2: Game.supply_initial
         }
 
-        self.round_brief = None
         self.round_count = 0
 
     def player_moved(self, player):
@@ -75,12 +74,11 @@ class Game:
         for player_move in player_move_list:
             self.validate_player_move(player_move)
 
-        next_board, player_action_map, round_brief = \
+        next_board, player_action_map = \
             rule.make_move(self.board, player_move_list)
 
         next_game = Game(next_board)
         next_game.last_player_action = player_action_map
-        next_game.round_brief = round_brief
         next_game.round_count = self.round_count + 1
 
         for player_action in player_action_map.values():
