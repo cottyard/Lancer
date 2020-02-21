@@ -27,9 +27,11 @@ class Game
 
     board: Board<Unit>;
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
-    player_name_map: Map<Player, string> = new Map<Player, string>();
-    player_supply_map: Map<Player, number> = new Map<Player, number>();
+    player_names: Map<Player, string> = new Map<Player, string>();
+    supplies: Map<Player, number> = new Map<Player, number>();
     status: GameStatus = GameStatus.NotStarted;
+    last_round_actions: PlayerAction[] = [];
+    last_round_board: Board<Unit> | null = null;
 
     session_id: string | null = null;
     latest_game_id: string | null = null;
@@ -234,7 +236,6 @@ class Game
     {
         if (this.current_game_id && this.player_move)
         {
-            console.log('submitting', this.player_move.serialize());
             submit_move(this.current_game_id, this.player_move, (res: string) => {
                 console.log('submit:', res)
                 this.start_query_game();
@@ -244,12 +245,13 @@ class Game
         }
     }
 
-    render_board()
+    render_board(board: Board<Unit> | null = null)
     {
-        if (this.board)
+        board = board || this.board;
+        if (board)
         {
             this.canvas.clear_canvas(this.canvas.st_ctx);
-            this.board.iterate_units((unit, coord) => {
+            board.iterate_units((unit, coord) => {
                 this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
             });
         }
@@ -288,7 +290,16 @@ class Game
 
     view_last_round()
     {
+        if (!this.last_round_board)
+        {
+            return;
+        }
 
+        this.render_board(this.last_round_board);
+        for (let player_action of this.last_round_actions)
+        {
+            this.canvas.paint_actions(player_action, this.board);
+        }
     }
 
     update_game()
@@ -345,7 +356,7 @@ class Game
                         this.update_player(player);
                         player_name_check = true;
                     }
-                    this.player_name_map.set(player, name);
+                    this.player_names.set(player, name);
                 }
 
                 if (!player_name_check)
@@ -362,20 +373,22 @@ class Game
                 let player_actions: string[];
                 [round_count, player_supply_map, board_payload, player_actions] = JSON.parse(game_payload);
 
-                console.log('actions', player_actions);
-
+                console.log('Round', round_count);
+                
+                this.last_round_actions = [];
                 for (let player_action_payload of player_actions)
                 {
-                    console.log(PlayerAction.deserialize(player_action_payload));
+                    let player_action = PlayerAction.deserialize(player_action_payload);
+                    this.last_round_actions.push(player_action);
                 }
-
-                console.log('Round', round_count);
 
                 for (let player in player_supply_map)
                 {
-                    this.player_supply_map.set(deserialize_player(player), player_supply_map[player]);
+                    this.supplies.set(deserialize_player(player), player_supply_map[player]);
                 }
 
+                this.last_round_board = this.board;
+                
                 this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
                 this.render_board();
                 this.update_player_action();
@@ -411,11 +424,11 @@ class Game
     }
 
     get_player_name(player: Player): string | undefined {
-        return this.player_name_map.get(player);
+        return this.player_names.get(player);
     }
 
     get_player_supply(player: Player): number | undefined {
-        return this.player_supply_map.get(player);
+        return this.supplies.get(player);
     }
 
     get_player_supply_income(player: Player): number {
