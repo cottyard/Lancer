@@ -206,26 +206,10 @@ class Game
 
     run()
     {
-        let man = new Spearman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
-        man.endow(new Skill(0, -2));
-        this.board.put(new Coordinate(1,2), man);
-        let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
-        man2.perfect.as_list().forEach(s => {man2.endow(s);});
-        this.board.put(new Coordinate(2,2), man2);
-        let man3 = new Warrior(Player.P1, <BasicUnit>this.board.at(new Coordinate(0,7)));
-        man3.endow(new Skill(0, -2));
-        this.board.put(new Coordinate(0,2), man3);
-        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
+        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
         lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
-        this.board.put(new Coordinate(3,2), lancer);
-        let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
-        knight.endow(new Skill(1, -1));
-        this.board.put(new Coordinate(4,2), knight);
-        this.board.remove(new Coordinate(0, 8));
-        this.board.remove(new Coordinate(1, 8));
-        this.board.remove(new Coordinate(2, 8));
-        this.board.remove(new Coordinate(3, 8));
-        set_out(this.board);
+        this.board.put(new Coordinate(4,4), lancer);
+
         this.render_board();
         this.canvas.paint_background();
         this.action_panel.render();

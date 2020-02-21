@@ -297,7 +297,7 @@
 
         let ear_left = new Position(-10, -head_height);
         let ear_right = new Position(body_size_x, -head_height);
-        let ear_top = new Position(body_size_x, -head_height - 18 - ear_size);
+        let ear_top = new Position(body_size_x, -head_height - 20 - ear_size);
 
         this.ctx.lineWidth = width;
         this.set_fill_color(color);
@@ -373,16 +373,14 @@
         this.circle(new Position(size_x / 2 * 0.8, size_y / 2), tyre_size, width, g.const.STYLE_WHITE);
     }
 
-    halo(angle: Angle, color: string)
+    halo(angle: Angle, color: string, radius: number)
     {
         let width = 4;
         this.set_color(color);
         this.ctx.globalAlpha = 0.5;
 
         let halo_center = new Position(0, 0);
-        let halo_radius = g.settings.grid_size / 2;
-
-        this.arc(halo_center, halo_radius, angle, width);
+        this.arc(halo_center, radius, angle, width);
 
         this.ctx.globalAlpha = 1;
     }
