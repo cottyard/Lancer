@@ -27,6 +27,9 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
 abstract class CanvasUnit
 {
     color: string;
+    
+    static halo_size_large = 45;
+    static halo_size_small = 30;
 
     constructor(protected unit: Unit)
     {
@@ -94,7 +97,7 @@ class CanvasSoldier extends CanvasHaloUnit
         [new Skill(-1, 0), HaloDirection.Left],
         [new Skill(1, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void
     {
@@ -110,7 +113,7 @@ class CanvasArcher extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -128,7 +131,7 @@ class CanvasBarbarian extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -151,7 +154,7 @@ class CanvasWarrior extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_small;
+    halo_size = CanvasUnit.halo_size_small;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -177,7 +180,7 @@ class CanvasRider extends CanvasHaloUnit
         [new Skill(-2, 1), HaloDirection.DownLeftLeft],
         [new Skill(2, 1), HaloDirection.DownRightRight]
     ]);
-    halo_size = GameCanvas.halo_size_small;
+    halo_size = CanvasUnit.halo_size_small;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -193,7 +196,7 @@ class CanvasLancer extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -212,7 +215,7 @@ class CanvasKnight extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -235,7 +238,7 @@ class CanvasSpearman extends CanvasHaloUnit
         [new Skill(-1, 0), HaloDirection.Left],
         [new Skill(1, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -276,7 +279,7 @@ class CanvasSwordsman extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = GameCanvas.halo_size_small;
+    halo_size = CanvasUnit.halo_size_small;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -295,7 +298,7 @@ class CanvasWagon extends CanvasHaloUnit
         [new Skill(-1, 0), HaloDirection.Left],
         [new Skill(1, 0), HaloDirection.Right]
     ]);
-    halo_size = GameCanvas.halo_size_large;
+    halo_size = CanvasUnit.halo_size_large;
 
     paint_unit(renderer: Renderer): void
     {

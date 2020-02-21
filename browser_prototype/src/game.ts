@@ -15,6 +15,7 @@ class Game
     action_panel: ActionPanel;
     status_bar: StatusBar;
 
+    // TODO: add setters to these members to auto trigger rendering
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
     options_capable: Coordinate[] = [];
@@ -22,9 +23,6 @@ class Game
     always_show_heat: boolean = false;
 
     player: Player = Player.P1;
-    player_move: PlayerMove = new PlayerMove(this.player);
-    player_action: PlayerAction = new PlayerAction(this.player);
-
     board: Board<Unit>;
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
     player_names: Map<Player, string> = new Map<Player, string>();
@@ -32,6 +30,9 @@ class Game
     status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
     last_round_board: Board<Unit> | null = null;
+
+    player_move: PlayerMove = new PlayerMove(this.player);
+    player_action: PlayerAction = new PlayerAction(this.player);
 
     session_id: string | null = null;
     latest_game_id: string | null = null;
@@ -60,6 +61,7 @@ class Game
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
+        this.canvas.animate.addEventListener("mouseleave", this.clear_grid_incicators.bind(this));
         // this.canvas.animate.addEventListener("touchstart",  this.on_mouse_down.bind(this));
         // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
         // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
@@ -69,24 +71,23 @@ class Game
 
     render_indicators(): void
     {
-        this.canvas.clear_canvas(this.canvas.am_ctx);
-        this.canvas.clear_canvas(this.canvas.am_ctx_t);
+        this.clear_animate();
 
         for (let option of this.options_upgrade)
         {
-            this.canvas.paint_indicator(option, g.const.STYLE_CYAN, 2);
+            this.canvas.paint_grid_indicator(option, g.const.STYLE_CYAN, 2);
         }
         for (let option of this.options_capable)
         {
-            this.canvas.paint_indicator(option);
+            this.canvas.paint_grid_indicator(option);
         }
         if (this.current)
         {
-            this.canvas.paint_indicator(this.current);
+            this.canvas.paint_grid_indicator(this.current);
         }
         if (this.selected)
         {
-            this.canvas.paint_indicator(this.selected);
+            this.canvas.paint_grid_indicator(this.selected);
         }
         if (this.player_action)
         {
@@ -96,6 +97,21 @@ class Game
         {
             this.render_heat();
         }
+    }
+
+    clear_grid_incicators(): void
+    {
+        this.current = null;
+        this.selected = null;
+        this.options_capable = [];
+        this.options_upgrade = [];
+        this.render_indicators();
+    }
+
+    clear_animate(): void
+    {
+        this.canvas.clear_canvas(this.canvas.am_ctx);
+        this.canvas.clear_canvas(this.canvas.am_ctx_t);
     }
     
     render_heat(): void

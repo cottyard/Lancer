@@ -10,9 +10,6 @@ class GameCanvas
     am_ctx: CanvasRenderingContext2D;
     am_ctx_t: CanvasRenderingContext2D;
 
-    static halo_size_large = 45;
-    static halo_size_small = 30;
-
     constructor(background: HTMLCanvasElement, static_: HTMLCanvasElement, animate: HTMLCanvasElement, animate_transparent: HTMLCanvasElement) 
     {
         this.background = background;
@@ -89,7 +86,7 @@ class GameCanvas
         });
     }
     
-    paint_indicator(coordinate: Coordinate, style: string | null = null, width: number = 3)
+    paint_grid_indicator(coordinate: Coordinate, style: string | null = null, width: number = 3)
     {
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 15;

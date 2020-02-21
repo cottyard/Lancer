@@ -72,7 +72,7 @@ class StatusBar {
         
         let player_name = DomHelper.createTextArea();
         player_name.textContent = this.game.player_name;
-        player_name.style.width = "100px";
+        player_name.style.width = "80px";
         player_name.style.resize = "none";
         this.dom_element.appendChild(player_name);
 
