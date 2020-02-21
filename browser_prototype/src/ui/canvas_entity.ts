@@ -66,11 +66,6 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     get_halo_angles(): Angle[]
     {
-        if (this.unit.is_perfect())
-        {
-            return [];
-        }
-
         let directions: Direction[] = this.unit.current.as_list().map(
             (skill: Skill) => {
                 return this.skill_direction.get(skill);
@@ -84,6 +79,11 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     paint_halo(renderer: Renderer): void
     {
+        if (this.unit.is_advanced() && this.unit.is_perfect())
+        {
+            return;
+        }
+
         for (let angle of this.get_halo_angles())
         {
             renderer.halo(angle, this.color);

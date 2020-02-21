@@ -34,7 +34,6 @@ class DomHelper
     static createButton(style: Style = {}): HTMLButtonElement
     {
         const btn = document.createElement("button");
-        btn.onclick = () => { g.game?.new_match(); };
         DomHelper.applyStyle(btn, style);
         return btn;
     }

@@ -9,15 +9,22 @@ class Game
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
 
-    player_move: PlayerMove;
-    player_action: PlayerAction;
-    player: Player;
-    board: Board<Unit>;
+    player: Player = Player.P1;
+    player_move: PlayerMove = new PlayerMove(this.player);
+    player_action: PlayerAction = new PlayerAction(this.player);
 
-    player_name: string | null = null;
+    board: Board<Unit>;
+    player_name: string = `player${Math.floor(10000 * Math.random())}`;
+    player_name_map: Map<Player, string> = new Map<Player, string>();
+    player_supply_map: Map<Player, number> = new Map<Player, number>();
+
     session_id: string | null = null;
     latest_game_id: string | null = null;
     current_game_id: string | null = null;
+    query_handle: number | null = null;
+
+    supply_wagon = 2
+    supply_basic_incremental = 16
 
     constructor()
     {
@@ -41,17 +48,8 @@ class Game
         // this.canvas.animate.addEventListener("touchstart",  this.on_mouse_down.bind(this));
         // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
         // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
-
-        this.player = Player.P1;
-        this.player_move = new PlayerMove(this.player);
-        this.player_action = new PlayerAction(this.player, []);
-
         let board_ctor = create_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         this.board = new board_ctor();
-
-        this.canvas.paint_background();
-
-        setInterval(this.update_game.bind(this), 2000);
     }
 
     render_indicators(): void
@@ -127,7 +125,6 @@ class Game
             }
             catch (e)
             {
-                console.log(e);
                 this.player_move.pop();
                 this.update_player_action();
             }
@@ -173,24 +170,35 @@ class Game
 
     run()
     {
-        //set_out(this.board);
-        //console.log('standard', create_board_ctor(UnitConstructor).deserialize(this.board.serialize()).serialize());
-        
-        //this.action_panel.render();
+        this.canvas.paint_background();
+        this.action_panel.render();
         this.status_bar.render();
     }
 
-    new_match()
+    new_game()
     {
         let player_name = (<HTMLTextAreaElement>document.getElementById('player-name'))?.value;
         if (player_name)
         {
             this.player_name = player_name;
         }
-        new_match(player_name, (session: string) => {
-            console.log('session', session)
+        new_game(player_name, (session: string) => {
+            console.log('session:', session)
             this.session_id = session;
+            this.start_query_game();
         });
+    }
+
+    submit_move()
+    {
+        if (this.current_game_id && this.player_move)
+        {
+            console.log('submitting', this.player_move.serialize());
+            submit_move(this.current_game_id, this.player_move, (res: string) => {
+                console.log('submit:', res)
+                this.start_query_game();
+            });
+        }
     }
 
     update_board(board: Board<Unit>)
@@ -205,12 +213,36 @@ class Game
         }
     }
 
+    start_query_game()
+    {
+        if (!this.query_handle)
+        {
+            this.query_handle = setInterval(this.update_game.bind(this), 2000);
+        }
+    }
+    
+    stop_query_game()
+    {
+        if (this.query_handle)
+        {
+            clearInterval(this.query_handle);
+            this.query_handle = null;
+        }
+    }
+
+    update_player(player: Player)
+    {
+        this.player = player;
+        this.player_move = new PlayerMove(player);
+        this.player_action = new PlayerAction(player);
+    }
+
     update_game()
     {
         if (this.session_id)
         {
             query_match(this.session_id, (game_id: string) => {
-                console.log('game', game_id)
+                console.log('latest game:', game_id)
                 this.latest_game_id = game_id;
             });
         }
@@ -224,41 +256,62 @@ class Game
                     let game_id: string;
                     let game_status: number;
                     let player_name_map: any;
+                    let brief: string;
 
-                    [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
-                    console.log(game_payload)
-                    console.log(game_id)
-                    console.log(game_status)
-                    console.log(player_name_map)
+                    [game_payload, game_id, game_status, player_name_map, brief] = JSON.parse(serialized_game);
+                    console.log('loading game', game_id)
+                    console.log(brief)
+
+                    let player_name_check = false;
+                    for (let p in player_name_map)
+                    {
+                        let player = deserialize_player(p);
+                        let name = player_name_map[p];
+                        if (name == this.player_name)
+                        {
+                            this.update_player(player);
+                            player_name_check = true;
+                        }
+                        this.player_name_map.set(player, name);
+                    }
+
+                    if (!player_name_check)
+                    {
+                        throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
+                    }
 
                     this.current_game_id = game_id;
 
+                    this.player_move.moves = [];
+                    this.update_player_action();
+
                     let round_count: number;
-                    let supply: any;
+                    let player_supply_map: any;
                     let board_payload: string;
-                    [round_count, supply, board_payload] = JSON.parse(game_payload);
+                    [round_count, player_supply_map, board_payload] = JSON.parse(game_payload);
+
+                    for (let player in player_supply_map)
+                    {
+                        this.player_supply_map.set(deserialize_player(player), player_supply_map[player]);
+                    }
 
                     this.update_board(<Board<Unit>>create_board_ctor(UnitConstructor).deserialize(board_payload));
-                    console.log(this.board);
+                    this.status_bar.render();
+                    this.stop_query_game();
                 });
-
             }
         }
     }
 
-    get_player_name(player: Player): string {
-        // TODO: placeholder
-        return player === Player.P1 ? "zc" : "xyt";
+    get_player_name(player: Player): string | undefined {
+        return this.player_name_map.get(player);
     }
 
-    get_player_supply(player: Player): number {
-        // TODO: placeholder
-        return 20 + player;
+    get_player_supply(player: Player): number | undefined {
+        return this.player_supply_map.get(player);
     }
 
     get_player_supply_income(player: Player): number {
-        // TODO: placeholder
-        return 18 + player;
+        return Rule.count_unit(this.board, player, Wagon) * this.supply_wagon + this.supply_basic_incremental;
     }
 }
-

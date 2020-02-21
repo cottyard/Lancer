@@ -10,8 +10,8 @@ class Move:
             x1, y1, x2, y2 = literal
             x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
 
-            position_1 = Position(x1 - 1, y1 - 1)
-            position_2 = Position(x2 - 1, y2 - 1)
+            position_1 = Position(x1, y1)
+            position_2 = Position(x2, y2)
         except:
             raise InvalidParameter("move literal")
         else:

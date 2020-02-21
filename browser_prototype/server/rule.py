@@ -17,6 +17,10 @@ class ClashBrief:
     def __init__(self, unit_brief_map):
         self.unit_brief_map = unit_brief_map
 
+    def brief(self):
+        return f'{self.unit_brief_map[player_1].brief()} and ' + \
+            f'{self.unit_brief_map[player_2].brief()} killed each other.'
+
 class BattleBrief:
     def __init__(self, position):
         self.position = position
@@ -32,6 +36,32 @@ class Invasion(BattleBrief):
         self.unit_defenders = unit_defenders
         self.successful = successful
         self.escaped = escaped
+    
+    def brief(self):
+        invasive_squad = [self.unit_invader] + self.unit_reinforcers
+        if self.successful:
+            if self.unit_invaded is None:
+                action = 'moved to'
+            else:
+                action = 'invaded'
+
+            if self.unit_defenders:
+                text = f'{brief_squad(invasive_squad)} {action} [{self.position}] and ' + \
+                    f'outfought {brief_squad(self.unit_defenders)}. '
+            else:
+                text = f'{brief_squad(invasive_squad)} {action} [{self.position}]. '
+
+            if self.unit_invaded is not None:
+                if self.escaped:
+                    text += f'{self.unit_invaded.brief()} escaped.'
+                else:
+                    text += f'{self.unit_invaded.brief()} was killed.'
+        else:
+            text = f'{brief_squad(invasive_squad)} was defeated at ' + \
+                f'[{self.position}] by {brief_squad(self.unit_defenders)}. ' + \
+                f'{self.unit_invader.brief()} was killed.'
+        
+        return text
 
 class SkirmishTied(BattleBrief):
     def __init__(
@@ -42,6 +72,13 @@ class SkirmishTied(BattleBrief):
         self.unit_followers_1 = unit_followers_1
         self.unit_followers_2 = unit_followers_2
 
+    def brief(self):
+        text = f'A skirmish at [{self.position}] between ' + \
+            f'{brief_squad([self.unit_lead_1] + self.unit_followers_1)} and ' + \
+            f'{brief_squad([self.unit_lead_2] + self.unit_followers_2)} was tied. ' + \
+            f'{self.unit_lead_1.brief()} and {self.unit_lead_2.brief()} were killed.'
+        return text
+
 class Skirmish(BattleBrief):
     def __init__(
             self, position, unit_victorious, units_victorious, unit_defeated, units_defeated):
@@ -51,11 +88,24 @@ class Skirmish(BattleBrief):
         self.unit_defeated = unit_defeated
         self.units_defeated = units_defeated
 
+    def brief(self):
+        text = f'A skirmish at [{self.position}] between ' + \
+            f'{brief_squad([self.unit_victorious] + self.units_victorious)} and ' + \
+            f'{brief_squad([self.unit_defeated] + self.units_defeated)} was won by ' + \
+            f'{self.unit_victorious.brief()}. {self.unit_defeated.brief()} was killed.'
+        return text
+
 class UnitBrief:
     def __init__(self, unit_type, player, position):
         self.unit_type = unit_type
         self.player = player
         self.position = position
+
+    def __repr__(self):
+        return f'{self.unit_type.__name__}[{self.position}]'
+
+    def brief(self):
+        return f'{self.unit_type.__name__}' + f'[{self.position}]'
 
 def as_brief(unit, player, position):
     if unit is None:
@@ -247,8 +297,8 @@ def find_unit(board, type_, owner):
     return found_position
 
 spawn_row = {
-    player_1: 0,
-    player_2: board_size_y - 1
+    player_1: board_size_y - 1,
+    player_2: 0
 }
 
 def count_unit(board, player, unit_type=None):
@@ -263,6 +313,8 @@ def count_unit(board, player, unit_type=None):
 
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
+    print('moved:', move.position_from)
+    board.iterate_units(lambda u, position: print(type(u), u.owner, position))
     if unit is None:
         if move.position_from.y != spawn_row[player]:
             raise InvalidMoveException("grid is empty")

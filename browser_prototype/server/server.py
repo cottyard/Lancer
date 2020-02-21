@@ -7,6 +7,7 @@ import sys
 import logging
 import net
 import json
+import entity
 
 logging.basicConfig(level=logging.DEBUG)
 static_dir = os.path.join(os.path.dirname(os.getcwd()), 'target')
@@ -43,11 +44,20 @@ def get_game(game_id):
     except KeyError:
         abort(404)
     else:
+        round_briefs = []
+        if server_game.game.round_brief is not None:
+            for clash_brief in server_game.game.round_brief.clash_briefs:
+                round_briefs.append(clash_brief.brief())
+
+            for battle_brief in server_game.game.round_brief.battle_briefs:
+                round_briefs.append(battle_brief.brief())
+
         return json.dumps([
             server_game.game.serialize(),
             str(server_game.game_id),
             server_game.status.value,
-            server_game.player_name_map
+            server_game.player_name_map,
+            '\n'.join(round_briefs)
         ])
 
 @app.route('/session/<string:session_id>/rollback', methods=['POST'])
@@ -71,16 +81,18 @@ def get_game_id(session_id):
 @app.route('/game/<string:game_id>/move', methods=['POST'])
 def submit_player_move(game_id):
     game_id = uuid.UUID(game_id)
-    #command = net.unpack_command(request.get_json())
-    #assert(type(command) is net.PlayerMoveCommand)
-    # player = command.player_move.player
-    # print(f"Received player {player} move: {command.player_move}.")
-    # if game_id not in game_player_move_map:
-    #     game_player_move_map[game_id] = ServerGamePlayerMove()
-    # game_player_move_map[game_id].update(player, command.player_move)
+    data = json.loads(request.data)
+    player = int(data[0])
+    moves_literal = ' '.join(data[1:])
 
-    # Session.process_sessions()
-    # return 'done'
+    player_move = entity.PlayerMove.from_literal(player, moves_literal)
+    logging.info(f"Received player {player} move: {player_move}.")
+
+    if game_id not in game_player_move_map:
+        game_player_move_map[game_id] = ServerGamePlayerMove()
+    game_player_move_map[game_id].update(player, player_move)
+    Session.process_sessions()
+    return 'done'
 
 @app.route('/match/<string:player_name>', methods=['POST'])
 def new_game(player_name):
@@ -182,8 +194,10 @@ class Session:
             next_server_game = server_game.next(sg_player_move)
 
             if next_server_game is None:
-                # this should never happen
+                # when this happen, there is a bug 
+                # with client move validation
                 sg_player_move.reset()
+                return
             
             session.update(next_server_game.game_id)
 

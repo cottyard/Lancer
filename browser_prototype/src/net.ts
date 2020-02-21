@@ -1,6 +1,6 @@
 type callback = (res: string) => void;
 
-function remote_post(url: string, next: callback): void
+function remote_post(url: string, next: callback, data: string | null = null): void
 {
     let req = new XMLHttpRequest();
     req.open('POST', `${g.settings.server_url}/${url}`);
@@ -24,7 +24,7 @@ function remote_post(url: string, next: callback): void
         console.log('timeout', e);
     }
 
-    req.send();
+    req.send(data);
 }
 
 function remote_get(url: string, next: callback): void
@@ -54,9 +54,14 @@ function remote_get(url: string, next: callback): void
     req.send();
 }
 
-function new_match(player_name: string, next: callback)
+function new_game(player_name: string, next: callback)
 {
     remote_post(`match/${player_name}`, next);
+}
+
+function submit_move(game_id: string, player_move: PlayerMove, next: callback)
+{
+    remote_post(`game/${game_id}/move`, next, player_move.serialize());
 }
 
 function query_match(session_id: string, next: callback)

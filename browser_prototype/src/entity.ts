@@ -1,6 +1,6 @@
 class InvalidParameter extends Error {}
 
-class Coordinate implements IHashable
+class Coordinate implements IHashable, ISerializable
 {
     constructor(public x: number, public y: number)
     {
@@ -36,6 +36,16 @@ class Coordinate implements IHashable
     {
         return `Coordinate(${this.x},${this.y})`;
     }
+
+    serialize(): string
+    {
+        return `${this.x}${this.y}`;
+    }
+
+    static deserialize(payload: string): Coordinate
+    {
+        return new Coordinate(parseInt(payload[0]), parseInt(payload[1]));
+    }
 }
 
 class Skill implements IHashable
@@ -55,7 +65,7 @@ class Skill implements IHashable
     }
 }
 
-class SkillSet
+class SkillSet implements ISerializable
 {
     private map: boolean[][];
 
@@ -210,7 +220,17 @@ enum Player
     P2 = 2
 }
 
-class Move
+function deserialize_player(payload: string): Player
+{
+    return Player[<keyof typeof Player>('P' + payload)];
+}
+
+function serialize_player(player: Player)
+{
+    return JSON.stringify(player);
+}
+
+class Move implements ISerializable
 {
     constructor(public from: Coordinate, public to: Coordinate)
     {
@@ -225,9 +245,19 @@ class Move
     {
         return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
     }
+
+    serialize(): string
+    {
+        return this.from.serialize() + this.to.serialize();
+    }
+
+    static deserialize(payload: string)
+    {
+        return new Move(Coordinate.deserialize(payload.slice(0, 2)), Coordinate.deserialize(payload.slice(2, 4)));
+    }
 }
 
-class PlayerMove
+class PlayerMove implements ISerializable
 {
     constructor(public player: Player, public moves: Move[] = [])
     {
@@ -241,6 +271,21 @@ class PlayerMove
     pop(): void
     {
         this.moves.pop();
+    }
+
+    serialize(): string
+    {
+        let s = this.moves.map(m => m.serialize());
+        s.unshift(serialize_player(this.player));
+        return JSON.stringify(s);
+    }
+
+    static deserialize(payload: string): PlayerMove
+    {
+        let data = JSON.parse(payload);
+        let player = deserialize_player(data.shift());
+        let moves = data.map((m: string) => Move.deserialize(m));
+        return new PlayerMove(player, moves);
     }
 }
 
@@ -290,7 +335,7 @@ enum ActionType
 
 class PlayerAction
 {
-    constructor(public player: Player, public actions: Action[])
+    constructor(public player: Player, public actions: Action[] = [])
     {
     }
 
@@ -300,7 +345,7 @@ class PlayerAction
     }
 }
 
-abstract class Unit
+abstract class Unit implements ISerializable
 {
     readonly perfect: SkillSet;
     current: SkillSet;
@@ -363,6 +408,11 @@ abstract class Unit
         return this.current.equals(this.perfect);
     }
 
+    is_advanced(): boolean
+    {
+        return false;
+    }
+
     static from_skill(player: Player, skill: Skill): Unit | null
     {
         let cons = this.which_has_skill(g.spawnable_unit_types, skill);
@@ -398,7 +448,6 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
 {
     static deserialize(payload: string): Unit
     {
-        console.log(payload);
         let display: string, owner: string, current: string;
         [display, owner, current] = <[string, string, string]>JSON.parse(payload);
         
@@ -407,7 +456,7 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
         {
             throw new Error('Unit.deserialize: no constructor');
         }
-        let unit = new type(Player[<keyof typeof Player>('P' + owner)]);
+        let unit = new type(deserialize_player(owner));
         unit.current = SkillSet.deserialize(current);
         return unit;
     }
@@ -449,6 +498,11 @@ abstract class AdvancedUnit extends UnitConstructor
         {
             this.current = was.current.copy();
         }
+    }
+
+    is_advanced(): boolean
+    {
+        return true;
     }
 }
 
