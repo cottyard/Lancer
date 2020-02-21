@@ -296,6 +296,7 @@ class Game
         }
 
         this.render_board(this.last_round_board);
+        this.clear_animate();
         for (let player_action of this.last_round_actions)
         {
             this.canvas.paint_actions(player_action, this.board);

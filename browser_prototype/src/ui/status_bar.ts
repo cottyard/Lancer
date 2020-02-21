@@ -10,7 +10,6 @@ class StatusBar {
 
     render() {
         let cost = this.game.player_action.cost();
-        let supply = this.game.get_player_supply(this.game.player);
         
         this.dom_element.innerHTML = "";
 
@@ -44,6 +43,7 @@ class StatusBar {
         
             if (this.game.status == GameStatus.WaitingForPlayer)
             {
+                let supply = this.game.get_player_supply(this.game.player);
                 if (!supply)
                 {
                     throw new Error("cannot get game supply");
@@ -111,7 +111,7 @@ class StatusBar {
                 this.dom_element.appendChild(this.player_status(
                     player,
                     this.game.get_player_name(player) || "",
-                    supply || 0,
+                    this.game.get_player_supply(player) || 0,
                     this.game.get_player_supply_income(player),
                     cost,
                     player === this.game.player
@@ -125,7 +125,10 @@ class StatusBar {
             last_round.innerText = "What Happend"
             this.dom_element.appendChild(last_round);
             last_round.onmouseenter = () => { this.game.view_last_round(); };
-            last_round.onmouseleave = () => { this.game.render_board(); };
+            last_round.onmouseleave = () => { 
+                this.game.render_board();
+                this.game.render_indicators();
+            };
     
             let heap_map = DomHelper.createButton();
             heap_map.innerText = "Heat"
