@@ -105,7 +105,13 @@ class Game
 
     on_mouse_down(event: MouseEvent): void
     {
-        this.selected = this.get_coordinate(event);
+        let coord = this.get_coordinate(event);
+        let unit = this.board.at(coord);
+        if (unit && unit.owner != this.player)
+        {
+            return;
+        }
+        this.selected = coord;
     }
     
     on_mouse_up(event: MouseEvent): void
@@ -139,6 +145,7 @@ class Game
         this.player_action = Rule.validate_player_move(this.board, this.player_move);
         this.action_panel.render();
         this.status_bar.render();
+        this.render_indicators();
     }
 
     update_options(coord: Coordinate)
@@ -146,7 +153,7 @@ class Game
         this.options_capable = [];
         this.options_upgrade = [];
         let unit = this.board.at(coord);
-        if (!unit || unit.owner != this.player)
+        if (!unit)
         {
             return;
         }
@@ -158,6 +165,7 @@ class Game
                 this.options_capable.push(option);
             }
         }
+
         for (let skill of unit.potential().as_list())
         {
             let option = coord.add(skill.x, skill.y);
@@ -170,6 +178,28 @@ class Game
 
     run()
     {
+        let man = new Spearman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        man.endow(new Skill(0, -2));
+        this.board.put(new Coordinate(1,2), man);
+        let man2 = new Swordsman(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        man2.perfect.as_list().forEach(s => {man2.endow(s);});
+        this.board.put(new Coordinate(2,2), man2);
+        let man3 = new Warrior(Player.P1, <BasicUnit>this.board.at(new Coordinate(0,7)));
+        man3.endow(new Skill(0, -2));
+        this.board.put(new Coordinate(0,2), man3);
+        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
+        lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
+        this.board.put(new Coordinate(3,2), lancer);
+        let knight = new Knight(Player.P1, <BasicUnit>this.board.at(new Coordinate(3,8)));
+        knight.endow(new Skill(1, -1));
+        this.board.put(new Coordinate(4,2), knight);
+        this.board.remove(new Coordinate(0, 8));
+        this.board.remove(new Coordinate(1, 8));
+        this.board.remove(new Coordinate(2, 8));
+        this.board.remove(new Coordinate(3, 8));
+        set_out(this.board);
+        this.update_board(this.board);
+
         this.canvas.paint_background();
         this.action_panel.render();
         this.status_bar.render();

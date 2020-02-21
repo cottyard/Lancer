@@ -54,6 +54,7 @@ class StatusBar {
         player_name.style.width = "100px";
         player_name.style.resize = "none";
         this.dom_element.appendChild(player_name);
+
         [Player.P1, Player.P2].forEach(player => {
             this.dom_element.appendChild(this.render_player(
                 player,
@@ -63,7 +64,14 @@ class StatusBar {
                 player === this.game.player ? cost : null
             ));
         });
-        
+
+        let btn3 = DomHelper.createButton();
+        btn3.innerText = "last round"
+        this.dom_element.appendChild(btn3);
+
+        let btn4 = DomHelper.createButton();
+        btn4.innerText = "heat map"
+        this.dom_element.appendChild(btn4);
     }
 
     render_player(
@@ -76,7 +84,8 @@ class StatusBar {
         const div = DomHelper.createDiv({
             display: "flex",
             flexDirection: "row",
-            marginLeft: "20px",
+            marginLeft: "10px",
+            marginRight: "10px",
             alignItems: "center",
             fontWeight: cost != null ? "bold" : "normal",
         });
@@ -86,7 +95,6 @@ class StatusBar {
                 : g.const.STYLE_BLUE_LIGHT 
         }));
         div.appendChild(DomHelper.createText("🍞", {
-            marginLeft: "10px",
         }));
         if (cost != null) {
             div.appendChild(DomHelper.createText(cost.toString(), {
