@@ -17,13 +17,6 @@ class Module
     readonly spawnable_unit_types: UnitConstructor[] = [
         Rider, Soldier, Barbarian, Archer, Wagon
     ];
-    settings = {
-        'cvs_size': this.cvs_size,
-        'cvs_border_width': 3,
-        'grid_size': this.cvs_size / 9,
-        'piece_font': "40px Courier New",
-        'server_url': 'http://127.0.0.1:5000'
-    };
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
         'STYLE_BLACK': "#000",
@@ -33,6 +26,14 @@ class Module
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
         'STYLE_GREEN_LIGHT': '#80e080'
+    };
+    settings = {
+        'cvs_size': this.cvs_size,
+        'cvs_border_width': 3,
+        'grid_size': this.cvs_size / 9,
+        'piece_font': "40px Courier New",
+        'server_url': 'http://127.0.0.1:5000',
+        'player_color_map': new Map<Player, string>()
     };
     private _action_style: Map<ActionType, string> | undefined;
     get action_style():  Map<ActionType, string> {
@@ -157,6 +158,11 @@ class Module
 
     initialize()
     {
+        g.settings.player_color_map = new Map<Player, string>([
+            [Player.P1, g.const.STYLE_RED_LIGHT],
+            [Player.P2, g.const.STYLE_BLUE_LIGHT]
+        ]);
+        
         this.all_unit_types.forEach((type: UnitConstructor) =>
         {
             this.unit_type_by_name.set(type.name, type);

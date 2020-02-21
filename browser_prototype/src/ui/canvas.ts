@@ -49,6 +49,13 @@ class GameCanvas
             coord.y * g.settings.grid_size + g.settings.grid_size / 2);
     }
 
+    static get_grid_position(coord: Coordinate): Position
+    {
+        return new Position(
+            coord.x * g.settings.grid_size, 
+            coord.y * g.settings.grid_size);
+    }
+
     static to_coordinate(pixel_x: number, pixel_y: number): Coordinate
     { 
         function gridify(pixel: number)
@@ -109,6 +116,27 @@ class GameCanvas
                     zero.add(new PositionDelta(0, -q * size)), width);
             });
         }
+    }
+
+    paint_heat(coordinate: Coordinate, heat: Heat)
+    {
+        let begin = GameCanvas.get_grid_position(coordinate);
+        using(new Renderer(this.am_ctx), (renderer) => {
+            renderer.translate(begin);
+            let offset = 5;
+            let size = 3;
+
+            for (let player of [Player.P1, Player.P2])
+            {
+                for (let i = 1; i <= heat.get(player); i++)
+                {
+                    renderer.circle(
+                        new Position(offset, size * 2.5 * i), 
+                        size, 1, g.settings.player_color_map.get(player));
+                }
+                offset += 8;
+            }
+        });
     }
 
     paint_actions(player_action: PlayerAction, board: Board<Unit>)

@@ -28,14 +28,9 @@ abstract class CanvasUnit
 {
     color: string;
 
-    static readonly color_map = new Map<Player, string>([
-        [Player.P1, g.const.STYLE_RED_LIGHT],
-        [Player.P2, g.const.STYLE_BLUE_LIGHT]
-    ]);
-
     constructor(protected unit: Unit)
     {
-        this.color = CanvasUnit.color_map.get(this.unit.owner)!;
+        this.color = g.settings.player_color_map.get(this.unit.owner)!;
     }
 
     paint(renderer: Renderer): void

@@ -71,6 +71,8 @@ class StatusBar {
 
         let btn4 = DomHelper.createButton();
         btn4.innerText = "heat map"
+        btn4.onmouseenter = () => { this.game?.render_heat(); };
+        btn4.onmouseleave = () => { this.game?.render_indicators(); };
         this.dom_element.appendChild(btn4);
     }
 
@@ -90,9 +92,7 @@ class StatusBar {
             fontWeight: cost != null ? "bold" : "normal",
         });
         div.appendChild(DomHelper.createText(name, {
-            color: player === Player.P1
-                ? g.const.STYLE_RED_LIGHT
-                : g.const.STYLE_BLUE_LIGHT 
+            color: g.settings.player_color_map.get(player)!
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));

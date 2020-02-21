@@ -1,6 +1,6 @@
-class Board<T extends ISerializable> implements ISerializable
+class Board<T>
 {
-    private board: (T | null)[][];
+    protected board: (T | null)[][];
 
     constructor(initializer: () => (T | null) = () => null)
     {
@@ -52,7 +52,10 @@ class Board<T extends ISerializable> implements ISerializable
             }
         }
     }
+}
 
+class SerializableBoard<T extends ISerializable> extends Board<T> implements ISerializable
+{
     serialize(): string
     {
         let s: (string | number)[] = [];
@@ -73,23 +76,24 @@ class Board<T extends ISerializable> implements ISerializable
     }
 }
 
-interface BoardConstructor<T extends ISerializable, _> extends IDeserializable<Board<T>>
+
+interface SerializableBoardConstructor<T extends ISerializable, _> extends IDeserializable<SerializableBoard<T>>
 {
-    deserialize(payload: string): Board<T>;
+    deserialize(payload: string): SerializableBoard<T>;
 }
 
-function create_board_ctor<T extends ISerializable, C extends IDeserializable<T>>(unit_ctor: C): BoardConstructor<T, C>
+function create_serializable_board_ctor<T extends ISerializable, C extends IDeserializable<T>>(unit_ctor: C): SerializableBoardConstructor<T, C>
 {
-    return class _ extends Board<T>
+    return class _ extends SerializableBoard<T>
     {
         constructor()
         {
             super();
         }
 
-        static deserialize(payload: string): Board<T>
+        static deserialize(payload: string): SerializableBoard<T>
         {
-            let board = new Board<T>();
+            let board = new SerializableBoard<T>();
             let s: (string | number)[] = JSON.parse(payload);
             for (let i = 0; i < g.board_size_x; i++) {
                 for (let j = 0; j < g.board_size_y; j++) {

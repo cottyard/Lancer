@@ -121,4 +121,41 @@ class Rule
         })
         return count;
     }
+
+    static reachable_by_skills(coord: Coordinate, skills: Skill[]): Coordinate[]
+    {
+        let coordinates = [];
+        for (let skill of skills)
+        {
+            let c = coord.add(skill.x, skill.y);
+            if (c)
+            {
+                coordinates.push(c);
+            }
+        }
+
+        return coordinates;
+    }
+    
+    static reachable_by_unit(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    {
+        let unit = board.at(coord);
+        if (!unit)
+        {
+            return [];
+        }
+
+        return Rule.reachable_by_skills(coord, unit.current.as_list());
+    }
+
+    static upgradable_by_unit(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    {
+        let unit = board.at(coord);
+        if (!unit)
+        {
+            return [];
+        }
+
+        return Rule.reachable_by_skills(coord, unit.potential().as_list());
+    }
 }

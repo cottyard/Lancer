@@ -48,7 +48,7 @@ class Game
         // this.canvas.animate.addEventListener("touchstart",  this.on_mouse_down.bind(this));
         // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
         // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
-        let board_ctor = create_board_ctor<Unit, UnitConstructor>(UnitConstructor);
+        let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         this.board = new board_ctor();
     }
 
@@ -78,6 +78,24 @@ class Game
         {
             this.canvas.paint_actions(this.player_action, this.board);
         }
+    }
+    
+    render_heat(): void
+    {
+        let heatmap = new Board<Heat>(() => new Heat());
+
+        this.board.iterate_units((unit, coord) => {
+            for (let c of Rule.reachable_by_unit(this.board, coord))
+            {
+                console.log(c);
+                heatmap.at(c)?.heatup(unit.owner);
+            }
+        });
+
+        heatmap.iterate_units((heat, coord) => {
+            console.log(heat)
+            this.canvas.paint_heat(coord, heat);
+        });
     }
 
     get_coordinate(event: MouseEvent): Coordinate
@@ -150,30 +168,8 @@ class Game
 
     update_options(coord: Coordinate)
     {
-        this.options_capable = [];
-        this.options_upgrade = [];
-        let unit = this.board.at(coord);
-        if (!unit)
-        {
-            return;
-        }
-        for (let skill of unit.current.as_list())
-        {
-            let option = coord.add(skill.x, skill.y);
-            if (option)
-            {
-                this.options_capable.push(option);
-            }
-        }
-
-        for (let skill of unit.potential().as_list())
-        {
-            let option = coord.add(skill.x, skill.y);
-            if (option)
-            {
-                this.options_upgrade.push(option);
-            }
-        }
+        this.options_capable = Rule.reachable_by_unit(this.board, coord);
+        this.options_upgrade = Rule.upgradable_by_unit(this.board, coord);
     }
 
     run()
@@ -199,7 +195,7 @@ class Game
         this.board.remove(new Coordinate(3, 8));
         set_out(this.board);
         this.update_board(this.board);
-
+        this.render_heat();
         this.canvas.paint_background();
         this.action_panel.render();
         this.status_bar.render();
@@ -325,7 +321,7 @@ class Game
                         this.player_supply_map.set(deserialize_player(player), player_supply_map[player]);
                     }
 
-                    this.update_board(<Board<Unit>>create_board_ctor(UnitConstructor).deserialize(board_payload));
+                    this.update_board(<SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload));
                     this.status_bar.render();
                     this.stop_query_game();
                 });
@@ -343,5 +339,19 @@ class Game
 
     get_player_supply_income(player: Player): number {
         return Rule.count_unit(this.board, player, Wagon) * this.supply_wagon + this.supply_basic_incremental;
+    }
+}
+
+class Heat
+{
+    map = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
+    heatup(player: Player)
+    {
+        this.map.set(player, this.map.get(player)! + 1);
+    }
+
+    get(player: Player): number
+    {
+        return this.map.get(player)!;
     }
 }
