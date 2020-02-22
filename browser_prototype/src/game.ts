@@ -212,6 +212,7 @@ class Game
     update_player_action()
     {
         this.player_action[0] = Rule.validate_player_move(this.displaying_board, this.player_move);
+        this.player_action[0].actions.sort((a1, a2) => a2.type - a1.type);
         this.render_indicators();
     }
 
