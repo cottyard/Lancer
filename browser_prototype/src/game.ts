@@ -23,13 +23,16 @@ class Game
     always_show_heat: boolean = false;
 
     player: Player = Player.P1;
-    board: Board<Unit>;
+    board: Board<Unit> | null = null;
+    last_round_board: Board<Unit> | null = null;
+    displaying_board: Board<Unit>;
+
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
     player_names: Map<Player, string> = new Map<Player, string>();
     supplies: Map<Player, number> = new Map<Player, number>();
     status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
-    last_round_board: Board<Unit> | null = null;
+    
 
     player_move: PlayerMove = new PlayerMove(this.player);
     player_action: PlayerAction = new PlayerAction(this.player);
@@ -66,7 +69,7 @@ class Game
         // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
         // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
-        this.board = new board_ctor();
+        this.displaying_board = new board_ctor();
     }
 
     render_indicators(): void
@@ -91,7 +94,7 @@ class Game
         }
         if (this.player_action)
         {
-            this.canvas.paint_actions(this.player_action, this.board);
+            this.canvas.paint_actions(this.player_action, this.displaying_board);
         }
         if (this.always_show_heat)
         {
@@ -118,8 +121,8 @@ class Game
     {
         let heatmap = new Board<Heat>(() => new Heat());
 
-        this.board.iterate_units((unit, coord) => {
-            for (let c of Rule.reachable_by_unit(this.board, coord))
+        this.displaying_board.iterate_units((unit, coord) => {
+            for (let c of Rule.reachable_by_unit(this.displaying_board, coord))
             {
                 heatmap.at(c)?.heatup(unit.owner);
             }
@@ -156,7 +159,7 @@ class Game
     on_mouse_down(event: MouseEvent): void
     {
         let coord = this.get_coordinate(event);
-        let unit = this.board.at(coord);
+        let unit = this.displaying_board.at(coord);
         if (unit && unit.owner != this.player)
         {
             return;
@@ -192,7 +195,7 @@ class Game
 
     update_player_action()
     {
-        this.player_action = Rule.validate_player_move(this.board, this.player_move);
+        this.player_action = Rule.validate_player_move(this.displaying_board, this.player_move);
         this.action_panel.render();
         this.status_bar.render();
         this.render_indicators();
@@ -200,15 +203,15 @@ class Game
 
     update_options(coord: Coordinate)
     {
-        this.options_capable = Rule.reachable_by_unit(this.board, coord);
-        this.options_upgrade = Rule.upgradable_by_unit(this.board, coord);
+        this.options_capable = Rule.reachable_by_unit(this.displaying_board, coord);
+        this.options_upgrade = Rule.upgradable_by_unit(this.displaying_board, coord);
     }
 
     run()
     {
-        let lancer = new Lancer(Player.P1, <BasicUnit>this.board.at(new Coordinate(1,7)));
+        let lancer = new Lancer(Player.P1, <BasicUnit>this.displaying_board.at(new Coordinate(1,7)));
         lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
-        this.board.put(new Coordinate(4,4), lancer);
+        this.displaying_board.put(new Coordinate(4,4), lancer);
 
         this.render_board();
         this.canvas.paint_background();
@@ -245,16 +248,12 @@ class Game
         }
     }
 
-    render_board(board: Board<Unit> | null = null)
+    render_board()
     {
-        board = board || this.board;
-        if (board)
-        {
-            this.canvas.clear_canvas(this.canvas.st_ctx);
-            board.iterate_units((unit, coord) => {
-                this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
-            });
-        }
+        this.canvas.clear_canvas(this.canvas.st_ctx);
+        this.displaying_board.iterate_units((unit, coord) => {
+            this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
+        });
     }
 
     start_query_game()
@@ -295,11 +294,12 @@ class Game
             return;
         }
 
-        this.render_board(this.last_round_board);
+        this.displaying_board = this.last_round_board;
+        this.render_board();
         this.clear_animate();
         for (let player_action of this.last_round_actions)
         {
-            this.canvas.paint_actions(player_action, this.last_round_board);
+            this.canvas.paint_actions(player_action, this.displaying_board);
         }
     }
 
@@ -328,9 +328,19 @@ class Game
                 let game_id: string;
                 let game_status: number;
                 let player_name_map: any;
+                let round_count: number;
+                let player_supply_map: any;
+                let board_payload: string;
+                let player_actions: string[];
 
                 [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
-                console.log('loading game', game_id)
+                console.log('loading game', game_id);
+                [round_count, player_supply_map, board_payload, player_actions] = JSON.parse(game_payload);
+
+                if (this.current_game_id == game_id)
+                {
+                    return;
+                }
 
                 switch (game_status)
                 {
@@ -362,16 +372,7 @@ class Game
                 {
                     throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
                 }
-
-                this.current_game_id = game_id;
-                this.player_move.moves = [];
-
-                let round_count: number;
-                let player_supply_map: any;
-                let board_payload: string;
-                let player_actions: string[];
-                [round_count, player_supply_map, board_payload, player_actions] = JSON.parse(game_payload);
-
+                
                 console.log('Round', round_count);
                 
                 this.last_round_actions = [];
@@ -387,9 +388,11 @@ class Game
                 }
 
                 this.last_round_board = this.board;
-                
-                this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
+                this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
+                    .deserialize(board_payload);
+
                 this.render_board();
+                this.player_move.moves = [];
                 this.update_player_action();
                 this.stop_query_game();
             });
@@ -431,6 +434,10 @@ class Game
     }
 
     get_player_supply_income(player: Player): number {
+        if (!this.board)
+        {
+            return 0;
+        }
         return Rule.count_unit(this.board, player, Wagon) * this.supply_wagon + this.supply_basic_incremental;
     }
 }
