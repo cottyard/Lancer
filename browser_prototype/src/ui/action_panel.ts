@@ -233,10 +233,10 @@ class ActionPanel {
 
     renderUnit(unit: Unit): HTMLElement {
         const canvas = DomHelper.createCanvas({
-            zoom: "0.5",
+            zoom: "0.7",
         });
-        canvas.width = g.settings.grid_size;
-        canvas.height = g.settings.grid_size;
+        canvas.width = g.settings.grid_size + 10;
+        canvas.height = g.settings.grid_size + 10;
         const context = canvas.getContext("2d");
         if (context == null) {
             throw new Error("Your browser is outdated.");
@@ -245,7 +245,7 @@ class ActionPanel {
 
         using(new Renderer(context), (renderer) =>
         {
-            renderer.translate(new Position(g.settings.grid_size / 2, g.settings.grid_size / 2));
+            renderer.translate(new Position(g.settings.grid_size / 2 + 5, g.settings.grid_size / 2 + 5));
             canvas_unit.paint(renderer);
         });
         
