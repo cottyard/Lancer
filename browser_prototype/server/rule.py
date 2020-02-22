@@ -113,7 +113,7 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
         if outcome.arriver_map.count() == 1:
             player_invader = outcome.arriver_map.arrived_players()[0]
             _, position_from = outcome.arriver_map.get(player_invader)
-            resident = last_board.at(position)
+            resident = board.at(position)
             if arriving_successful:
                 if resident:
                     victims.append(position)
