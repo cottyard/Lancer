@@ -238,12 +238,12 @@ class Game
     new_game()
     {
         let player_name = (<HTMLTextAreaElement>document.getElementById('player-name'))?.value;
-        if (player_name)
+        if (player_name && player_name != 'undefined')
         {
             this.player_name = player_name;
         }
         new_game(player_name, (session: string) => {
-            console.log('session:', session)
+            console.log('new session:', session)
             this.session_id = session;
             this.start_query_game();
             this.status = GameStatus.InQueue;
@@ -345,94 +345,98 @@ class Game
             return;
         }
 
-        if (this.latest_game_id != this.current_game_id)
+        if (this.latest_game_id == this.current_game_id)
         {
-            fetch_game(this.latest_game_id, (serialized_game) => {
-                let game_payload: string;
-                let game_id: string;
-                let game_status: number;
-                let player_name_map: any;
-                let round_count: number;
-                let player_supply_map: any;
-                let board_payload: string;
-                let player_actions: string[];
-                let victims: string[];
-
-                [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
-                console.log('loading game', game_id);
-                [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
-                console.log(victims);
-
-                if (this.current_game_id == game_id)
-                {
-                    return;
-                }
-
-                this.current_game_id = game_id;
-
-                this.status = GameStatus.WaitForPlayer;
-                switch (game_status)
-                {
-                    case 1:
-                        this.status = GameStatus.WonByPlayer1;
-                        break;
-                    case 2:
-                        this.status = GameStatus.WonByPlayer2;
-                        break;
-                    case 3:
-                        this.status = GameStatus.Tied;
-                        break;
-                }
-
-                let player_name_check = false;
-                for (let p in player_name_map)
-                {
-                    let player = deserialize_player(p);
-                    let name = player_name_map[p];
-                    if (name == this.player_name)
-                    {
-                        this.update_player(player);
-                        player_name_check = true;
-                    }
-                    this.player_names.set(player, name);
-                }
-
-                if (!player_name_check)
-                {
-                    throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
-                }
-                
-                console.log('Round', round_count);
-                
-                this.last_round_actions = [];
-                for (let player_action_payload of player_actions)
-                {
-                    let player_action = PlayerAction.deserialize(player_action_payload);
-                    this.last_round_actions.push(player_action);
-                }
-
-                for (let player in player_supply_map)
-                {
-                    this.supplies.set(deserialize_player(player), player_supply_map[player]);
-                }
-
-                this.last_round_victims = [];
-                for (let victim of victims)
-                {
-                    let coord = Coordinate.deserialize(victim);
-                    this.last_round_victims.push(coord);
-                }
-
-                this.last_round_board = this.board;
-                this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
-                    .deserialize(board_payload);
-                
-                this.player_move.moves = [];
-                this.update_player_action();
-                this.view_this_round();
-                this.stop_query_game();
-            });
+            return;
         }
+
+        fetch_game(this.latest_game_id, (serialized_game) => {
+            let game_payload: string;
+            let game_id: string;
+            let game_status: number;
+            let player_name_map: any;
+            let round_count: number;
+            let player_supply_map: any;
+            let board_payload: string;
+            let player_actions: string[];
+            let victims: string[];
+
+            [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
+            console.log('loading game', game_id);
+            [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
+
+            if (this.current_game_id == game_id)
+            {
+                return;
+            }
+
+            this.current_game_id = game_id;
+
+            this.status = GameStatus.WaitForPlayer;
+            switch (game_status)
+            {
+                case 1:
+                    this.status = GameStatus.WonByPlayer1;
+                    break;
+                case 2:
+                    this.status = GameStatus.WonByPlayer2;
+                    break;
+                case 3:
+                    this.status = GameStatus.Tied;
+                    break;
+            }
+
+            let player_name_check = false;
+            for (let p in player_name_map)
+            {
+                let player = deserialize_player(p);
+                let name = player_name_map[p];
+                if (name == this.player_name)
+                {
+                    this.update_player(player);
+                    player_name_check = true;
+                }
+                this.player_names.set(player, name);
+            }
+
+            if (!player_name_check)
+            {
+                this.stop_query_game();
+                this.status = GameStatus.NotStarted;
+                this.render_indicators();
+                throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
+            }
+            
+            console.log('Round', round_count);
+            
+            this.last_round_actions = [];
+            for (let player_action_payload of player_actions)
+            {
+                let player_action = PlayerAction.deserialize(player_action_payload);
+                this.last_round_actions.push(player_action);
+            }
+
+            for (let player in player_supply_map)
+            {
+                this.supplies.set(deserialize_player(player), player_supply_map[player]);
+            }
+
+            this.last_round_victims = [];
+            for (let victim of victims)
+            {
+                let coord = Coordinate.deserialize(victim);
+                this.last_round_victims.push(coord);
+            }
+
+            this.last_round_board = this.board;
+            this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
+                .deserialize(board_payload);
+            
+            this.player_move.moves = [];
+            this.update_player_action();
+            this.view_this_round();
+            this.stop_query_game();
+        });
     }
 
     is_playing(): boolean

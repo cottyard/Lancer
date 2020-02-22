@@ -72,7 +72,7 @@ class StatusBar {
             this.submit_button = submit_button;
         }
         
-        if (this.game.is_not_started() || this.game.is_in_queue())
+        if (!this.game.is_playing())
         {
             let player_name = DomHelper.createTextArea();
             player_name.textContent = this.game.player_name;

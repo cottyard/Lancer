@@ -94,6 +94,7 @@ def new_game(player_name):
                 player_2: player_name
             }
             Session(session_id, player_name_map)
+            print('new match', session_id, player_name_map.values())
             return str(session_id)
     session_id = uuid.uuid4()
     match_queue.append((session_id, player_name))
