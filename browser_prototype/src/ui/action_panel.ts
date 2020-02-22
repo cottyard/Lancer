@@ -199,6 +199,7 @@ class ActionPanel {
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
+            this.game.canvas.paint_grid_indicator(action.move.from);
         });
 
         div.addEventListener("mouseleave", () => {
@@ -206,6 +207,7 @@ class ActionPanel {
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
+            this.game.render_indicators();
         });
 
         return div;
