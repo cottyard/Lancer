@@ -299,7 +299,7 @@ class Game
         this.clear_animate();
         for (let player_action of this.last_round_actions)
         {
-            this.canvas.paint_actions(player_action, this.board);
+            this.canvas.paint_actions(player_action, this.last_round_board);
         }
     }
 

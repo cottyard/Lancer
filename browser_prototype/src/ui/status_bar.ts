@@ -70,17 +70,19 @@ class StatusBar {
             this.submit_button = submit_button;
         }
         
-        let player_name = DomHelper.createTextArea();
-        player_name.textContent = this.game.player_name;
-        player_name.style.width = "80px";
-        player_name.style.resize = "none";
-        this.dom_element.appendChild(player_name);
-
-        if (this.game.is_playing())
+        if (this.game.is_not_started() || this.game.is_in_queue())
         {
-            player_name.readOnly = true;
+            let player_name = DomHelper.createTextArea();
+            player_name.textContent = this.game.player_name;
+            player_name.style.width = "80px";
+            player_name.style.resize = "none";
+            this.dom_element.appendChild(player_name);
+            if (this.game.is_in_queue())
+            {
+                player_name.readOnly = true;
+            }
         }
-        
+
         if (this.game.is_finished())
         {
             let text: string;
@@ -155,7 +157,7 @@ class StatusBar {
             alignItems: "center",
             fontWeight: is_me ? "bold" : "normal",
         });
-        div.appendChild(DomHelper.createText(is_me ? 'Me' : name, {
+        div.appendChild(DomHelper.createText(name, {
             color: g.settings.player_color_map.get(player)!
         }));
         div.appendChild(DomHelper.createText("🍞", {
