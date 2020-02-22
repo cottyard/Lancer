@@ -1,9 +1,9 @@
 potential_skill_matrices = """
 KING
 -----
--xxx-
+--x--
 -x-x-
--xxx-
+--x--
 -----
 
 RDR
@@ -80,9 +80,9 @@ WAG
 inborn_skill_matrices = """
 KING
 -----
--xxx-
+--x--
 -x-x-
--xxx-
+--x--
 -----
 
 RDR
