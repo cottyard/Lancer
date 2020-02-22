@@ -35,7 +35,7 @@ class ActionPanel {
     render() {
         this.dom_element.innerHTML = "";
         
-        this.game.player_action.actions.forEach((action, index) => {
+        this.game.player_action[0].actions.forEach((action, index) => {
             this.dom_element.appendChild(this.renderAction(action, index));
         });
     }
@@ -106,8 +106,6 @@ class ActionPanel {
                 this.game.player_move.moves.findIndex(move => move.equals(action.move)),
                 1);
             this.game.update_player_action();
-            this.game.canvas.clear_canvas(this.game.canvas.am_ctx);
-            this.game.canvas.paint_actions(this.game.player_action, this.game.displaying_board);
             e.cancelBubble = true;
         });
 

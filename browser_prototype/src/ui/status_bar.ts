@@ -2,6 +2,7 @@ class StatusBar {
     dom_element: HTMLDivElement;
     game: Game;
     submit_button: HTMLButtonElement | null = null;
+    view_last_round: boolean = false;
 
     constructor(dom_element: HTMLDivElement, game: Game) {
         this.dom_element = dom_element;
@@ -9,7 +10,7 @@ class StatusBar {
     }
 
     render() {
-        let cost = this.game.player_action.cost();
+        let cost = this.game.player_action[0].cost();
         
         this.dom_element.innerHTML = "";
 
@@ -38,11 +39,11 @@ class StatusBar {
             }
         }
 
-        if (this.game.is_playing())
+        if (this.game.status == GameStatus.WaitForPlayer || this.game.status == GameStatus.WaitForOpponent)
         {
             let submit_button = DomHelper.createButton();
         
-            if (this.game.status == GameStatus.WaitingForPlayer)
+            if (this.game.status == GameStatus.WaitForPlayer)
             {
                 let supply = this.game.get_player_supply(this.game.player);
                 if (!supply)
@@ -125,21 +126,66 @@ class StatusBar {
         if (this.game.is_playing())
         {
             let last_round = DomHelper.createButton();
-            last_round.innerText = "What Happend"
+
+            if (this.view_last_round)
+            {
+                last_round.innerText = "Return To Now";
+                last_round.onclick = () => { 
+                    this.view_last_round = false;
+                    this.game.view_this_round();
+                };
+            }
+            else
+            {
+                last_round.innerText = "Show Last Round";
+                if (this.game.status == GameStatus.ViewLastRound)
+                {
+                    last_round.onmouseleave = () => { 
+                        this.game.view_this_round();
+                    };
+                }
+                else
+                {
+                    last_round.onmouseenter = () => { 
+                        this.game.view_last_round();
+                    };
+                }
+
+                last_round.onclick = () => { 
+                    this.view_last_round = true;
+                    this.game.view_last_round();
+                };
+            }
+
+            if (!this.game.last_round_board)
+            {
+                last_round.disabled = true;
+            }
             this.dom_element.appendChild(last_round);
-            last_round.onmouseenter = () => { 
-                this.game.view_last_round(); 
+            
+
+            let heat = DomHelper.createButton();
+            if (this.game.show_heat)
+            {
+                heat.innerText = "Heat  On";
+            }
+            else
+            {
+                heat.innerText = "Heat Off";
+                heat.onmouseenter = () => { 
+                    this.game.render_heat();
+                };
+                heat.onmouseleave = () => { 
+                    this.game.render_indicators();
+                };
+            }
+
+            heat.onclick = () => { 
+                this.game.show_heat = !this.game.show_heat;
+                this.game.render_indicators();
             };
-            last_round.onmouseleave = () => { 
-                this.game.view_this_round();
-            };
-    
-            let heap_map = DomHelper.createButton();
-            heap_map.innerText = "Heat"
-            heap_map.onmouseenter = () => { this.game.render_heat(); };
-            heap_map.onmouseleave = () => { this.game.render_indicators(); };
-            heap_map.onclick = () => { this.game.always_show_heat = !this.game.always_show_heat; };
-            this.dom_element.appendChild(heap_map);
+            
+            this.dom_element.appendChild(heat);
         }
     }
 

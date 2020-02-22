@@ -2,8 +2,9 @@ enum GameStatus
 {
     NotStarted,
     InQueue,
-    WaitingForPlayer,
-    WaitingForOpponent,
+    ViewLastRound,
+    WaitForPlayer,
+    WaitForOpponent,
     WonByPlayer1,
     WonByPlayer2,
     Tied
@@ -20,7 +21,7 @@ class Game
     selected: Coordinate | null = null;
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
-    always_show_heat: boolean = false;
+    show_heat: boolean = false;
 
     player: Player = Player.P1;
     board: Board<Unit> | null = null;
@@ -32,10 +33,10 @@ class Game
     supplies: Map<Player, number> = new Map<Player, number>();
     status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
-    
+    displaying_actions: PlayerAction[] = [];
 
     player_move: PlayerMove = new PlayerMove(this.player);
-    player_action: PlayerAction = new PlayerAction(this.player);
+    player_action: [PlayerAction] = [new PlayerAction(this.player)];
 
     session_id: string | null = null;
     latest_game_id: string | null = null;
@@ -92,14 +93,16 @@ class Game
         {
             this.canvas.paint_grid_indicator(this.selected);
         }
-        if (this.player_action)
+        for (let player_action of this.displaying_actions)
         {
-            this.canvas.paint_actions(this.player_action, this.displaying_board);
+            this.canvas.paint_actions(player_action, this.displaying_board);
         }
-        if (this.always_show_heat)
+        if (this.show_heat)
         {
             this.render_heat();
         }
+        this.action_panel.render();
+        this.status_bar.render();
     }
 
     clear_grid_incicators(): void
@@ -158,6 +161,11 @@ class Game
 
     on_mouse_down(event: MouseEvent): void
     {
+        if (this.status != GameStatus.WaitForPlayer)
+        {
+            return;
+        }
+
         let coord = this.get_coordinate(event);
         let unit = this.displaying_board.at(coord);
         if (unit && unit.owner != this.player)
@@ -195,9 +203,7 @@ class Game
 
     update_player_action()
     {
-        this.player_action = Rule.validate_player_move(this.displaying_board, this.player_move);
-        this.action_panel.render();
-        this.status_bar.render();
+        this.player_action[0] = Rule.validate_player_move(this.displaying_board, this.player_move);
         this.render_indicators();
     }
 
@@ -209,14 +215,16 @@ class Game
 
     run()
     {
+        this.canvas.paint_background();
+
         let lancer = new Lancer(Player.P1, <BasicUnit>this.displaying_board.at(new Coordinate(1,7)));
         lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
         this.displaying_board.put(new Coordinate(4,4), lancer);
-
+        
         this.render_board();
-        this.canvas.paint_background();
-        this.action_panel.render();
-        this.status_bar.render();
+        this.render_indicators();
+
+        this.new_game();
     }
 
     new_game()
@@ -231,7 +239,7 @@ class Game
             this.session_id = session;
             this.start_query_game();
             this.status = GameStatus.InQueue;
-            this.status_bar.render();
+            this.render_indicators();
         });
     }
 
@@ -242,8 +250,8 @@ class Game
             submit_move(this.current_game_id, this.player_move, (res: string) => {
                 console.log('submit:', res)
                 this.start_query_game();
-                this.status = GameStatus.WaitingForOpponent;
-                this.status_bar.render();
+                this.status = GameStatus.WaitForOpponent;
+                this.render_indicators();
             });
         }
     }
@@ -277,7 +285,7 @@ class Game
     {
         this.player = player;
         this.player_move = new PlayerMove(player);
-        this.player_action = new PlayerAction(player);
+        this.player_action[0] = new PlayerAction(player);
     }
 
     load_session(session: string, player_name: string)
@@ -294,13 +302,11 @@ class Game
             return;
         }
 
+        this.status = GameStatus.ViewLastRound;
         this.displaying_board = this.last_round_board;
+        this.displaying_actions = this.last_round_actions;
         this.render_board();
-        this.clear_animate();
-        for (let player_action of this.last_round_actions)
-        {
-            this.canvas.paint_actions(player_action, this.displaying_board);
-        }
+        this.render_indicators();
     }
 
     view_this_round()
@@ -310,9 +316,10 @@ class Game
             return;
         }
 
+        this.status = GameStatus.WaitForPlayer;
         this.displaying_board = this.board;
+        this.displaying_actions = this.player_action;
         this.render_board();
-        this.clear_animate();
         this.render_indicators();
     }
 
@@ -335,7 +342,7 @@ class Game
         if (this.latest_game_id != this.current_game_id)
         {
             fetch_game(this.latest_game_id, (serialized_game) => {
-                this.status = GameStatus.WaitingForPlayer;
+                this.status = GameStatus.WaitForPlayer;
 
                 let game_payload: string;
                 let game_id: string;
@@ -405,7 +412,7 @@ class Game
                 this.last_round_board = this.board;
                 this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
                     .deserialize(board_payload);
-                this.displaying_board = this.board;
+                this.view_this_round();
 
                 this.render_board();
                 this.player_move.moves = [];
@@ -418,8 +425,9 @@ class Game
     is_playing(): boolean
     {
         return [
-            GameStatus.WaitingForOpponent,
-            GameStatus.WaitingForPlayer
+            GameStatus.WaitForOpponent,
+            GameStatus.WaitForPlayer,
+            GameStatus.ViewLastRound
         ].indexOf(this.status) > -1;
     }
 
