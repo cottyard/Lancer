@@ -126,7 +126,7 @@ class ActionType(Enum):
                 Barbarian: 10,
                 Archer: 10,
                 Rider: 15,
-                Wagon: 30
+                Wagon: 25
             }[unit_type]
             
 class Position:
@@ -223,7 +223,7 @@ class Unit:
         promoted = creator(self.owner, skillset=self.skillset)
         promoted.endow(skill)
         return promoted
-        
+
     @classmethod
     def which_creator_has_skill(self, creator_list, skill):
         for creator in creator_list:
@@ -232,10 +232,14 @@ class Unit:
 
     @classmethod
     def create_from_skill(self, player, skill):
-        creator = self.which_creator_has_skill(
-            [Rider, Soldier, Barbarian, Archer, Wagon], skill)
+        if skill.delta.dx == skill.delta.dy == 0:
+            creator = Wagon
+        else:
+            creator = self.which_creator_has_skill(
+                [Rider, Soldier, Barbarian, Archer], skill)
         if creator is None:
             return None
+
         created = creator(player, SkillSet())
         created.endow(skill)
         return created
@@ -338,47 +342,36 @@ class SkillSet:
 
 class Rider(Unit):
     display = "RDR"
-    letter = "R"
 
 class Soldier(Unit):
     display = "SLD"
-    letter = "D"
 
 class Archer(Unit):
     display = "ACH"
-    letter = "A"
 
 class Barbarian(Unit):
     display = "BAR"
-    letter = "B"
 
 class Lancer(Unit):
     display = "LAN"
-    letter = "L"
 
 class Knight(Unit):
     display = "KNT"
-    letter = "N"
 
 class Swordsman(Unit):
     display = "SWD"
-    letter = "S"
 
 class Spearman(Unit):
     display = "SPR"
-    letter = "P"
 
 class Warrior(Unit):
     display = "WAR"
-    letter = "W"
 
 class King(Unit):
     display = "KING"
-    letter = "K"
 
 class Wagon(Unit):
     display = "WAG"
-    letter = "G"
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {

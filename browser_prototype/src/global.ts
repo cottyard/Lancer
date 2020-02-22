@@ -14,9 +14,6 @@ class Module
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
     unit_type_by_name = new Map<string, UnitConstructor>();
-    readonly spawnable_unit_types: UnitConstructor[] = [
-        Rider, Soldier, Barbarian, Archer, Wagon
-    ];
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
         'STYLE_BLACK': "#000",
@@ -109,7 +106,7 @@ class Module
         'Wagon':
             `-----
             --x--
-            -xxx-
+            -x-x-
             --x--
             -----`
     };
@@ -149,7 +146,7 @@ class Module
         'Wagon':
             `-----
             -----
-            --x--
+            -----
             -----
             -----`
     };

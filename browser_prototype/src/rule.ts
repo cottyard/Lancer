@@ -52,7 +52,7 @@ class Rule
                     throw new InvalidMove("not a valid skill");
                 }
 
-                let type = Unit.which_has_skill(g.spawnable_unit_types, skill);
+                let type = Unit.which_to_spawn(skill);
                 if (type == null)
                 {
                     throw new InvalidMove("this skill recruits nothing");

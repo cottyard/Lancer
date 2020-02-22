@@ -63,6 +63,11 @@ class Skill implements IHashable
     {
         return `Skill(${this.x},${this.y})`;
     }
+
+    equals(other: Skill): boolean
+    {
+        return this.x == other.x && this.y == other.y;
+    }
 }
 
 class SkillSet implements ISerializable
@@ -317,7 +322,7 @@ class Action
                     case Rider:
                         return 15;
                     case Wagon:
-                        return 30;
+                        return 25;
                 }
             throw new Error("Action.cost");
         }
@@ -435,28 +440,35 @@ abstract class Unit implements ISerializable
         return false;
     }
 
-    static from_skill(player: Player, skill: Skill): Unit | null
+    static spawn_from_skill(player: Player, skill: Skill): Unit | null
     {
-        let cons = this.which_has_skill(g.spawnable_unit_types, skill);
-        if (cons == null)
+        let ctor = Unit.which_to_spawn(skill);
+        if (ctor == null)
         {
             return null;
         }
-        let unit = new cons(player);
+        let unit = new ctor(player);
         unit.endow(skill);
         return unit;
     }
 
-    static which_has_skill(cons: UnitConstructor[], skill: Skill): UnitConstructor | null
+    static which_to_spawn(skill: Skill): UnitConstructor | null
     {
-        for (let c of cons)
+        if (skill.equals(new Skill(0, 0)))
         {
-            if (g.perfect_skills.get(c)!.has(skill))
-            {
-                return c;
-            }
+            return Wagon;
         }
-        return null;
+        else
+        {
+            for (let c of [Rider, Soldier, Barbarian, Archer])
+            {
+                if (g.perfect_skills.get(c)!.has(skill))
+                {
+                    return c;
+                }
+            }
+            return null;
+        }
     }
 }
 
