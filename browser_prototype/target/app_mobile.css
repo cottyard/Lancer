@@ -27,9 +27,9 @@ span {
 }
 
 #action-panel {
-    padding: 0 20px;
+    padding: 0 50px;
     box-sizing: border-box;
-    width: 80%;
+    width: 100%;
     align-self: flex-start;
     justify-self: stretch;
 }
