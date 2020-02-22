@@ -2,7 +2,6 @@ enum GameStatus
 {
     NotStarted,
     InQueue,
-    ViewLastRound,
     WaitForPlayer,
     WaitForOpponent,
     WonByPlayer1,
@@ -22,6 +21,7 @@ class Game
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
     show_heat: boolean = false;
+    show_last_round: boolean = false;
 
     player: Player = Player.P1;
     board: Board<Unit> | null = null;
@@ -102,7 +102,7 @@ class Game
         {
             this.render_heat();
         }
-        if (this.status == GameStatus.ViewLastRound)
+        if (this.show_last_round)
         {
             for (let v of this.last_round_victims)
             {
@@ -232,7 +232,7 @@ class Game
         
         this.render_board();
         this.render_indicators();
-        //this.new_game();
+        this.new_game();
     }
 
     new_game()
@@ -309,8 +309,7 @@ class Game
         {
             return;
         }
-
-        this.status = GameStatus.ViewLastRound;
+        this.show_last_round = true;
         this.displaying_board = this.last_round_board;
         this.displaying_actions = this.last_round_actions;
         this.render_board();
@@ -323,8 +322,7 @@ class Game
         {
             return;
         }
-
-        this.status = GameStatus.WaitForPlayer;
+        this.show_last_round = false;
         this.displaying_board = this.board;
         this.displaying_actions = this.player_action;
         this.render_board();
@@ -372,6 +370,7 @@ class Game
 
                 this.current_game_id = game_id;
 
+                this.status = GameStatus.WaitForPlayer;
                 switch (game_status)
                 {
                     case 1:
@@ -427,11 +426,10 @@ class Game
                 this.last_round_board = this.board;
                 this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
                     .deserialize(board_payload);
-                this.view_this_round();
-
-                this.render_board();
+                
                 this.player_move.moves = [];
                 this.update_player_action();
+                this.view_this_round();
                 this.stop_query_game();
             });
         }
@@ -441,8 +439,7 @@ class Game
     {
         return [
             GameStatus.WaitForOpponent,
-            GameStatus.WaitForPlayer,
-            GameStatus.ViewLastRound
+            GameStatus.WaitForPlayer
         ].indexOf(this.status) > -1;
     }
 

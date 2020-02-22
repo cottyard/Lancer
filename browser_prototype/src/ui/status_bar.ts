@@ -138,7 +138,7 @@ class StatusBar {
             else
             {
                 last_round.innerText = "Show Last Round";
-                if (this.game.status == GameStatus.ViewLastRound)
+                if (this.game.show_last_round)
                 {
                     last_round.onmouseleave = () => { 
                         this.game.view_this_round();
