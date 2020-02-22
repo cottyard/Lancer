@@ -115,6 +115,28 @@ class GameCanvas
         }
     }
 
+    paint_victim_indicator(coordinate: Coordinate)
+    {
+        let center = GameCanvas.get_grid_center(coordinate);
+        let size = 7;
+        let width = 6;
+        using(new Renderer(this.am_ctx), (renderer) => {
+            renderer.set_color(g.const.STYLE_RED);
+            renderer.translate(center.add(new PositionDelta(
+                g.settings.grid_size / 2 - 10, 
+                -g.settings.grid_size / 2 + 10)));
+
+            renderer.line(
+                new Position(-size, -size),
+                new Position(size, size),
+                width);
+            renderer.line(
+                new Position(-size, size),
+                new Position(size, -size),
+                width);
+        });
+    }
+
     paint_heat(coordinate: Coordinate, heat: Heat)
     {
         let begin = GameCanvas.get_grid_position(coordinate);

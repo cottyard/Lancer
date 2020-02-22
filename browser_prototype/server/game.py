@@ -37,6 +37,7 @@ class Game:
         }
 
         self.round_count = 0
+        self.victim_position_list = []
 
     def player_moved(self, player):
         return self.last_player_action[player] is not None
@@ -74,12 +75,13 @@ class Game:
         for player_move in player_move_list:
             self.validate_player_move(player_move)
 
-        next_board, player_action_map = \
+        next_board, player_action_map, victim_position_list = \
             rule.make_move(self.board, player_move_list)
 
         next_game = Game(next_board)
         next_game.last_player_action = player_action_map
         next_game.round_count = self.round_count + 1
+        next_game.victim_position_list = victim_position_list
 
         for player_action in player_action_map.values():
             player = player_action.player
@@ -113,7 +115,8 @@ class Game:
             self.round_count, 
             self.supply, 
             self.board.serialize(), 
-            [player_action.serialize() for player_action in self.last_player_action.values() if player_action is not None]
+            [player_action.serialize() for player_action in self.last_player_action.values() if player_action is not None],
+            [p.serialize() for p in self.victim_position_list]
         ])
     
     @classmethod

@@ -23,6 +23,7 @@ class Module
         'STYLE_WHITE': "#FFF",
         'STYLE_CYAN': '#01cdfe',
         'STYLE_RED_LIGHT': '#ff8080',
+        'STYLE_RED': '#ff0000',
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
         'STYLE_GREEN_LIGHT': '#80e080'

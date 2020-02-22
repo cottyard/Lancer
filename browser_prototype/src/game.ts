@@ -33,6 +33,7 @@ class Game
     supplies: Map<Player, number> = new Map<Player, number>();
     status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
+    last_round_victims: Coordinate[] = [];
     displaying_actions: PlayerAction[] = [];
 
     player_move: PlayerMove = new PlayerMove(this.player);
@@ -100,6 +101,13 @@ class Game
         if (this.show_heat)
         {
             this.render_heat();
+        }
+        if (this.status == GameStatus.ViewLastRound)
+        {
+            for (let v of this.last_round_victims)
+            {
+                this.canvas.paint_victim_indicator(v);
+            }
         }
         this.action_panel.render();
         this.status_bar.render();
@@ -223,8 +231,7 @@ class Game
         
         this.render_board();
         this.render_indicators();
-
-        this.new_game();
+        //this.new_game();
     }
 
     new_game()
@@ -352,10 +359,12 @@ class Game
                 let player_supply_map: any;
                 let board_payload: string;
                 let player_actions: string[];
+                let victims: string[];
 
                 [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
                 console.log('loading game', game_id);
-                [round_count, player_supply_map, board_payload, player_actions] = JSON.parse(game_payload);
+                [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
+                console.log(victims);
 
                 if (this.current_game_id == game_id)
                 {
@@ -407,6 +416,13 @@ class Game
                 for (let player in player_supply_map)
                 {
                     this.supplies.set(deserialize_player(player), player_supply_map[player]);
+                }
+
+                this.last_round_victims = [];
+                for (let victim of victims)
+                {
+                    let coord = Coordinate.deserialize(victim);
+                    this.last_round_victims.push(coord);
                 }
 
                 this.last_round_board = this.board;
