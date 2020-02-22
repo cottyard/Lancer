@@ -3,7 +3,7 @@ from entity import Action, ActionType, InvalidParameter, \
 from board import Board, ForceBoard
 from const import player_1, player_2, board_size_y
 
-max_unit_count = 20
+max_unit_count = 28
 
 class InvalidMoveException(Exception):
     pass
