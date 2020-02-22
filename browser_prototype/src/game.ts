@@ -67,9 +67,11 @@ class Game
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
         this.canvas.animate.addEventListener("mouseleave", this.clear_grid_incicators.bind(this));
-        // this.canvas.animate.addEventListener("touchstart",  this.on_mouse_down.bind(this));
-        // this.canvas.animate.addEventListener("touchmove", this.on_mouse_move.bind(this));
-        // this.canvas.animate.addEventListener("touchend", this.on_mouse_up.bind(this));
+        this.canvas.animate.addEventListener("touchstart",  this.on_touch.bind(this));
+        this.canvas.animate.addEventListener("touchmove", this.on_touch.bind(this));
+        this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
+        this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
+
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         this.displaying_board = new board_ctor();
     }
@@ -151,6 +153,36 @@ class Game
         let mouse_y = event.clientY - rect.top - g.settings.cvs_border_width;
 
         return GameCanvas.to_coordinate(mouse_x, mouse_y);
+    }
+
+    on_touch(event: TouchEvent)
+    {
+        let touches = event.changedTouches;
+        let first = touches[0];
+        let type = ""
+
+        switch (event.type)
+        {
+            case "touchstart":
+                type = "mousedown";
+                break;
+            case "touchmove":
+                type = "mousemove";
+                break;
+            case "touchend":
+                type = "mouseup";
+                break;
+        }
+
+        let simulated = document.createEvent("MouseEvent");
+        simulated.initMouseEvent(
+            type, true, true, window, 1,
+            first.screenX, first.screenY,
+            first.clientX, first.clientY, false,
+            false, false, false, 0, null);
+
+        first.target.dispatchEvent(simulated);
+        event.preventDefault();
     }
 
     on_mouse_move(event: MouseEvent): void

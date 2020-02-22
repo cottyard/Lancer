@@ -35,6 +35,10 @@ def send_static_js():
 def send_static_css():
     return send_from_directory(static_dir, 'app.css')
 
+@app.route('/app_mobile.css')
+def send_static_css_mobile():
+    return send_from_directory(static_dir, 'app_mobile.css')
+
 @app.route('/game/<string:game_id>')
 def get_game(game_id):
     game_id = uuid.UUID(game_id)
@@ -200,7 +204,7 @@ class Session:
             del cls.session_map[session.session_id]
 
 def start():
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0', port=80)
 
 if __name__ == '__main__':
     start()
