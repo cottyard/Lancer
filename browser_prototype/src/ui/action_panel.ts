@@ -214,7 +214,7 @@ class ActionPanel {
     getMainUnit(action: Action): Unit {
         const unit = action.type === ActionType.Recruit
             ? new action.unit_type(this.game.player)
-            : this.game.displaying_board.at(action.move.from);
+            : this.game.board!.at(action.move.from);
         if (unit == null) {
             throw new Error("Action on non-existing unit.");
         }
@@ -224,7 +224,7 @@ class ActionPanel {
     getTargetUnit(action: Action): Unit | null {
         if (action.type === ActionType.Attack || action.type === ActionType.Defend)
         {
-            return this.game.displaying_board.at(action.move.to);
+            return this.game.board!.at(action.move.to);
         }
         return null;
     }
