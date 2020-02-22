@@ -303,6 +303,19 @@ class Game
         }
     }
 
+    view_this_round()
+    {
+        if (!this.board)
+        {
+            return;
+        }
+
+        this.displaying_board = this.board;
+        this.render_board();
+        this.clear_animate();
+        this.render_indicators();
+    }
+
     update_game()
     {
         if (this.session_id)
@@ -341,6 +354,8 @@ class Game
                 {
                     return;
                 }
+
+                this.current_game_id = game_id;
 
                 switch (game_status)
                 {
@@ -390,6 +405,7 @@ class Game
                 this.last_round_board = this.board;
                 this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
                     .deserialize(board_payload);
+                this.displaying_board = this.board;
 
                 this.render_board();
                 this.player_move.moves = [];

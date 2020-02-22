@@ -17,12 +17,13 @@ class StatusBar {
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-end",
+            height: "40px"
         });
 
         if (!this.game.is_playing())
         {
             let new_game = DomHelper.createButton();
-            new_game.onclick = () => { g.game?.new_game(); };
+            new_game.onclick = () => { this.game.new_game(); };
             
             this.dom_element.appendChild(new_game);
 
@@ -57,7 +58,7 @@ class StatusBar {
                 else
                 {
                     submit_button.innerText = "Submit Move";
-                    submit_button.onclick = () => { g.game?.submit_move(); };
+                    submit_button.onclick = () => { this.game.submit_move(); };
                 }
             }
             else
@@ -126,10 +127,11 @@ class StatusBar {
             let last_round = DomHelper.createButton();
             last_round.innerText = "What Happend"
             this.dom_element.appendChild(last_round);
-            last_round.onmouseenter = () => { this.game.view_last_round(); };
+            last_round.onmouseenter = () => { 
+                this.game.view_last_round(); 
+            };
             last_round.onmouseleave = () => { 
-                this.game.render_board();
-                this.game.render_indicators();
+                this.game.view_this_round();
             };
     
             let heap_map = DomHelper.createButton();
