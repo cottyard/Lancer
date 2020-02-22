@@ -111,7 +111,16 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
             unit, _ = arriver
             board.put(position, unit)
         
-        if outcome.arriver_map.count() == 1:
+        if outcome.is_skirmish():
+            if outcome.tied():
+                _, position_1 = outcome.arriver_map.get(player_1)
+                _, position_2 = outcome.arriver_map.get(player_2)
+                victims.extend([position_1, position_2])
+            else:
+                player_lost = opponent(outcome.player_won)
+                _, unit_position = outcome.arriver_map.get(player_lost)
+                victims.append(unit_position)
+        else:
             player_invader = outcome.arriver_map.arrived_players()[0]
             _, position_from = outcome.arriver_map.get(player_invader)
             
@@ -120,14 +129,6 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
                     victims.append(position)
             else:
                 victims.append(position_from)
-        elif outcome.tied():
-            _, position_1 = outcome.arriver_map.get(player_1)
-            _, position_2 = outcome.arriver_map.get(player_2)
-            victims.extend([position_1, position_2])
-        else:
-            player_lost = opponent(outcome.player_won)
-            _, unit_position = outcome.arriver_map.get(player_lost)
-            victims.append(unit_position)
 
     force_board.iterate_battles(settle_battle)
     return victims

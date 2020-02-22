@@ -112,6 +112,9 @@ class BattleOutcome:
     def tied(self):
         return self.player_won is None
 
+    def is_skirmish(self):
+        return self.arriver_map.count() > 1
+
 class ForceBoard:
     def __init__(self):
         self.reinforce_board = Board(ReinforcerMap)
