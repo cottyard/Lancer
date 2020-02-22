@@ -190,7 +190,7 @@ class SkillSet implements ISerializable
     equals(other: SkillSet): boolean
     {
         for (let i = -g.skill_range; i <= g.skill_range; i++) {
-            for (let j = -g.skill_range; j < g.skill_range; j++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++) {
                 if (this.map[i][j] != other.map[i][j])
                 {
                     return false;
