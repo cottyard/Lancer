@@ -350,8 +350,6 @@ class Game
         if (this.latest_game_id != this.current_game_id)
         {
             fetch_game(this.latest_game_id, (serialized_game) => {
-                this.status = GameStatus.WaitForPlayer;
-
                 let game_payload: string;
                 let game_id: string;
                 let game_status: number;
