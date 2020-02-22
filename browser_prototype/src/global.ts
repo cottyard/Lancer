@@ -7,7 +7,7 @@ class Module
     readonly board_size_y: number = 9;
     readonly grid_count: number = 9;
     readonly skill_range: number = 2;
-    readonly max_unit_count: number = 20;
+    readonly max_unit_count: number = 28;
     readonly layout_1st: UnitConstructor[] = [Archer, Wagon, Archer, Rider, King, Rider, Archer, Wagon, Archer];
     readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
     readonly all_unit_types: UnitConstructor[] = [
@@ -33,7 +33,7 @@ class Module
         'cvs_border_width': 3,
         'grid_size': this.cvs_size / 9,
         'piece_font': "40px Courier New",
-        'server_url': 'http://127.0.0.1:5000',
+        'server_url': window.location.href,
         'player_color_map': new Map<Player, string>()
     };
     private _action_style: Map<ActionType, string> | undefined;
@@ -48,9 +48,9 @@ class Module
     {
         'King':
             `-----
-            -xxx-
+            --x--
             -x-x-
-            -xxx-
+            --x--
             -----`,
         'Rider':
             `-x-x-
@@ -118,9 +118,9 @@ class Module
     {
         'King':
             `-----
-            -xxx-
+            --x--
             -x-x-
-            -xxx-
+            --x--
             -----`,
         'Rider':
             `-x-x-

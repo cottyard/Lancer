@@ -3,7 +3,7 @@ type callback = (res: string) => void;
 function remote_post(url: string, next: callback, data: string | null = null): void
 {
     let req = new XMLHttpRequest();
-    req.open('POST', `${g.settings.server_url}/${url}`);
+    req.open('POST', `${g.settings.server_url}${url}`);
     req.timeout = 8000;
 
     req.onreadystatechange = () => {
@@ -30,7 +30,7 @@ function remote_post(url: string, next: callback, data: string | null = null): v
 function remote_get(url: string, next: callback): void
 {
     let req = new XMLHttpRequest();
-    req.open('GET', `${g.settings.server_url}/${url}`);
+    req.open('GET', `${g.settings.server_url}${url}`);
     req.timeout = 8000;
 
     req.onreadystatechange = () => {
