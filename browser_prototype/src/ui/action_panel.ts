@@ -3,7 +3,7 @@ class ActionPanel {
     dom_element: HTMLDivElement;
     game: Game;
     dragging: null | {
-        action: Action,
+        action: DisplayAction,
         offsetX: number,
         offsetY: number,
         clientY: number,
@@ -35,12 +35,12 @@ class ActionPanel {
     render() {
         this.dom_element.innerHTML = "";
         
-        this.game.player_action[0].actions.forEach((action, index) => {
+        new DisplayPlayerAction(this.game.player_action[0]).actions.forEach((action, index) => {
             this.dom_element.appendChild(this.renderAction(action, index));
         });
     }
 
-    renderAction(action: Action, index: number): HTMLElement {
+    renderAction(action: DisplayAction, index: number): HTMLElement {
         const div = DomHelper.createDiv({
             display: "flex",
             flexDirection: "row",
@@ -80,7 +80,7 @@ class ActionPanel {
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.cost().toString(),
+            "🍞" + action.action.cost().toString(),
             {'font-weight': 'bold'}
         ));
 
@@ -100,7 +100,7 @@ class ActionPanel {
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
             this.game.player_move.moves.splice(
-                this.game.player_move.moves.findIndex(move => move.equals(action.move)),
+                this.game.player_move.moves.findIndex(move => move.equals(action.action.move)),
                 1);
             this.game.update_player_action();
             e.cancelBubble = true;
@@ -151,7 +151,7 @@ class ActionPanel {
             }
             
             // Update orders.
-            const dragging_move = this.dragging.action.move;
+            const dragging_move = this.dragging.action.action.move;
             const ordered_moves = this.game.player_move.moves
                 .map((move, index) => {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
@@ -196,7 +196,7 @@ class ActionPanel {
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
-            this.game.canvas.paint_grid_indicator(action.move.from);
+            this.game.canvas.paint_grid_indicator(action.action.move.from);
         });
 
         div.addEventListener("mouseleave", () => {
@@ -210,20 +210,20 @@ class ActionPanel {
         return div;
     }
 
-    getMainUnit(action: Action): Unit {
-        const unit = action.type === ActionType.Recruit
-            ? new action.unit_type(this.game.player)
-            : this.game.board!.at(action.move.from);
+    getMainUnit(action: DisplayAction): Unit {
+        const unit = action.type === DisplayActionType.Recruit
+            ? new action.action.unit_type(this.game.player)
+            : this.game.board!.at(action.action.move.from);
         if (unit == null) {
             throw new Error("Action on non-existing unit.");
         }
         return unit;
     }
 
-    getTargetUnit(action: Action): Unit | null {
-        if (action.type === ActionType.Attack || action.type === ActionType.Defend)
+    getTargetUnit(action: DisplayAction): Unit | null {
+        if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.game.board!.at(action.move.to);
+            return this.game.board!.at(action.action.move.to);
         }
         return null;
     }
@@ -249,18 +249,22 @@ class ActionPanel {
         return canvas;
     }
 
-    getActionTypeText(type: ActionType): string {
+    getActionTypeText(type: DisplayActionType): string {
         switch (type) {
-            case ActionType.Upgrade:
+            case DisplayActionType.Upgrade:
                 return "upgrading";
-            case ActionType.Defend:
+            case DisplayActionType.Defend:
                 return "defends";
-            case ActionType.Move:
+            case DisplayActionType.Move:
                 return "moving";
-            case ActionType.Attack:
+            case DisplayActionType.Attack:
                 return "attacks";
-            case ActionType.Recruit:
+            case DisplayActionType.Recruit:
                 return "recruited";
+            case DisplayActionType.MoveAssist:
+                return "assisting";
+            case DisplayActionType.AttackAssist:
+                return "assisting";
         }
     }
 }

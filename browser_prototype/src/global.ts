@@ -33,13 +33,7 @@ class Module
         'server_url': window.location.href,
         'player_color_map': new Map<Player, string>()
     };
-    private _action_style: Map<ActionType, string> | undefined;
-    get action_style():  Map<ActionType, string> {
-        if (this._action_style == null) {
-            throw new Error("Not initialized.");
-        }
-        return this._action_style;
-    }
+    action_style = new Map<DisplayActionType, string>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined } =
     {
@@ -186,12 +180,14 @@ class Module
             }
         });
 
-        this._action_style = new Map<ActionType, string>([
-            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
-            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-            [ActionType.Move, g.const.STYLE_BLACK],
-            [ActionType.Upgrade, g.const.STYLE_CYAN],
-            [ActionType.Recruit, g.const.STYLE_CYAN]
+        this.action_style = new Map<DisplayActionType, string>([
+            [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
+            [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+            [DisplayActionType.Move, g.const.STYLE_BLACK],
+            [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
+            [DisplayActionType.Recruit, g.const.STYLE_CYAN],
+            [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
+            [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
         ]);
     }
 }

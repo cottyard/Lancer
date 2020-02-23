@@ -9,6 +9,59 @@ enum GameStatus
     Tied
 }
 
+enum DisplayActionType
+{
+    Upgrade = 1,
+    Defend = 2,
+    Move = 3,
+    Attack = 4,
+    Recruit = 5,
+    MoveAssist = 6,
+    AttackAssist = 7
+}
+
+class DisplayAction
+{
+    constructor(public type: DisplayActionType, public action: Action)
+    {
+    }
+}
+
+class DisplayPlayerAction
+{
+    player: Player;
+    actions: DisplayAction[];
+
+    constructor(player_action: PlayerAction)
+    {
+        this.player = player_action.player;
+
+        let first_arriver = new HashMap<Coordinate, null>();
+        this.actions = player_action.actions.map((a: Action) =>
+        {
+            let type = <DisplayActionType><unknown>a.type;
+            if (a.type == ActionType.Attack || a.type == ActionType.Move)
+            {
+                let arriver = first_arriver.get(a.move.to);
+                first_arriver.put(a.move.to, null);
+                let is_first = !arriver
+                if (is_first)
+                {
+                    if (a.type == ActionType.Attack)
+                    {
+                        type = DisplayActionType.AttackAssist;
+                    }
+                    else
+                    {
+                        type = DisplayActionType.MoveAssist;
+                    }
+                }
+            }
+            return new DisplayAction(type, a);
+        });
+    }
+}
+
 class Game
 {
     canvas: GameCanvas;
@@ -98,7 +151,7 @@ class Game
         }
         for (let player_action of this.displaying_actions)
         {
-            this.canvas.paint_actions(player_action, this.displaying_board);
+            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
         }
         if (this.show_heat)
         {

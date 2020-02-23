@@ -167,34 +167,24 @@ class GameCanvas
         });
     }
 
-    paint_actions(player_action: PlayerAction, board: Board<Unit>)
+    paint_actions(player_action: DisplayPlayerAction, board: Board<Unit>)
     {
-        let first_arriver = new HashMap<Coordinate, true>();
-        for (let action of player_action.actions)
+        for (let a of player_action.actions)
         {
-            let is_first = false;
-            if (action.type == ActionType.Attack || 
-                action.type == ActionType.Move)
-            {
-                let arriver = first_arriver.get(action.move.to);
-                first_arriver.put(action.move.to, true);
-                is_first = !arriver;
-            }
-
-            let skill = action.move.get_skill();
-            let color = g.action_style.get(action.type)!;
+            let skill = a.action.move.get_skill();
+            let color = g.action_style.get(a.type)!;
             let shrink = g.settings.grid_size / 2 - 5;
             let control_distance = g.settings.grid_size * 0.75;
-            let from = GameCanvas.get_grid_center(action.move.from);
-            let to = GameCanvas.get_grid_center(action.move.to);
-            let width = is_first ? 5 : 3;
+            let from = GameCanvas.get_grid_center(a.action.move.from);
+            let to = GameCanvas.get_grid_center(a.action.move.to);
+            let width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
 
             let go_around = false;
 
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) && 
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
             {
-                let middleground = action.move.from.add(skill.x / 2, skill.y / 2);
+                let middleground = a.action.move.from.add(skill.x / 2, skill.y / 2);
                 if (!middleground)
                 {
                     throw Error("action move has no middleground");
@@ -212,11 +202,11 @@ class GameCanvas
                 let sy = Math.sign(skill.y);
                 using(new Renderer(this.am_ctx), (renderer) => {
                     renderer.curved_arrow(
-                        GameCanvas.get_grid_center(action.move.from),
+                        GameCanvas.get_grid_center(a.action.move.from),
                         new Position(
                             (from.x + to.x) / 2 - sy * control_distance,
                             (from.y + to.y) / 2 + sx * control_distance),
-                        GameCanvas.get_grid_center(action.move.to),
+                        GameCanvas.get_grid_center(a.action.move.to),
                         color, shrink, width
                     );
                 });
@@ -225,16 +215,16 @@ class GameCanvas
             {
                 using(new Renderer(this.am_ctx), (renderer) => {
                     renderer.arrow(
-                        GameCanvas.get_grid_center(action.move.from),
-                        GameCanvas.get_grid_center(action.move.to),
+                        GameCanvas.get_grid_center(a.action.move.from),
+                        GameCanvas.get_grid_center(a.action.move.to),
                         color, shrink, width
                     );
                 });
             }
 
-            if (action.type == ActionType.Recruit)
+            if (a.type == DisplayActionType.Recruit)
             {
-                this.paint_unit(CanvasUnitFactory(new action.unit_type(player_action.player)), action.move.from, true);
+                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
             }
         }
     }
