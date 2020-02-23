@@ -76,6 +76,12 @@ class StatusBar {
         {
             let player_name = DomHelper.createTextArea();
             player_name.textContent = this.game.player_name;
+            player_name.onfocus = () => { player_name.select() };
+            player_name.onkeyup = () => {
+                if (player_name.value) { 
+                    this.game.player_name = player_name.value; 
+                }
+            };
             player_name.style.width = "80px";
             player_name.style.resize = "none";
             this.dom_element.appendChild(player_name);
