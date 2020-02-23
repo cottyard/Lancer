@@ -396,6 +396,7 @@ class Game
     {
         this.session_id = session;
         this.player_name = player_name;
+        this.current_game_id = null;
         this.start_query_game();
     }
 
