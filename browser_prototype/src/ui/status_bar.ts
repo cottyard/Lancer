@@ -1,12 +1,62 @@
 class StatusBar {
     dom_element: HTMLDivElement;
     game: Game;
-    submit_button: HTMLButtonElement | null = null;
-    view_last_round: boolean = false;
+    submit: HTMLButtonElement | null = null;
+    last_round: HTMLButtonElement | null = null;
+    heat: HTMLButtonElement | null = null;
+    private _view_last_round: boolean = false;
+    private _show_heat: boolean = false;
+    private view_last_round_handle: number | null = null;
 
     constructor(dom_element: HTMLDivElement, game: Game) {
         this.dom_element = dom_element;
         this.game = game;
+    }
+
+    set view_last_round(value: boolean)
+    {
+        this._view_last_round = value;
+        this.game.show_last_round = value;
+        this.update_last_round_name();
+    }
+    
+    get view_last_round()
+    {
+        return this._view_last_round;
+    }
+
+    set show_heat(value: boolean)
+    {
+        this._show_heat = value;
+        this.game.show_heat = value;
+        this.update_heat_name();
+    }
+
+    get show_heat()
+    {
+        return this._show_heat;
+    }
+
+    update_button_names()
+    {
+        this.update_last_round_name();
+        this.update_heat_name();
+    }
+
+    update_last_round_name()
+    {
+        if (this.last_round)
+        {
+            this.last_round.innerText = this.view_last_round ? "Return To Now" : "Show Last Round";
+        }
+    }
+
+    update_heat_name()
+    {
+        if (this.heat)
+        {
+            this.heat.innerText = this.show_heat ? "Heat:  On" : "Heat: Off";
+        }
     }
 
     render() {
@@ -69,7 +119,7 @@ class StatusBar {
             }
     
             this.dom_element.appendChild(submit_button);
-            this.submit_button = submit_button;
+            this.submit = submit_button;
         }
         
         if (!this.game.is_playing())
@@ -110,7 +160,7 @@ class StatusBar {
             }
 
             let status = DomHelper.createText(text, {
-                marginLeft: "10px",
+                margin: "15px",
                 fontWeight: "bold"
             });
             this.dom_element.appendChild(status);
@@ -132,68 +182,57 @@ class StatusBar {
 
         if (!this.game.is_not_started() && !this.game.is_in_queue())
         {
-            let last_round = DomHelper.createButton();
+            this.last_round = DomHelper.createButton();
+            
+            this.last_round.onclick = () => { 
+                this.view_last_round = !this.view_last_round;
+            };
 
-            if (this.view_last_round)
-            {
-                last_round.innerText = "Return To Now";
-                last_round.onclick = () => { 
-                    this.view_last_round = false;
-                    this.game.view_this_round();
-                };
-            }
-            else
-            {
-                last_round.innerText = "Show Last Round";
-                if (this.game.show_last_round)
+            this.last_round.onmouseenter = () => { 
+                if (!this.view_last_round)
                 {
-                    last_round.onmouseleave = () => {
-                        this.game.view_this_round();
-                    };
+                    this.view_last_round_handle = setTimeout(() => {
+                        this.game.show_last_round = true;
+                    }, 200);
                 }
-                else
+            };
+            this.last_round.onmouseleave = () => {
+                if (!this.view_last_round)
                 {
-                    last_round.onmouseenter = () => { 
-                        this.game.view_last_round();
-                    };
+                    this.game.show_last_round = false;
                 }
-
-                last_round.onclick = () => { 
-                    this.view_last_round = true;
-                    this.game.view_last_round();
-                };
-            }
+                if (this.view_last_round_handle)
+                {
+                    clearTimeout(this.view_last_round_handle);
+                    this.view_last_round_handle = null;
+                }
+            };
 
             if (!this.game.last_round_board)
             {
-                last_round.disabled = true;
+                this.last_round.disabled = true;
             }
-            this.dom_element.appendChild(last_round);
-            
+            this.dom_element.appendChild(this.last_round);
 
-            let heat = DomHelper.createButton();
-            if (this.game.show_heat)
-            {
-                heat.innerText = "Heat  On";
-            }
-            else
-            {
-                heat.innerText = "Heat Off";
-                heat.onmouseenter = () => { 
-                    this.game.render_heat();
-                };
-                heat.onmouseleave = () => { 
-                    this.game.render_indicators();
-                };
-            }
 
-            heat.onclick = () => { 
-                this.game.show_heat = !this.game.show_heat;
+            this.heat = DomHelper.createButton();
+                
+            this.heat.onmouseenter = () => { 
+                this.game.render_heat();
+            };
+            this.heat.onmouseleave = () => { 
+                this.game.render_indicators();
+            };
+
+            this.heat.onclick = () => { 
+                this.show_heat = !this.show_heat;
                 this.game.render_indicators();
             };
             
-            this.dom_element.appendChild(heat);
+            this.dom_element.appendChild(this.heat);
         }
+
+        this.update_button_names();
     }
 
     player_status(

@@ -74,17 +74,17 @@ class Game
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
     show_heat: boolean = false;
-    show_last_round: boolean = false;
 
     player: Player = Player.P1;
     board: Board<Unit> | null = null;
     last_round_board: Board<Unit> | null = null;
     displaying_board: Board<Unit>;
+    private _show_last_round: boolean = false;
 
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
     player_names: Map<Player, string> = new Map<Player, string>();
     supplies: Map<Player, number> = new Map<Player, number>();
-    status: GameStatus = GameStatus.NotStarted;
+    private _status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
     last_round_victims: Coordinate[] = [];
     displaying_actions: PlayerAction[] = [];
@@ -129,6 +129,57 @@ class Game
         this.displaying_board = new board_ctor();
     }
 
+    set status(value: GameStatus)
+    {
+        this._status = value;
+        this.render_indicators();
+        this.status_bar.render();
+
+        if (value == GameStatus.InQueue || value == GameStatus.WaitForOpponent)
+        {
+            this.start_query_game();
+        }
+        else
+        {
+            this.stop_query_game();
+        }
+
+        if (value == GameStatus.InQueue)
+        {
+            this.current_game_id = null;
+        }
+    }
+
+    get status()
+    {
+        return this._status;
+    }
+
+    set show_last_round(value: boolean)
+    {
+        if (value && this.last_round_board)
+        {
+            this._show_last_round = true;
+            this.displaying_board = this.last_round_board;
+            this.displaying_actions = this.last_round_actions;
+            this.render_board();
+            this.render_indicators();
+        }
+        else if (!value && this.board)
+        {
+            this._show_last_round = false;
+            this.displaying_board = this.board;
+            this.displaying_actions = this.player_action;
+            this.render_board();
+            this.render_indicators();
+        }
+    }
+
+    get show_last_round()
+    {
+        return this._show_last_round;
+    }
+
     render_indicators(): void
     {
         this.clear_animate();
@@ -165,7 +216,6 @@ class Game
             }
         }
         this.action_panel.render();
-        this.status_bar.render();
     }
 
     clear_grid_incicators(): void
@@ -329,6 +379,7 @@ class Game
         
         this.render_board();
         this.render_indicators();
+        this.status_bar.render();
     }
 
     new_game()
@@ -341,9 +392,7 @@ class Game
         new_game(player_name, (session: string) => {
             console.log('new session:', session)
             this.session_id = session;
-            this.start_query_game();
             this.status = GameStatus.InQueue;
-            this.render_indicators();
         });
     }
 
@@ -353,9 +402,7 @@ class Game
         {
             submit_move(this.current_game_id, this.player_move, (res: string) => {
                 console.log('submit:', res)
-                this.start_query_game();
                 this.status = GameStatus.WaitForOpponent;
-                this.render_indicators();
             });
         }
     }
@@ -396,34 +443,7 @@ class Game
     {
         this.session_id = session;
         this.player_name = player_name;
-        this.current_game_id = null;
-        this.start_query_game();
-    }
-
-    view_last_round()
-    {
-        if (!this.last_round_board)
-        {
-            return;
-        }
-        this.show_last_round = true;
-        this.displaying_board = this.last_round_board;
-        this.displaying_actions = this.last_round_actions;
-        this.render_board();
-        this.render_indicators();
-    }
-
-    view_this_round()
-    {
-        if (!this.board)
-        {
-            return;
-        }
-        this.show_last_round = false;
-        this.displaying_board = this.board;
-        this.displaying_actions = this.player_action;
-        this.render_board();
-        this.render_indicators();
+        this.status = GameStatus.InQueue;
     }
 
     update_game()
@@ -468,21 +488,7 @@ class Game
             }
 
             this.current_game_id = game_id;
-
-            this.status = GameStatus.WaitForPlayer;
-            switch (game_status)
-            {
-                case 1:
-                    this.status = GameStatus.WonByPlayer1;
-                    break;
-                case 2:
-                    this.status = GameStatus.WonByPlayer2;
-                    break;
-                case 3:
-                    this.status = GameStatus.Tied;
-                    break;
-            }
-
+            
             let player_name_check = false;
             for (let p in player_name_map)
             {
@@ -498,9 +504,7 @@ class Game
 
             if (!player_name_check)
             {
-                this.stop_query_game();
                 this.status = GameStatus.NotStarted;
-                this.render_indicators();
                 throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
             }
             
@@ -531,8 +535,22 @@ class Game
             
             this.player_move.moves = [];
             this.update_player_action();
-            this.view_this_round();
-            this.stop_query_game();
+            this.show_last_round = false;
+
+            switch (game_status)
+            {
+                case 1:
+                    this.status = GameStatus.WonByPlayer1;
+                    break;
+                case 2:
+                    this.status = GameStatus.WonByPlayer2;
+                    break;
+                case 3:
+                    this.status = GameStatus.Tied;
+                    break;
+                default:
+                    this.status = GameStatus.WaitForPlayer;
+            }
         });
     }
 
@@ -554,7 +572,8 @@ class Game
         return [
             GameStatus.WonByPlayer1, 
             GameStatus.WonByPlayer2, 
-            GameStatus.Tied].indexOf(this.status) > -1;
+            GameStatus.Tied
+        ].indexOf(this.status) > -1;
     }
 
     is_not_started(): boolean
