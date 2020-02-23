@@ -258,13 +258,14 @@ class Game
     {
         this.canvas.paint_background();
 
-        let lancer = new Lancer(Player.P1, <BasicUnit>this.displaying_board.at(new Coordinate(1,7)));
+        let random_unit = g.all_unit_types[Math.floor(Math.random() * g.all_unit_types.length)];
+
+        let lancer = new random_unit(Player.P1, <BasicUnit>this.displaying_board.at(new Coordinate(1,7)));
         lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
         this.displaying_board.put(new Coordinate(4,4), lancer);
         
         this.render_board();
         this.render_indicators();
-        this.new_game();
     }
 
     new_game()

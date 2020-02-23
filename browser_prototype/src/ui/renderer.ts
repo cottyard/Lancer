@@ -385,7 +385,7 @@
         this.ctx.globalAlpha = 1;
     }
 
-    hat()
+    hat(ribbon_color: string | null = null)
     {
         this.set_color(g.const.STYLE_BLACK);
         let hat_size = 18
@@ -394,6 +394,19 @@
             new Position(-hat_size * 1.2, hat_size),
             new Position(hat_size * 0.8, hat_size),
             2, g.const.STYLE_WHITE);
+
+        if (ribbon_color)
+        {
+            this.ctx.save();
+            this.ctx.clip();
+            this.rectangle(new Position(-15, 7), 30, 5, 2, ribbon_color);
+            this.triangle(
+                new Position(0, 0), 
+                new Position(-hat_size * 1.2, hat_size),
+                new Position(hat_size * 0.8, hat_size),
+                2);
+            this.ctx.restore();
+        }
     }
 
     horns()

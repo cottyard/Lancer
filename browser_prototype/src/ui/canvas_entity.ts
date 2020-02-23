@@ -84,7 +84,7 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     paint_halo(renderer: Renderer): void
     {
-        if (this.unit.is_advanced() && this.unit.is_perfect())
+        if (this.unit.is_perfect())
         {
             return;
         }
@@ -126,9 +126,9 @@ class CanvasArcher extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void 
     {
-        renderer.soldier(this.color, this.unit.is_perfect());
+        renderer.soldier(this.color);
         renderer.translate(new Position(3, -30));
-        renderer.hat();
+        renderer.hat(this.unit.is_perfect() ? this.color : null);
     }
 }
 
