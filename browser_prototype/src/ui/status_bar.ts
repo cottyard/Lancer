@@ -116,7 +116,7 @@ class StatusBar {
             this.dom_element.appendChild(status);
         }
 
-        if (!this.game.is_not_started() && !this.game.is_in_queue())
+        if (this.game.is_playing())
         {
             [Player.P1, Player.P2].forEach(player => {
                 this.dom_element.appendChild(this.player_status(
@@ -130,7 +130,7 @@ class StatusBar {
             });
         }
 
-        if (this.game.is_playing())
+        if (!this.game.is_not_started())
         {
             let last_round = DomHelper.createButton();
 
