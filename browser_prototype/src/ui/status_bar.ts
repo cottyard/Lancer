@@ -99,7 +99,8 @@ class StatusBar {
             {
                 text = 'Game is tied.';
             }
-            else if (this.game.status == GameStatus.WonByPlayer1 && this.game.player == Player.P1)
+            else if ((this.game.status == GameStatus.WonByPlayer1 && this.game.player == Player.P1) ||
+                     (this.game.status == GameStatus.WonByPlayer2 && this.game.player == Player.P2))
             {
                 text = 'You are victorious!';
             }
