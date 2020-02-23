@@ -188,6 +188,7 @@ class Game
     on_mouse_move(event: MouseEvent): void
     {
         let coord = this.get_coordinate(event);
+
         if (!this.current?.equals(coord))
         {
             this.current = coord;
@@ -250,8 +251,16 @@ class Game
 
     update_options(coord: Coordinate)
     {
-        this.options_capable = Rule.reachable_by_unit(this.displaying_board, coord);
-        this.options_upgrade = Rule.upgradable_by_unit(this.displaying_board, coord);
+        let unit = this.displaying_board.at(coord);
+        if (!unit)
+        {
+            this.options_capable = Rule.able_to_reach(this.displaying_board, coord);
+        }
+        else
+        {
+            this.options_capable = Rule.reachable_by_unit(this.displaying_board, coord);
+            this.options_upgrade = Rule.upgradable_by_unit(this.displaying_board, coord);
+        }
     }
 
     run()

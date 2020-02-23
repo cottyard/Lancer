@@ -137,6 +137,27 @@ class Rule
         return coordinates;
     }
     
+    static able_to_reach(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    {
+        let able: Coordinate[] = [];
+        board.iterate_units((unit, c) => {
+            let skill;
+            try
+            {
+                skill = new Skill(coord.x - c.x, coord.y - c.y);
+            }
+            catch
+            {
+                return;
+            }
+            if (unit.capable(skill))
+            {
+                able.push(c);
+            }
+        })
+        return able;
+    } 
+
     static reachable_by_unit(board: Board<Unit>, coord: Coordinate): Coordinate[]
     {
         let unit = board.at(coord);
