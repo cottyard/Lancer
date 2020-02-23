@@ -36,16 +36,16 @@ class DisplayPlayerAction
     {
         this.player = player_action.player;
 
-        let first_arriver = new HashMap<Coordinate, null>();
+        let first_arriver = new HashMap<Coordinate, true>();
         this.actions = player_action.actions.map((a: Action) =>
         {
             let type = <DisplayActionType><unknown>a.type;
             if (a.type == ActionType.Attack || a.type == ActionType.Move)
             {
                 let arriver = first_arriver.get(a.move.to);
-                first_arriver.put(a.move.to, null);
-                let is_first = !arriver
-                if (is_first)
+                first_arriver.put(a.move.to, true);
+                let is_first = !arriver;
+                if (!is_first)
                 {
                     if (a.type == ActionType.Attack)
                     {
@@ -308,6 +308,7 @@ class Game
         if (!unit)
         {
             this.options_capable = Rule.able_to_reach(this.displaying_board, coord);
+            this.options_upgrade = [];
         }
         else
         {
