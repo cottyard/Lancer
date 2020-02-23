@@ -169,6 +169,7 @@ class Position:
 
 class Unit:
     display = ""
+    level = 0
     
     def __init__(self, owner, skillset=None, flip_skillset=False):
         self.owner = owner
@@ -210,7 +211,6 @@ class Unit:
         if self.is_promotion_ready():
             for creator in promotion_map[type(self)]:
                 ultimate.union(potential_skillset_map[creator.display])
-
         return ultimate
 
     def get_promoted(self, skill):
@@ -223,6 +223,14 @@ class Unit:
         promoted = creator(self.owner, skillset=self.skillset)
         promoted.endow(skill)
         return promoted
+    
+    def duel(self, other):
+        if self.level == other.level:
+            return None
+        elif self.level > other.level:
+            return self
+        else:
+            return other
 
     @classmethod
     def which_creator_has_skill(self, creator_list, skill):
@@ -342,36 +350,47 @@ class SkillSet:
 
 class Rider(Unit):
     display = "RDR"
+    level = 2
 
 class Soldier(Unit):
     display = "SLD"
+    level = 1
 
 class Archer(Unit):
     display = "ACH"
+    level = 1
 
 class Barbarian(Unit):
     display = "BAR"
+    level = 1
 
 class Lancer(Unit):
     display = "LAN"
+    level = 3
 
 class Knight(Unit):
     display = "KNT"
+    level = 3
 
 class Swordsman(Unit):
     display = "SWD"
+    level = 2
 
 class Spearman(Unit):
     display = "SPR"
+    level = 2
 
 class Warrior(Unit):
     display = "WAR"
+    level = 2
 
 class King(Unit):
     display = "KING"
+    level = 1
 
 class Wagon(Unit):
     display = "WAG"
+    level = 0
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {

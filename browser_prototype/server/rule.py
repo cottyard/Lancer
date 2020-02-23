@@ -22,7 +22,7 @@ def make_move(board, player_move_list):
 
     run_upgrade_phase(next_board, player_action_list)
     run_defend_phase(board, player_action_list, force_board)
-    victim_position_list += run_clash_phase(next_board, player_action_list)
+    victim_position_list += run_clash_phase(next_board, player_action_list, force_board)
     victim_position_list += run_battle_phase(next_board, player_action_list, force_board, board)
     run_recruit_phase(next_board, player_action_list)
 
@@ -52,7 +52,7 @@ def run_defend_phase(board, player_action_list, force_board):
                 (unit, action.move.position_from))
     return force_board
 
-def run_clash_phase(board, player_action_list):
+def run_clash_phase(board, player_action_list, force_board):
     clash_board = Board()
     clashing_actions = []
     victims = []
@@ -76,9 +76,21 @@ def run_clash_phase(board, player_action_list):
         player_action.extract_actions(lambda a: a in clashing_actions)
     
     for action_1, action_2 in list(zip(clashing_actions[0::2], clashing_actions[1::2])):
-        board.remove(action_1.move.position_from)
-        board.remove(action_2.move.position_from)
-        victims.extend([action_1.move.position_from, action_2.move.position_from])
+        u1 = board.remove(action_1.move.position_from)
+        u2 = board.remove(action_2.move.position_from)
+        
+        surviver = u1.duel(u2)
+        if surviver is None:
+            victims.extend([action_1.move.position_from, action_2.move.position_from])
+        else:
+            a = action_1 if surviver == u1 else action_2
+            a_v = action_2 if surviver == u1 else action_1
+            force_board.arrive(
+                a.move.position_to,
+                surviver.owner,
+                (surviver, a.move.position_from)
+            )
+            victims.append(a_v.move.position_from)
 
     return victims
 

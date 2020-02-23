@@ -83,6 +83,9 @@ class ArriverMap:
     
     def get(self, player):
         return self.map[player]
+    
+    def arrive(self, player, unit):
+        self.map[player] = unit
 
 class ReinforcerMap:
     def __init__(self):
@@ -120,19 +123,29 @@ class ForceBoard:
         self.reinforce_board = Board(ReinforcerMap)
         self.arrive_board = Board(ArriverMap)
 
-    def heat(self, position, player):
-        rmap = self.reinforce_board.at(position)
-        amap = self.arrive_board.at(position)
-        heat = len(rmap.get(player))
-        if amap.get(player) is not None:
-            heat += 1
-        return heat
+    def reinforcer_count(self, position, player):
+        return len(self.reinforce_board.at(position).get(player))
 
     def battle(self, position):
         winner = None
-        for player, other in [(player_1, player_2), (player_2, player_1)]:
-            if self.heat(position, player) > self.heat(position, other):
-                winner = player
+        r1 = self.reinforcer_count(position, player_1)
+        r2 = self.reinforcer_count(position, player_2)
+        if r1 > r2:
+            winner = player_1
+        elif r2 > r1:
+            winner = player_2
+        else:
+            amap = self.arrive_board.at(position)
+            if amap.count() == 1:
+                winner = amap.arrived_players()[0]
+            else:
+                u1, _ = amap.get(player_1)
+                u2, _ = amap.get(player_2)
+                surviver = u1.duel(u2)
+                if surviver:
+                    winner = surviver.owner
+                else:
+                    winner = None
 
         return BattleOutcome(
             winner, 
@@ -148,7 +161,7 @@ class ForceBoard:
     def arrive(self, position, player, unit):
         amap = self.arrive_board.at(position)
         assert(amap.get(player) is None)
-        amap.map[player] = unit
+        amap.arrive(player, unit)
 
     def arriver(self, position, player):
         return self.arrive_board.at(position).get(player)
