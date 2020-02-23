@@ -130,7 +130,7 @@ class StatusBar {
             });
         }
 
-        if (!this.game.is_not_started())
+        if (!this.game.is_not_started() && !this.game.is_in_queue())
         {
             let last_round = DomHelper.createButton();
 
@@ -147,7 +147,7 @@ class StatusBar {
                 last_round.innerText = "Show Last Round";
                 if (this.game.show_last_round)
                 {
-                    last_round.onmouseleave = () => { 
+                    last_round.onmouseleave = () => {
                         this.game.view_this_round();
                     };
                 }
