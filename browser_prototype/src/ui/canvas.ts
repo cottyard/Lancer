@@ -147,7 +147,16 @@ class GameCanvas
 
             for (let player of [Player.P1, Player.P2])
             {
-                for (let i = 1; i <= heat.get(player); i++)
+                let h = heat.get(player);
+                let repeat = h;
+                if (h > 5)
+                {
+                    repeat = 1;
+                    renderer.ctx.font="Bold 11px Sans-Serif";
+                    renderer.ctx.fillText(h.toString(), offset - 3, size * 5 + 5);
+                }
+                
+                for (let i = 1; i <= repeat; i++)
                 {
                     renderer.circle(
                         new Position(offset, size * 2.5 * i), 
