@@ -13,7 +13,7 @@ class Module
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
-    skills_for_spawning: SkillSet;
+    skills_for_spawning: SkillSet | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",

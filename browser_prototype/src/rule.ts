@@ -177,7 +177,7 @@ class Rule
             {
                 if (coord.y == row)
                 {
-                    return Rule.reachable_by_skills(coord, g.skills_for_spawning.as_list());
+                    return Rule.reachable_by_skills(coord, g.skills_for_spawning!.as_list());
                 }
             }
             return [];
