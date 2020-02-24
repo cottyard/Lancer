@@ -86,7 +86,9 @@ class ActionPanel {
 
         // Cross & callback.
         const cross = div.appendChild(DomHelper.createText("✘", {
-            fontSize: "40px"
+            fontSize: "20px",
+            padding: "20px", 
+            margin: "-10px"
         }));
         cross.addEventListener("mouseenter", () => {
             DomHelper.applyStyle(cross, {
