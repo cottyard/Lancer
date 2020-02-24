@@ -520,6 +520,7 @@ class Game
             }
 
             this.last_round_victims = [];
+            this.last_round_trophy = [];
             for (let [victim, trophy] of victims)
             {
                 let coord = Coordinate.deserialize(victim);
