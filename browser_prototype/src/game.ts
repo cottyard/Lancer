@@ -68,12 +68,12 @@ class Game
     action_panel: ActionPanel;
     status_bar: StatusBar;
 
-    // TODO: add setters to these members to auto trigger rendering
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
     show_heat: boolean = false;
+    show_threats: boolean = true;
 
     player: Player = Player.P1;
     board: Board<Unit> | null = null;
@@ -223,6 +223,7 @@ class Game
     {
         this.current = null;
         this.selected = null;
+        this.show_threats = true;
         this.options_capable = [];
         this.options_upgrade = [];
         this.render_indicators();
@@ -239,7 +240,7 @@ class Game
         let heatmap = new Board<Heat>(() => new Heat());
 
         this.displaying_board.iterate_units((unit, coord) => {
-            for (let c of Rule.reachable_by_unit(this.displaying_board, coord))
+            for (let c of Rule.reachable_by(this.displaying_board, coord))
             {
                 heatmap.at(c)?.heatup(unit.owner);
             }
@@ -306,18 +307,11 @@ class Game
 
     on_mouse_down(event: MouseEvent): void
     {
-        if (this.status != GameStatus.WaitForPlayer)
-        {
-            return;
-        }
-
         let coord = this.get_coordinate(event);
-        let unit = this.displaying_board.at(coord);
-        if (unit && unit.owner != this.player)
-        {
-            return;
-        }
         this.selected = coord;
+        this.show_threats = false;
+        this.update_options(coord);
+        this.render_indicators();
     }
     
     on_mouse_up(event: MouseEvent): void
@@ -326,8 +320,10 @@ class Game
         if (this.selected)
         {
             let selected = this.selected;
+
             this.player_move.moves = this.player_move.moves.filter(
-                (move) => !move.from.equals(selected));
+                (move) => !move.from.equals(selected)
+            );
 
             this.player_move.append(new Move(this.selected, this.current));
 
@@ -342,6 +338,7 @@ class Game
             }
         }
         this.selected = null;
+        this.show_threats = true;
         this.update_options(this.current);
         this.render_indicators();
     }
@@ -356,16 +353,15 @@ class Game
 
     update_options(coord: Coordinate)
     {
-        let unit = this.displaying_board.at(coord);
-        if (!unit)
+        if (this.show_threats)
         {
             this.options_capable = Rule.able_to_reach(this.displaying_board, coord);
             this.options_upgrade = [];
         }
         else
         {
-            this.options_capable = Rule.reachable_by_unit(this.displaying_board, coord);
-            this.options_upgrade = Rule.upgradable_by_unit(this.displaying_board, coord);
+            this.options_capable = Rule.reachable_by(this.displaying_board, coord);
+            this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);
         }
     }
 

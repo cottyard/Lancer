@@ -158,22 +158,28 @@ class Rule
         return able;
     } 
 
-    static reachable_by_unit(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    static reachable_by(board: Board<Unit>, coord: Coordinate): Coordinate[]
     {
         let unit = board.at(coord);
         if (!unit)
         {
             return [];
         }
-
         return Rule.reachable_by_skills(coord, unit.current.as_list());
     }
 
-    static upgradable_by_unit(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    static upgradable_by(board: Board<Unit>, coord: Coordinate): Coordinate[]
     {
         let unit = board.at(coord);
         if (!unit)
         {
+            for (let row of this.spawn_row.values())
+            {
+                if (coord.y == row)
+                {
+                    return Rule.reachable_by_skills(coord, g.skills_for_spawning.as_list());
+                }
+            }
             return [];
         }
 

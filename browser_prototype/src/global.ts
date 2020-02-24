@@ -13,6 +13,7 @@ class Module
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
+    skills_for_spawning: SkillSet;
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
@@ -190,6 +191,12 @@ class Module
             [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
         ]);
+
+        this.skills_for_spawning = new SkillSet([new Skill(0, 0)]);
+        for (let c of [Rider, Soldier, Barbarian, Archer])
+        {
+            this.skills_for_spawning = this.skills_for_spawning.union(this.perfect_skills.get(c)!)
+        }
     }
 }
 
