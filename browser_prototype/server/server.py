@@ -121,8 +121,7 @@ class ServerGame:
         try:
             next_game = self.game.make_move(player_move.as_list())
         except Exception as e:
-            print(e)
-            print(player_move)
+            print('exception during game.make_move:', e)
             return None
         return ServerGame(self.player_name_map, next_game)
 

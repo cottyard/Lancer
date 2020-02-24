@@ -8,6 +8,11 @@ max_unit_count = 28
 class InvalidMoveException(Exception):
     pass
 
+class BoardUnit:
+    def __init__(self, unit, position):
+        self.unit = unit
+        self.position = position
+
 def make_move(board, player_move_list):
     player_action_map = {}
     for player_move in player_move_list:
@@ -18,17 +23,15 @@ def make_move(board, player_move_list):
     next_board = board.copy()
     force_board = ForceBoard()
 
-    victim_position_list = []
+    martyr_list = []
 
     run_upgrade_phase(next_board, player_action_list)
     run_defend_phase(board, player_action_list, force_board)
-    victim_position_list += run_clash_phase(next_board, player_action_list, force_board)
-    victim_position_list += run_battle_phase(next_board, player_action_list, force_board, board)
+    martyr_list += run_clash_phase(next_board, player_action_list, force_board)
+    martyr_list += run_battle_phase(next_board, player_action_list, force_board, board)
     run_recruit_phase(next_board, player_action_list)
 
-    print(victim_position_list)
-
-    return next_board, player_action_map, victim_position_list
+    return next_board, player_action_map, martyr_list
 
 def run_upgrade_phase(board, player_action_list):
     for player_action in player_action_list:
@@ -49,13 +52,13 @@ def run_defend_phase(board, player_action_list, force_board):
             force_board.reinforce(
                 action.move.position_to,
                 player_action.player,
-                (unit, action.move.position_from))
+                BoardUnit(unit, action.move.position_from))
     return force_board
 
 def run_clash_phase(board, player_action_list, force_board):
     clash_board = Board()
     clashing_actions = []
-    victims = []
+    martyr_list = []
     for player_action in player_action_list:
         for action in player_action.action_list:
             if action.type != ActionType.Attack:
@@ -70,7 +73,7 @@ def run_clash_phase(board, player_action_list, force_board):
             clash_board.put(action.move.position_from, action)
 
     if len(clashing_actions) == 0:
-        return victims
+        return martyr_list
 
     for player_action in player_action_list:
         player_action.extract_actions(lambda a: a in clashing_actions)
@@ -78,21 +81,24 @@ def run_clash_phase(board, player_action_list, force_board):
     for action_1, action_2 in list(zip(clashing_actions[0::2], clashing_actions[1::2])):
         u1 = board.remove(action_1.move.position_from)
         u2 = board.remove(action_2.move.position_from)
-        
+        bu1 = BoardUnit(u1, action_1.move.position_from)
+        bu2 = BoardUnit(u2, action_2.move.position_from)
+
         surviver = u1.duel(u2)
         if surviver is None:
-            victims.extend([action_1.move.position_from, action_2.move.position_from])
+            martyr_list.extend([bu1, bu2])
         else:
-            a = action_1 if surviver == u1 else action_2
-            a_v = action_2 if surviver == u1 else action_1
+            a_surviver = action_1 if surviver == u1 else action_2
+            bunit_surviver = bu1 if surviver == u1 else bu2
+            bunit_martyr = bu2 if surviver == u1 else bu1
             force_board.arrive(
-                a.move.position_to,
+                a_surviver.move.position_to,
                 surviver.owner,
-                (surviver, a.move.position_from)
+                bunit_surviver
             )
-            victims.append(a_v.move.position_from)
+            martyr_list.append(bunit_martyr)
 
-    return victims
+    return martyr_list
 
 def run_battle_phase(board, player_action_list, force_board, last_board):
     for player_action in player_action_list:
@@ -104,15 +110,15 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
                 force_board.arrive(
                     target_position, 
                     player_action.player,
-                    (unit, action.move.position_from))
+                    BoardUnit(unit, action.move.position_from))
             else:
                 unit = board.at(action.move.position_from)
                 force_board.reinforce(
                     target_position,
                     player_action.player,
-                    (unit, action.move.position_from))
+                    BoardUnit(unit, action.move.position_from))
 
-    victims = []
+    martyr_list = []
     def settle_battle(position):
         outcome = force_board.battle(position)
         arriver = outcome.arriver_won()
@@ -120,30 +126,30 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
         resident = board.at(position)
 
         if arriving_successful:
-            unit, _ = arriver
-            board.put(position, unit)
+            bunit = arriver
+            board.put(position, bunit.unit)
         
         if outcome.is_skirmish():
             if outcome.tied():
-                _, position_1 = outcome.arriver_map.get(player_1)
-                _, position_2 = outcome.arriver_map.get(player_2)
-                victims.extend([position_1, position_2])
+                bu1 = outcome.arriver_map.get(player_1)
+                bu2 = outcome.arriver_map.get(player_2)
+                martyr_list.extend([bu1, bu2])
             else:
                 player_lost = opponent(outcome.player_won)
-                _, unit_position = outcome.arriver_map.get(player_lost)
-                victims.append(unit_position)
+                bunit = outcome.arriver_map.get(player_lost)
+                martyr_list.append(bunit)
         else:
             player_invader = outcome.arriver_map.arrived_players()[0]
-            _, position_from = outcome.arriver_map.get(player_invader)
+            bunit = outcome.arriver_map.get(player_invader)
             
             if arriving_successful:
                 if resident:
-                    victims.append(position)
+                    martyr_list.append(BoardUnit(resident, position))
             else:
-                victims.append(position_from)
+                martyr_list.append(bunit)
 
     force_board.iterate_battles(settle_battle)
-    return victims
+    return martyr_list
 
 def run_recruit_phase(board, player_action_list):
     for player_action in player_action_list:

@@ -14,9 +14,9 @@ class GameStatus(Enum):
     Draw = 3
 
 class Game:
-    supply_initial = 20
-    supply_basic_incremental = 16
-    supply_wagon = 2
+    supply_initial = 12
+    supply_basic_incremental = 10
+    supply_wagon = 1
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
@@ -37,7 +37,7 @@ class Game:
         }
 
         self.round_count = 0
-        self.victim_position_list = []
+        self.martyr_list = []
 
     def player_moved(self, player):
         return self.last_player_action[player] is not None
@@ -75,19 +75,20 @@ class Game:
         for player_move in player_move_list:
             self.validate_player_move(player_move)
 
-        next_board, player_action_map, victim_position_list = \
+        next_board, player_action_map, martyr_list = \
             rule.make_move(self.board, player_move_list)
 
         next_game = Game(next_board)
         next_game.last_player_action = player_action_map
         next_game.round_count = self.round_count + 1
-        next_game.victim_position_list = victim_position_list
+        next_game.martyr_list = martyr_list
 
         for player_action in player_action_map.values():
             player = player_action.player
             next_game.supply[player] = self.supply[player] - player_action.get_cost()
             next_game.supply[player] += Game.supply_basic_incremental
-            next_game.supply[player] += self.bonus_supply(player)
+            next_game.supply[player] += self.wagon_supply(player)
+            next_game.supply[player] += self.trophy_supply(player, martyr_list)
 
         return next_game
 
@@ -101,11 +102,15 @@ class Game:
         for player in self.supply:
             self.supply[player] += amount
 
-    def bonus_supply(self, player):
+    def wagon_supply(self, player):
         return rule.count_unit(self.board, player, Wagon) * Game.supply_wagon
-
-    def incremental_supply(self, player):
-        return self.bonus_supply(player) + Game.supply_basic_incremental
+    
+    def trophy_supply(self, player, martyr_list):
+        trophy = 0
+        for martyr in martyr_list:
+            if martyr.unit.owner != player:
+                trophy += martyr.unit.trophy
+        return trophy
 
     def count_unit(self, player):
         return rule.count_unit(self.board, player)
@@ -116,7 +121,7 @@ class Game:
             self.supply, 
             self.board.serialize(), 
             [player_action.serialize() for player_action in self.last_player_action.values() if player_action is not None],
-            [p.serialize() for p in self.victim_position_list]
+            [[martyr.position.serialize(), martyr.unit.trophy] for martyr in self.martyr_list]
         ])
     
     @classmethod

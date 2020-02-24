@@ -305,24 +305,25 @@ class Action
         switch(this.type)
         {
             case ActionType.Upgrade:
-                return 4;
-            case ActionType.Defend:
-                return 2;
-            case ActionType.Move:
                 return 3;
+            case ActionType.Defend:
+                return 1;
+            case ActionType.Move:
+                return 2;
             case ActionType.Attack:
-                return 5;
+                return 3;
             case ActionType.Recruit:
                 switch(this.unit_type)
                 {
-                    case Soldier:
                     case Barbarian:
+                        return 5;
+                    case Soldier:
                     case Archer:
-                        return 10;
+                        return 6;
                     case Rider:
-                        return 15;
+                        return 8;
                     case Wagon:
-                        return 25;
+                        return 7;
                 }
             throw new Error("Action.cost");
         }

@@ -87,6 +87,7 @@ class Game
     private _status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
     last_round_victims: Coordinate[] = [];
+    last_round_trophy: number[] = [];
     displaying_actions: PlayerAction[] = [];
 
     player_move: PlayerMove = new PlayerMove(this.player);
@@ -97,8 +98,8 @@ class Game
     current_game_id: string | null = null;
     query_handle: number | null = null;
 
-    supply_wagon = 2
-    supply_basic_incremental = 16
+    supply_wagon = 1
+    supply_basic_incremental = 10
 
     constructor()
     {
@@ -210,9 +211,9 @@ class Game
         }
         if (this.show_last_round)
         {
-            for (let v of this.last_round_victims)
+            for (let i in this.last_round_victims)
             {
-                this.canvas.paint_victim_indicator(v);
+                this.canvas.paint_victim_indicator(this.last_round_victims[i], this.last_round_trophy[i]);
             }
         }
         this.action_panel.render();
@@ -477,12 +478,11 @@ class Game
             let player_supply_map: any;
             let board_payload: string;
             let player_actions: string[];
-            let victims: string[];
+            let victims: [string, number][];
 
             [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
             console.log('loading game', game_id);
             [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
-
             if (this.current_game_id == game_id)
             {
                 return;
@@ -524,10 +524,11 @@ class Game
             }
 
             this.last_round_victims = [];
-            for (let victim of victims)
+            for (let [victim, trophy] of victims)
             {
                 let coord = Coordinate.deserialize(victim);
                 this.last_round_victims.push(coord);
+                this.last_round_trophy.push(trophy);
             }
 
             this.last_round_board = this.board;

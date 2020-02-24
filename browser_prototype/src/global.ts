@@ -23,7 +23,8 @@ class Module
         'STYLE_RED': '#ff0000',
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
-        'STYLE_GREEN_LIGHT': '#80e080'
+        'STYLE_GREEN_LIGHT': '#80e080',
+        'STYLE_GREEN': '#079400'
     };
     settings = {
         'cvs_size': this.cvs_size,

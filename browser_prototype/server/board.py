@@ -139,9 +139,9 @@ class ForceBoard:
             if amap.count() == 1:
                 winner = amap.arrived_players()[0]
             else:
-                u1, _ = amap.get(player_1)
-                u2, _ = amap.get(player_2)
-                surviver = u1.duel(u2)
+                bu1 = amap.get(player_1)
+                bu2 = amap.get(player_2)
+                surviver = bu1.unit.duel(bu2.unit)
                 if surviver:
                     winner = surviver.owner
                 else:

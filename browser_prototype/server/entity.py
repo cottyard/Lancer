@@ -115,20 +115,20 @@ class ActionType(Enum):
     def cost(self, action_type, unit_type):
         try:
             return {
-                ActionType.Upgrade: 4,
-                ActionType.Defend: 2,
-                ActionType.Move: 3,
-                ActionType.Attack: 5,
+                ActionType.Upgrade: 3,
+                ActionType.Defend: 1,
+                ActionType.Move: 2,
+                ActionType.Attack: 3,
             }[action_type]
         except KeyError:
             return {
-                Soldier: 10,
-                Barbarian: 10,
-                Archer: 10,
-                Rider: 15,
-                Wagon: 25
+                Soldier: 6,
+                Barbarian: 5,
+                Archer: 6,
+                Rider: 8,
+                Wagon: 7
             }[unit_type]
-            
+
 class Position:
     def __init__(self, x, y):
         if not (0 <= x < board_size_x and 0 <= y < board_size_y):
@@ -170,6 +170,7 @@ class Position:
 class Unit:
     display = ""
     level = 0
+    trophy = 0
     
     def __init__(self, owner, skillset=None, flip_skillset=False):
         self.owner = owner
@@ -351,46 +352,57 @@ class SkillSet:
 class Rider(Unit):
     display = "RDR"
     level = 2
+    trophy = 4
 
 class Soldier(Unit):
     display = "SLD"
     level = 1
+    trophy = 3
 
 class Archer(Unit):
     display = "ACH"
     level = 1
+    trophy = 3
 
 class Barbarian(Unit):
     display = "BAR"
     level = 1
+    trophy = 2
 
 class Lancer(Unit):
     display = "LAN"
     level = 3
+    trophy = 4
 
 class Knight(Unit):
     display = "KNT"
     level = 3
+    trophy = 4
 
 class Swordsman(Unit):
     display = "SWD"
     level = 2
+    trophy = 3
 
 class Spearman(Unit):
     display = "SPR"
     level = 2
+    trophy = 3
 
 class Warrior(Unit):
     display = "WAR"
     level = 2
+    trophy = 2
 
 class King(Unit):
     display = "KING"
     level = 1
+    trophy = 0
 
 class Wagon(Unit):
     display = "WAG"
     level = 0
+    trophy = 7
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {
