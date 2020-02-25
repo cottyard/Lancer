@@ -323,7 +323,7 @@ class Action
                     case Rider:
                         return 8;
                     case Wagon:
-                        return 7;
+                        return 10;
                 }
             throw new Error("Action.cost");
         }

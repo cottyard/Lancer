@@ -126,7 +126,7 @@ class ActionType(Enum):
                 Barbarian: 5,
                 Archer: 6,
                 Rider: 8,
-                Wagon: 7
+                Wagon: 10
             }[unit_type]
 
 class Position:
@@ -402,7 +402,7 @@ class King(Unit):
 class Wagon(Unit):
     display = "WAG"
     level = 0
-    trophy = 7
+    trophy = 10
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {

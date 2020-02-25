@@ -136,8 +136,8 @@ class GameCanvas
                 width);
             
             renderer.set_color(g.const.STYLE_GREEN);
-            renderer.ctx.font="Bold 24px Sans-Serif";
-            renderer.ctx.fillText(trophy.toString(), -size, size * 4);
+            renderer.ctx.font="Bold 14px Sans-Serif";
+            renderer.ctx.fillText(trophy.toString(), -size, size * 3.5);
         });
     }
 
