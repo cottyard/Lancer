@@ -79,29 +79,27 @@ def run_clash_phase(board, player_action_list, force_board):
 
     if len(clashing_actions) == 0:
         return martyr_list
-
-    for player_action in player_action_list:
-        player_action.extract_actions(lambda a: a in clashing_actions)
     
     for action_1, action_2 in list(zip(clashing_actions[0::2], clashing_actions[1::2])):
-        u1 = board.remove(action_1.move.position_from)
-        u2 = board.remove(action_2.move.position_from)
+        u1 = board.at(action_1.move.position_from)
+        u2 = board.at(action_2.move.position_from)
         bu1 = BoardUnit(u1, action_1.move.position_from)
         bu2 = BoardUnit(u2, action_2.move.position_from)
 
         surviver = u1.duel(u2)
         if surviver is None:
+            board.remove(action_1.move.position_from)
+            board.remove(action_2.move.position_from)
             martyr_list.extend([Martyr(bu1), Martyr(bu2)])
+            for player_action in player_action_list:
+                player_action.extract_actions(lambda a: a in [action_1, action_2])
         else:
-            a_surviver = action_1 if surviver == u1 else action_2
-            bunit_surviver = bu1 if surviver == u1 else bu2
+            action_martyr = action_2 if surviver == u1 else action_1
             bunit_martyr = bu2 if surviver == u1 else bu1
-            force_board.arrive(
-                a_surviver.move.position_to,
-                surviver.owner,
-                bunit_surviver
-            )
+            board.remove(bunit_martyr.position)
             martyr_list.append(Martyr(bunit_martyr))
+            for player_action in player_action_list:
+                player_action.extract_actions(lambda a: a == action_martyr)
 
     return martyr_list
 
