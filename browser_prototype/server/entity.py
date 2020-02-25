@@ -65,8 +65,26 @@ class Action:
         return f'{self.move}({ActionType.show(self.type)})'
 
     def get_cost(self):
-        return ActionType.cost(self.type, self.unit_type)
-    
+        if self.type == ActionType.Move:
+            if self.move.get_skill().is_leap():
+                return 4
+            else:
+                return 3
+        try:
+            return {
+                ActionType.Upgrade: 5,
+                ActionType.Defend: 2,
+                ActionType.Attack: 6,
+            }[self.type]
+        except KeyError:
+            return {
+                Barbarian: 8,
+                Soldier: 12,
+                Archer: 10,
+                Rider: 16,
+                Wagon: 20
+            }[self.unit_type]
+
     def serialize(self):
         return json.dumps([self.type.value, self.unit_type.__name__, self.move.serialize()])
 
@@ -110,24 +128,6 @@ class ActionType(Enum):
             ActionType.Attack: 'ATK',
             ActionType.Recruit: 'REC'
         }[action_type]
-
-    @classmethod
-    def cost(self, action_type, unit_type):
-        try:
-            return {
-                ActionType.Upgrade: 3,
-                ActionType.Defend: 1,
-                ActionType.Move: 2,
-                ActionType.Attack: 3,
-            }[action_type]
-        except KeyError:
-            return {
-                Soldier: 6,
-                Barbarian: 5,
-                Archer: 6,
-                Rider: 8,
-                Wagon: 10
-            }[unit_type]
 
 class Position:
     def __init__(self, x, y):
@@ -279,6 +279,9 @@ class Skill:
                 0 <= self.delta.dx + skillset_range < skillset_size and \
                 0 <= self.delta.dy + skillset_range < skillset_size):
             raise InvalidParameter("Skill")
+    
+    def is_leap(self):
+        return abs(self.delta.x) > 1 or abs(self.delta.y) > 1
 
 class SkillSet:
     op_union = lambda a, b: a or b
@@ -352,47 +355,47 @@ class SkillSet:
 class Rider(Unit):
     display = "RDR"
     level = 2
-    trophy = 4
+    trophy = 8
 
 class Soldier(Unit):
     display = "SLD"
     level = 1
-    trophy = 3
+    trophy = 6
 
 class Archer(Unit):
     display = "ACH"
     level = 1
-    trophy = 3
+    trophy = 5
 
 class Barbarian(Unit):
     display = "BAR"
     level = 1
-    trophy = 2
+    trophy = 4
 
 class Lancer(Unit):
     display = "LAN"
     level = 3
-    trophy = 4
+    trophy = 8
 
 class Knight(Unit):
     display = "KNT"
     level = 3
-    trophy = 4
+    trophy = 8
 
 class Swordsman(Unit):
     display = "SWD"
     level = 2
-    trophy = 3
+    trophy = 6
 
 class Spearman(Unit):
     display = "SPR"
     level = 2
-    trophy = 3
+    trophy = 6
 
 class Warrior(Unit):
     display = "WAR"
     level = 2
-    trophy = 2
+    trophy = 4
 
 class King(Unit):
     display = "KING"
@@ -402,7 +405,7 @@ class King(Unit):
 class Wagon(Unit):
     display = "WAG"
     level = 0
-    trophy = 10
+    trophy = 20
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {

@@ -98,8 +98,8 @@ class Game
     current_game_id: string | null = null;
     query_handle: number | null = null;
 
-    supply_wagon = 1
-    supply_basic_incremental = 10
+    supply_wagon = 2
+    supply_basic_incremental = 20
 
     constructor()
     {

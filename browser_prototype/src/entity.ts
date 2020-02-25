@@ -68,6 +68,11 @@ class Skill implements IHashable
     {
         return this.x == other.x && this.y == other.y;
     }
+
+    is_leap(): boolean
+    {
+        return Math.abs(this.x) > 1 || Math.abs(this.y) > 1;
+    }
 }
 
 class SkillSet implements ISerializable
@@ -305,25 +310,33 @@ class Action
         switch(this.type)
         {
             case ActionType.Upgrade:
-                return 3;
+                return 5;
             case ActionType.Defend:
-                return 1;
-            case ActionType.Move:
                 return 2;
+            case ActionType.Move:
+                if (this.move.get_skill().is_leap())
+                {
+                    return 4;
+                }
+                else
+                {
+                    return 3;
+                }
             case ActionType.Attack:
-                return 3;
+                return 6;
             case ActionType.Recruit:
                 switch(this.unit_type)
                 {
                     case Barbarian:
-                        return 5;
-                    case Soldier:
-                    case Archer:
-                        return 6;
-                    case Rider:
                         return 8;
-                    case Wagon:
+                    case Archer:
                         return 10;
+                    case Soldier:
+                        return 12;
+                    case Rider:
+                        return 16;
+                    case Wagon:
+                        return 20;
                 }
             throw new Error("Action.cost");
         }

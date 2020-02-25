@@ -14,9 +14,9 @@ class GameStatus(Enum):
     Draw = 3
 
 class Game:
-    supply_initial = 12
-    supply_basic_incremental = 10
-    supply_wagon = 1
+    supply_initial = 24
+    supply_basic_incremental = 20
+    supply_wagon = 2
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
@@ -53,24 +53,6 @@ class Game:
             3: GameStatus.Draw
         }[rule.status(self.board)]
 
-    def get_random_player_move(self, player):
-        move_list = []
-        while random.randint(0, 12) != 0:
-            if random.randint(0, 8) == 0:
-                recruit_position = Position(random.randint(0, board_size_x - 1), rule.spawn_row[player])
-                move = Move(recruit_position, recruit_position)
-            else:
-                move = random.choice(
-                    rule.all_valid_moves(self.board, player, True))
-            try:
-                self.validate_player_move(PlayerMove(player, move_list + [move]))
-                move_list.append(move)
-            except rule.InvalidMoveException:
-                break
-
-        print(move_list)
-        return PlayerMove(player, move_list)
-    
     def make_move(self, player_move_list):
         for player_move in player_move_list:
             self.validate_player_move(player_move)
