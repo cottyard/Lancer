@@ -385,7 +385,7 @@ class Knight(Unit):
 class Swordsman(Unit):
     display = "SWD"
     level = 2
-    trophy = 6
+    trophy = 5
 
 class Spearman(Unit):
     display = "SPR"
