@@ -13,6 +13,11 @@ class BoardUnit:
         self.unit = unit
         self.position = position
 
+class Martyr:
+    def __init__(self, board_unit, has_trophy = True):
+        self.board_unit = board_unit
+        self.has_trophy = has_trophy
+
 def make_move(board, player_move_list):
     player_action_map = {}
     for player_move in player_move_list:
@@ -86,7 +91,7 @@ def run_clash_phase(board, player_action_list, force_board):
 
         surviver = u1.duel(u2)
         if surviver is None:
-            martyr_list.extend([bu1, bu2])
+            martyr_list.extend([Martyr(bu1), Martyr(bu2)])
         else:
             a_surviver = action_1 if surviver == u1 else action_2
             bunit_surviver = bu1 if surviver == u1 else bu2
@@ -96,7 +101,7 @@ def run_clash_phase(board, player_action_list, force_board):
                 surviver.owner,
                 bunit_surviver
             )
-            martyr_list.append(bunit_martyr)
+            martyr_list.append(Martyr(bunit_martyr))
 
     return martyr_list
 
@@ -133,20 +138,20 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
             if outcome.tied():
                 bu1 = outcome.arriver_map.get(player_1)
                 bu2 = outcome.arriver_map.get(player_2)
-                martyr_list.extend([bu1, bu2])
+                martyr_list.extend([Martyr(bu1, False), Martyr(bu2, False)])
             else:
                 player_lost = opponent(outcome.player_won)
                 bunit = outcome.arriver_map.get(player_lost)
-                martyr_list.append(bunit)
+                martyr_list.append(Martyr(bunit, False))
         else:
             player_invader = outcome.arriver_map.arrived_players()[0]
             bunit = outcome.arriver_map.get(player_invader)
             
             if arriving_successful:
                 if resident:
-                    martyr_list.append(BoardUnit(resident, position))
+                    martyr_list.append(Martyr(BoardUnit(resident, position)))
             else:
-                martyr_list.append(bunit)
+                martyr_list.append(Martyr(bunit, False))
 
     force_board.iterate_battles(settle_battle)
     return martyr_list

@@ -106,11 +106,14 @@ class Game:
         return rule.count_unit(self.board, player, Wagon) * Game.supply_wagon
     
     def trophy_supply(self, player, martyr_list):
-        trophy = 0
+        total = 0
         for martyr in martyr_list:
-            if martyr.unit.owner != player:
-                trophy += martyr.unit.trophy
-        return trophy
+            if not martyr.has_trophy:
+                continue
+            unit = martyr.board_unit.unit
+            if unit.owner != player:
+                total += unit.trophy
+        return total
 
     def count_unit(self, player):
         return rule.count_unit(self.board, player)
@@ -121,7 +124,12 @@ class Game:
             self.supply, 
             self.board.serialize(), 
             [player_action.serialize() for player_action in self.last_player_action.values() if player_action is not None],
-            [[martyr.position.serialize(), martyr.unit.trophy] for martyr in self.martyr_list]
+            [
+                [
+                    martyr.board_unit.position.serialize(), 
+                    martyr.board_unit.unit.trophy if martyr.has_trophy else 0
+                ] for martyr in self.martyr_list
+            ]
         ])
     
     @classmethod
