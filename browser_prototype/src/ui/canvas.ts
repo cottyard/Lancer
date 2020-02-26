@@ -175,15 +175,15 @@ class GameCanvas
     {
         for (let a of player_action.actions)
         {
-            let skill = a.action.move.get_skill();
-            let color = g.action_style.get(a.type)!;
-            let shrink = g.settings.grid_size / 2 - 5;
-            let control_distance = g.settings.grid_size * 0.75;
-            let from = GameCanvas.get_grid_center(a.action.move.from);
-            let to = GameCanvas.get_grid_center(a.action.move.to);
-            let width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
+            const skill = a.action.move.get_skill();
+            const color = g.action_style.get(a.type)!;
+            const shrink = g.settings.grid_size / 2 - 5;
+            const from = GameCanvas.get_grid_center(a.action.move.from);
+            const to = GameCanvas.get_grid_center(a.action.move.to);
+            const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
 
             let go_around = false;
+            let rider_move = false;
 
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) && 
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
@@ -207,20 +207,66 @@ class GameCanvas
                     go_around = true;
                 }
             }
+            else if (
+                (Math.abs(skill.y) == 2 && Math.abs(skill.x) == 1) ||
+                (Math.abs(skill.x) == 2 && Math.abs(skill.y) == 1))
+            {
+                rider_move = true;
+            }
             
             if (go_around)
             {
+                const control_distance = g.settings.grid_size * 0.75;
                 let sx = Math.sign(skill.x);
                 let sy = Math.sign(skill.y);
+                let control = new Position(
+                    (from.x + to.x) / 2 - sy * control_distance,
+                    (from.y + to.y) / 2 + sx * control_distance);
                 using(new Renderer(this.am_ctx), (renderer) => {
                     renderer.curved_arrow(
-                        GameCanvas.get_grid_center(a.action.move.from),
-                        new Position(
-                            (from.x + to.x) / 2 - sy * control_distance,
-                            (from.y + to.y) / 2 + sx * control_distance),
-                        GameCanvas.get_grid_center(a.action.move.to),
-                        color, shrink, width
+                        renderer.go_towards(from, control, shrink),
+                        control,
+                        renderer.go_towards(to, control, shrink),
+                        color, width
                     );
+                });
+            }
+            else if (rider_move)
+            {
+                function mix(a: number, b: number, weight = 0.7)
+                {
+                    return a * weight + b * (1 - weight);
+                }
+                using(new Renderer(this.am_ctx), (renderer) => {
+                    let from_s = renderer.go_towards(from, to, shrink);
+                    let to_s = renderer.go_towards(to, from, shrink);
+                    let mid = new Position((from.x + to.x) / 2, (from.y + to.y) / 2);
+
+                    let control_1: Position;
+                    let control_2: Position;
+                    if (Math.abs(skill.x) == 2)
+                    {
+                        control_1 = new Position(mix(from_s.x, mid.x), mid.y);
+                        control_2 = new Position(mix(to_s.x, mid.x), mid.y);
+                    }
+                    else
+                    {
+                        control_1 = new Position(mid.x, mix(from_s.y, mid.y));
+                        control_2 = new Position(mid.x, mix(to_s.y, mid.y));
+                    }
+
+                    renderer.set_color(color);
+                    renderer.curve(
+                        from_s,
+                        control_1,
+                        mid,
+                        width);
+                    renderer.curved_arrow(
+                        mid,
+                        control_2,
+                        to_s,
+                        color,
+                        width);
                 });
             }
             else
