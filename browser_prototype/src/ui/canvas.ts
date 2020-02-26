@@ -193,8 +193,16 @@ class GameCanvas
                 {
                     throw Error("action move has no middleground");
                 }
+                let _middleground = middleground;
                 let unit = board.at(middleground);
                 if (unit)
+                {
+                    go_around = true;
+                }
+                else if (
+                    player_action.actions.reduce<boolean>((previous: boolean, current: DisplayAction) => {
+                        return previous || current.action.move.from.equals(_middleground);
+                    }, false))
                 {
                     go_around = true;
                 }
