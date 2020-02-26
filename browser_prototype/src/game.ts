@@ -152,6 +152,14 @@ class Game
         {
             this.current_game_id = null;
         }
+
+        if (value == GameStatus.WaitForPlayer)
+        {
+            this.round_begin_time = new Date();
+            this.player_move.moves = [];
+            this.update_player_action();
+            this.show_last_round = false;
+        }
     }
 
     get status()
@@ -594,10 +602,6 @@ class Game
             this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
                 .deserialize(board_payload);
             
-            this.player_move.moves = [];
-            this.update_player_action();
-            this.show_last_round = false;
-
             switch (game_status)
             {
                 case 1:
@@ -612,8 +616,6 @@ class Game
                 default:
                     this.status = GameStatus.WaitForPlayer;
             }
-
-            this.round_begin_time = new Date();
         });
     }
 
