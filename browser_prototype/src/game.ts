@@ -460,11 +460,14 @@ class Game
         }
 
         query_match(this.session_id, (session_status: string) => {
-            console.log('session status', session_status)
             let status = JSON.parse(session_status);
             console.log('latest game:', status['latest']);
             this.latest_game_id = status['latest'];
-            console.log('playermove', status['player_moved']);
+
+            if (!this.latest_game_id)
+            {
+                return;
+            }
 
             let updated = false;
             [Player.P1, Player.P2].forEach((player) =>
@@ -486,7 +489,6 @@ class Game
 
         if (!this.latest_game_id)
         {
-            this.status = GameStatus.InQueue;
             return;
         }
 
