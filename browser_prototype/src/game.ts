@@ -154,7 +154,10 @@ class Game
             this.current_game_id = null;
         }
 
-        if (value == GameStatus.WaitForPlayer)
+        if ([GameStatus.WaitForPlayer,
+             GameStatus.WonByPlayer1,
+             GameStatus.WonByPlayer2, 
+             GameStatus.Tied].indexOf(value) > -1)
         {
             this.round_begin_time = new Date();
             this.player_move.moves = [];
