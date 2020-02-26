@@ -4,6 +4,7 @@ enum GameStatus
     InQueue,
     WaitForPlayer,
     WaitForOpponent,
+    Loading,
     WonByPlayer1,
     WonByPlayer2,
     Tied
@@ -139,14 +140,12 @@ class Game
 
     set status(value: GameStatus)
     {
-        this._status = value;
-        this.render_indicators();
-        this.status_bar.render();
-        this.button_bar.render();
-
-        if (value == GameStatus.InQueue || value == GameStatus.WaitForOpponent)
+        if (this._status != value)
         {
-            this.start_query_game();
+            this._status = value;
+            this.render_indicators();
+            this.status_bar.render();
+            this.button_bar.render();
         }
 
         if (value == GameStatus.InQueue)
@@ -388,6 +387,8 @@ class Game
         this.render_indicators();
         this.status_bar.render();
         this.button_bar.render();
+
+        this.start_query_game();
     }
 
     new_game()
@@ -427,7 +428,7 @@ class Game
     {
         if (!this.query_handle)
         {
-            this.query_handle = setInterval(this.update_game.bind(this), 2000);
+            this.query_handle = setInterval(this.query_and_update_game.bind(this), 2000);
         }
     }
     
@@ -454,10 +455,12 @@ class Game
         this.status = GameStatus.InQueue;
     }
 
-    update_game()
+
+    query_and_update_game()
     {
         if (!this.session_id)
         {
+            this._status = GameStatus.NotStarted;
             return;
         }
 
@@ -468,6 +471,7 @@ class Game
 
             if (!this.latest_game_id)
             {
+                this._status = GameStatus.InQueue;
                 return;
             }
 
@@ -496,8 +500,12 @@ class Game
             {
                 this.status_bar.render();
             }
+            this.update_game();
         });
+    }
 
+    update_game()
+    {
         if (!this.latest_game_id)
         {
             return;
@@ -507,6 +515,8 @@ class Game
         {
             return;
         }
+
+        this.status = GameStatus.Loading;
 
         fetch_game(this.latest_game_id, (serialized_game) => {
             let game_payload: string;
@@ -611,7 +621,8 @@ class Game
     {
         return [
             GameStatus.WaitForOpponent,
-            GameStatus.WaitForPlayer
+            GameStatus.WaitForPlayer,
+            GameStatus.Loading,
         ].indexOf(this.status) > -1;
     }
 

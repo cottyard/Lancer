@@ -106,7 +106,7 @@ class ButtonBar {
             this.dom_element.appendChild(player_name);
         }
 
-        if (this.game.status == GameStatus.WaitForPlayer || this.game.status == GameStatus.WaitForOpponent)
+        if (this.game.is_playing())
         {
             let submit_button = DomHelper.createButton();
         
@@ -129,10 +129,15 @@ class ButtonBar {
                     submit_button.onclick = () => { this.game.submit_move(); };
                 }
             }
-            else
+            else if (this.game.status == GameStatus.WaitForOpponent)
             {
                 submit_button.disabled = true;
                 submit_button.innerText = "Waiting for opponent...";
+            }
+            else
+            {
+                submit_button.disabled = true;
+                submit_button.innerText = "Loading next round...";
             }
     
             this.dom_element.appendChild(submit_button);
