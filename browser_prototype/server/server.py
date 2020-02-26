@@ -74,9 +74,10 @@ def get_session_status(session_id):
             current_game_id = pool[session_id].current_game_id()
 
     result = {
-        'latest': str(current_game_id)
+        'latest': None
     }
     if current_game_id:
+        result['latest'] = str(current_game_id)
         if current_game_id in game_player_move_map:
             sg_player_move = game_player_move_map[current_game_id]
             result['player_moved'] = {

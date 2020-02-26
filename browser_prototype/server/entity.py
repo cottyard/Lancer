@@ -281,7 +281,7 @@ class Skill:
             raise InvalidParameter("Skill")
     
     def is_leap(self):
-        return abs(self.delta.x) > 1 or abs(self.delta.y) > 1
+        return abs(self.delta.dx) > 1 or abs(self.delta.dy) > 1
 
 class SkillSet:
     op_union = lambda a, b: a or b
