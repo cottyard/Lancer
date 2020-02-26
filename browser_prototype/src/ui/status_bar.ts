@@ -32,9 +32,13 @@ class StatusBar {
                 
                 if (player == Player.P1)
                 {
-                    this.dom_element.appendChild(DomHelper.createDiv({
-                        flexGrow: 1
-                    }));
+                    this.dom_element.appendChild(DomHelper.createText(
+                        `Round ${this.game.round_count}`,
+                        {
+                            'text-align': 'center',
+                            fontWeight: "bold",
+                            flexGrow: 1,
+                        }));
                 }
             });
         }
@@ -102,7 +106,7 @@ class StatusBar {
         }
 
         let consumed = this.game.player_consumed_milliseconds.get(player);
-        if (consumed)
+        if (consumed != undefined)
         {
             div.appendChild(DomHelper.createText(
                 this.timestamp(consumed),

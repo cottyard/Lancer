@@ -94,6 +94,7 @@ class Game
     last_round_victims: Coordinate[] = [];
     last_round_trophy: number[] = [];
     displaying_actions: PlayerAction[] = [];
+    round_count = 0;
 
     player_move: PlayerMove = new PlayerMove(this.player);
     player_action: [PlayerAction] = [new PlayerAction(this.player)];
@@ -541,6 +542,7 @@ class Game
             [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
             console.log('loading game', game_id);
             [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
+            
             if (this.current_game_id == game_id)
             {
                 return;
@@ -548,6 +550,8 @@ class Game
 
             this.current_game_id = game_id;
             
+            this.round_count = round_count;
+
             let player_name_check = false;
             for (let p in player_name_map)
             {
@@ -565,7 +569,6 @@ class Game
             {
                 let player = deserialize_player(p);
                 let consumed = player_time_map[p];
-                console.log(consumed);
                 this.player_consumed_milliseconds.set(player, consumed);
             }
 
@@ -574,8 +577,6 @@ class Game
                 this.status = GameStatus.NotStarted;
                 throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
             }
-            
-            console.log('Round', round_count);
             
             this.last_round_actions = [];
             for (let player_action_payload of player_actions)
