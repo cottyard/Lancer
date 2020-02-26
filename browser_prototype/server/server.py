@@ -51,7 +51,8 @@ def get_game(game_id):
             server_game.game.serialize(),
             str(server_game.game_id),
             server_game.status.value,
-            server_game.player_name_map
+            server_game.player_name_map,
+            server_game.player_time_map
         ])
 
 @app.route('/session/<string:session_id>/rollback', methods=['POST'])
@@ -76,8 +77,10 @@ def get_session_status(session_id):
     result = {
         'latest': None
     }
+
     if current_game_id:
         result['latest'] = str(current_game_id)
+        sg_player_move = None
         if current_game_id in game_player_move_map:
             sg_player_move = game_player_move_map[current_game_id]
             result['player_moved'] = {
@@ -89,11 +92,29 @@ def get_session_status(session_id):
                 player_1: False,
                 player_2: False
             }
+
+        if current_game_id in ServerGame.server_game_map:
+            sg = ServerGame.server_game_map[current_game_id]
+            if sg_player_move:
+                result['player_time'] = {
+                    player_1: sg.player_time_map[player_1] + sg_player_move.player_time_map[player_1],
+                    player_2: sg.player_time_map[player_2] + sg_player_move.player_time_map[player_2]
+                }
+            else:
+                result['player_time'] = sg.player_time_map
+        else:
+            result['player_time'] = {
+                player_1: 0,
+                player_2: 0
+            }
+
     return json.dumps(result)
 
 @app.route('/game/<string:game_id>/move', methods=['POST'])
 def submit_player_move(game_id):
     game_id = uuid.UUID(game_id)
+    milliseconds = int(request.args.get('consumed'))
+
     data = json.loads(request.data)
     player = int(data[0])
     moves_literal = ' '.join(data[1:])
@@ -103,7 +124,7 @@ def submit_player_move(game_id):
 
     if game_id not in game_player_move_map:
         game_player_move_map[game_id] = ServerGamePlayerMove()
-    game_player_move_map[game_id].update(player, player_move)
+    game_player_move_map[game_id].update(player, player_move, milliseconds)
     Session.process_sessions()
     return 'done'
 
@@ -126,7 +147,7 @@ def new_game(player_name):
 class ServerGame:
     server_game_map = {}
 
-    def __init__(self, player_name_map, game_=None):
+    def __init__(self, player_name_map, player_time_map=None, game_=None):
         if game_ is None:
             self.game = game.Game()
         else:
@@ -134,15 +155,29 @@ class ServerGame:
         self.game_id = uuid.uuid4()
         self.status = self.game.get_status()
         self.player_name_map = player_name_map
+        if player_time_map is None:
+            self.player_time_map = {
+                player_1: 0,
+                player_2: 0
+            }
+        else:
+            self.player_time_map = player_time_map
         ServerGame.server_game_map[self.game_id] = self
 
-    def next(self, player_move):
+    def next(self, sg_player_move):
         try:
-            next_game = self.game.make_move(player_move.as_list())
+            next_game = self.game.make_move(sg_player_move.as_list())
         except Exception as e:
             print('exception during game.make_move:', e)
             return None
-        return ServerGame(self.player_name_map, next_game)
+        else:
+            return ServerGame(
+                self.player_name_map,
+                {
+                    player_1: self.player_time_map[player_1] + sg_player_move.player_time_map[player_1],
+                    player_2: self.player_time_map[player_2] + sg_player_move.player_time_map[player_2]
+                },
+                next_game)
 
 class ServerGamePlayerMove:
     def __init__(self):
@@ -151,8 +186,9 @@ class ServerGamePlayerMove:
     def all_players_moved(self):
         return self.as_list().count(None) == 0
 
-    def update(self, player, player_move):
+    def update(self, player, player_move, milliseconds_consumed):
         self.player_move_map[player] = player_move
+        self.player_time_map[player] = milliseconds_consumed
 
     def as_list(self):
         return list(self.player_move_map.values())
@@ -161,6 +197,10 @@ class ServerGamePlayerMove:
         self.player_move_map = { 
             player_1: None, 
             player_2: None 
+        }
+        self.player_time_map = { 
+            player_1: 0, 
+            player_2: 0
         }
 
     def __repr__(self):

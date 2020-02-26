@@ -69,6 +69,8 @@ class Game
     status_bar: StatusBar;
     button_bar: ButtonBar;
     player_moved = new Map<Player, boolean>();
+    player_consumed_milliseconds = new Map<Player, number>();
+    round_begin_time = new Date();
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -406,8 +408,8 @@ class Game
     {
         if (this.current_game_id && this.player_move)
         {
-            submit_move(this.current_game_id, this.player_move, (res: string) => {
-                console.log('submit:', res)
+            let milliseconds_consumed: number = new Date().getTime() - this.round_begin_time.getTime();
+            submit_move(this.current_game_id, this.player_move, milliseconds_consumed, (_: string) => {
                 this.status = GameStatus.WaitForOpponent;
             });
         }
@@ -472,11 +474,20 @@ class Game
             let updated = false;
             [Player.P1, Player.P2].forEach((player) =>
             {
-                let has_moved = this.player_moved.get(player);
-                let update = status['player_moved'][player];
-                if (has_moved != update)
+                let current_moved = this.player_moved.get(player);
+                let moved = status['player_moved'][player];
+
+                if (current_moved != moved)
                 {
-                    this.player_moved.set(player, update);
+                    this.player_moved.set(player, moved);
+                    updated = true;
+                }
+
+                let current_time = this.player_consumed_milliseconds.get(player);
+                let time = status['player_time'][player];
+                if (current_time != time)
+                {
+                    this.player_consumed_milliseconds.set(player, time);
                     updated = true;
                 }
             });
@@ -502,13 +513,14 @@ class Game
             let game_id: string;
             let game_status: number;
             let player_name_map: any;
+            let player_time_map: any;
             let round_count: number;
             let player_supply_map: any;
             let board_payload: string;
             let player_actions: string[];
             let victims: [string, number][];
 
-            [game_payload, game_id, game_status, player_name_map] = JSON.parse(serialized_game);
+            [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
             console.log('loading game', game_id);
             [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(game_payload);
             if (this.current_game_id == game_id)
@@ -529,6 +541,14 @@ class Game
                     player_name_check = true;
                 }
                 this.player_names.set(player, name);
+            }
+
+            for (let p in player_time_map)
+            {
+                let player = deserialize_player(p);
+                let consumed = player_time_map[p];
+                console.log(consumed);
+                this.player_consumed_milliseconds.set(player, consumed);
             }
 
             if (!player_name_check)
@@ -582,6 +602,8 @@ class Game
                 default:
                     this.status = GameStatus.WaitForPlayer;
             }
+
+            this.round_begin_time = new Date();
         });
     }
 

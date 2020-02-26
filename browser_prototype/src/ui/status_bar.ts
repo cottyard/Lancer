@@ -18,7 +18,7 @@ class StatusBar {
             height: "40px"
         });
 
-        if (this.game.is_playing())
+        if (this.game.is_playing() || this.game.is_finished())
         {
             [Player.P1, Player.P2].forEach(player => {
                 this.dom_element.appendChild(this.player_status(
@@ -29,6 +29,7 @@ class StatusBar {
                     cost,
                     player === this.game.player
                 ));
+                
                 if (player == Player.P1)
                 {
                     this.dom_element.appendChild(DomHelper.createDiv({
@@ -37,6 +38,20 @@ class StatusBar {
                 }
             });
         }
+    }
+    
+    timestamp(consumed: number) {
+        function display(v: number): string
+        {
+            let display = v.toString();
+            return display.length < 2 ? '0' + display : display;
+        }
+        let _seconds = Math.floor(consumed / 1000);
+        let seconds = _seconds % 60;
+        let _minutes = (_seconds - seconds) / 60;
+        let minutes = _minutes % 60;
+        let _hours = (_minutes - minutes) / 60;
+        return `${display(_hours)}:${display(minutes)}:${display(seconds)}`;
     }
 
     player_status(
@@ -69,24 +84,32 @@ class StatusBar {
 
         div.appendChild(DomHelper.createText(`(+${income})`));
 
-        if (!is_me)
+        let moved = this.game.player_moved.get(player);
+        let text = null;
+        if (moved)
         {
-            let moved = this.game.player_moved.get(player);
-            let text = null;
-            if (moved)
-            {
-                text = '🟢';
-            }
-            else
-            {
-                text = '🟡';
-            }
-            if (text)
-            {
-                div.appendChild(DomHelper.createText(text, {
-                    margin: "10px"
-                }));
-            }
+            text = '🟢';
+        }
+        else
+        {
+            text = '🟡';
+        }
+        if (text)
+        {
+            div.appendChild(DomHelper.createText(text, {
+                marginLeft: "10px"
+            }));
+        }
+
+        let consumed = this.game.player_consumed_milliseconds.get(player);
+        if (consumed)
+        {
+            div.appendChild(DomHelper.createText(
+                this.timestamp(consumed),
+                {
+                    marginLeft: "3px"
+                }
+            ));
         }
 
         return div;

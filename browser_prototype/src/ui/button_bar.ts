@@ -76,8 +76,6 @@ class ButtonBar {
             let new_game = DomHelper.createButton();
             new_game.onclick = () => { this.game.new_game(); };
             
-            this.dom_element.appendChild(new_game);
-
             if (this.game.is_in_queue())
             {
                 new_game.innerText = "Finding opponent..."
@@ -87,6 +85,25 @@ class ButtonBar {
             {
                 new_game.innerText = "Find Game";
             }
+
+            let player_name = DomHelper.createTextArea();
+            player_name.textContent = this.game.player_name;
+            player_name.onfocus = () => { player_name.select() };
+            player_name.onkeyup = () => {
+                if (player_name.value) { 
+                    this.game.player_name = player_name.value; 
+                }
+            };
+            player_name.style.width = "80px";
+            player_name.style.resize = "none";
+            
+            if (this.game.is_in_queue())
+            {
+                player_name.readOnly = true;
+            }
+
+            this.dom_element.appendChild(new_game);
+            this.dom_element.appendChild(player_name);
         }
 
         if (this.game.status == GameStatus.WaitForPlayer || this.game.status == GameStatus.WaitForOpponent)
@@ -119,29 +136,7 @@ class ButtonBar {
             }
     
             this.dom_element.appendChild(submit_button);
-            this.dom_element.appendChild(DomHelper.createDiv({
-                flexGrow: 1
-            }));
             this.submit = submit_button;
-        }
-        
-        if (!this.game.is_playing())
-        {
-            let player_name = DomHelper.createTextArea();
-            player_name.textContent = this.game.player_name;
-            player_name.onfocus = () => { player_name.select() };
-            player_name.onkeyup = () => {
-                if (player_name.value) { 
-                    this.game.player_name = player_name.value; 
-                }
-            };
-            player_name.style.width = "80px";
-            player_name.style.resize = "none";
-            this.dom_element.appendChild(player_name);
-            if (this.game.is_in_queue())
-            {
-                player_name.readOnly = true;
-            }
         }
 
         if (this.game.is_finished())
@@ -153,7 +148,7 @@ class ButtonBar {
                 text = 'Game is tied.';
             }
             else if ((this.game.status == GameStatus.WonByPlayer1 && this.game.player == Player.P1) ||
-                     (this.game.status == GameStatus.WonByPlayer2 && this.game.player == Player.P2))
+                    (this.game.status == GameStatus.WonByPlayer2 && this.game.player == Player.P2))
             {
                 text = 'You are victorious!';
             }
@@ -163,12 +158,16 @@ class ButtonBar {
             }
 
             let status = DomHelper.createText(text, {
-                margin: "15px",
-                fontWeight: "bold"
+                fontWeight: "bold",
+                marginLeft: "20px"
             });
             this.dom_element.appendChild(status);
         }
 
+        this.dom_element.appendChild(DomHelper.createDiv({
+            flexGrow: 1
+        }));
+        
         if (!this.game.is_not_started() && !this.game.is_in_queue())
         {
             this.last_round = DomHelper.createButton();

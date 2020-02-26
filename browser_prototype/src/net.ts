@@ -59,9 +59,9 @@ function new_game(player_name: string, next: callback)
     remote_post(`match/${player_name}`, next);
 }
 
-function submit_move(game_id: string, player_move: PlayerMove, next: callback)
+function submit_move(game_id: string, player_move: PlayerMove, milliseconds_consumed: number, next: callback)
 {
-    remote_post(`game/${game_id}/move`, next, player_move.serialize());
+    remote_post(`game/${game_id}/move?consumed=${milliseconds_consumed}`, next, player_move.serialize());
 }
 
 function query_match(session_id: string, next: callback)
