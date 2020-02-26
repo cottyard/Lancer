@@ -119,6 +119,9 @@ class ButtonBar {
             }
     
             this.dom_element.appendChild(submit_button);
+            this.dom_element.appendChild(DomHelper.createDiv({
+                flexGrow: 1
+            }));
             this.submit = submit_button;
         }
         

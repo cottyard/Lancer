@@ -29,6 +29,12 @@ class StatusBar {
                     cost,
                     player === this.game.player
                 ));
+                if (player == Player.P1)
+                {
+                    this.dom_element.appendChild(DomHelper.createDiv({
+                        flexGrow: 1
+                    }));
+                }
             });
         }
     }
