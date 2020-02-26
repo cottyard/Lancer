@@ -328,7 +328,7 @@ class Game
     on_mouse_up(event: MouseEvent): void
     {
         this.current = this.get_coordinate(event);
-        if (this.selected)
+        if (this.selected && !this.show_last_round)
         {
             let selected = this.selected;
 
