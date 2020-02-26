@@ -64,13 +64,31 @@ def rollback_game(session_id):
             return 'done'
     abort(404)
 
-@app.route('/session/<string:session_id>/current_game_id')
-def get_game_id(session_id):
+@app.route('/session/<string:session_id>/status')
+def get_session_status(session_id):
     session_id = uuid.UUID(session_id)
+    current_game_id = None
+
     for pool in [Session.session_map, Session.ended_session_map]:
         if session_id in pool:
-            return str(pool[session_id].current_game_id())
-    return ''
+            current_game_id = pool[session_id].current_game_id()
+
+    result = {
+        'latest': str(current_game_id)
+    }
+    if current_game_id:
+        if current_game_id in game_player_move_map:
+            sg_player_move = game_player_move_map[current_game_id]
+            result['player_moved'] = {
+                player_1: sg_player_move.player_move_map[player_1] is not None,
+                player_2: sg_player_move.player_move_map[player_2] is not None
+            }
+        else:
+            result['player_moved'] = {
+                player_1: False,
+                player_2: False
+            }
+    return json.dumps(result)
 
 @app.route('/game/<string:game_id>/move', methods=['POST'])
 def submit_player_move(game_id):
@@ -146,6 +164,20 @@ class ServerGamePlayerMove:
 
     def __repr__(self):
         return ','.join([str(pm) for pm in self.as_list()])
+
+# class PlayerStatus:
+#     connected = 'connected'
+#     connecting = 'connecting'
+#     disconnected = 'disconnected'
+
+#     def __init__(self):
+#         self.status_map = {}    
+
+#     def get(self, player_name):
+#         if player_name in self.status_map:
+#             return self.status_map[player_name]
+#         else:
+#             return None
 
 class Session:
     session_map = {}

@@ -67,6 +67,8 @@ class Game
     canvas: GameCanvas;
     action_panel: ActionPanel;
     status_bar: StatusBar;
+    button_bar: ButtonBar;
+    player_moved = new Map<Player, boolean>();
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -116,6 +118,9 @@ class Game
         this.status_bar = new StatusBar(
             <HTMLDivElement>document.getElementById('status-bar'),
             this);
+        this.button_bar = new ButtonBar(
+            <HTMLDivElement>document.getElementById('button-bar'),
+            this);
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
@@ -135,14 +140,11 @@ class Game
         this._status = value;
         this.render_indicators();
         this.status_bar.render();
+        this.button_bar.render();
 
         if (value == GameStatus.InQueue || value == GameStatus.WaitForOpponent)
         {
             this.start_query_game();
-        }
-        else
-        {
-            this.stop_query_game();
         }
 
         if (value == GameStatus.InQueue)
@@ -353,6 +355,7 @@ class Game
         this.player_action[0].actions.sort((a1, a2) => a2.type - a1.type);
         this.render_indicators();
         this.status_bar.render();
+        this.button_bar.render();
     }
 
     update_options(coord: Coordinate)
@@ -382,6 +385,7 @@ class Game
         this.render_board();
         this.render_indicators();
         this.status_bar.render();
+        this.button_bar.render();
     }
 
     new_game()
@@ -450,13 +454,35 @@ class Game
 
     update_game()
     {
-        if (this.session_id)
+        if (!this.session_id)
         {
-            query_match(this.session_id, (game_id: string) => {
-                console.log('latest game:', game_id)
-                this.latest_game_id = game_id;
-            });
+            return;
         }
+
+        query_match(this.session_id, (session_status: string) => {
+            console.log('session status', session_status)
+            let status = JSON.parse(session_status);
+            console.log('latest game:', status['latest']);
+            this.latest_game_id = status['latest'];
+            console.log('playermove', status['player_moved']);
+
+            let updated = false;
+            [Player.P1, Player.P2].forEach((player) =>
+            {
+                let has_moved = this.player_moved.get(player);
+                let update = status['player_moved'][player];
+                if (has_moved != update)
+                {
+                    this.player_moved.set(player, update);
+                    updated = true;
+                }
+            });
+
+            if (updated)
+            {
+                this.status_bar.render();
+            }
+        });
 
         if (!this.latest_game_id)
         {

@@ -76,7 +76,6 @@ class SerializableBoard<T extends ISerializable> extends Board<T> implements ISe
     }
 }
 
-
 interface SerializableBoardConstructor<T extends ISerializable, _> extends IDeserializable<SerializableBoard<T>>
 {
     deserialize(payload: string): SerializableBoard<T>;

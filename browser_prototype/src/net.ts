@@ -66,7 +66,7 @@ function submit_move(game_id: string, player_move: PlayerMove, next: callback)
 
 function query_match(session_id: string, next: callback)
 {
-    remote_get(`session/${session_id}/current_game_id`, next);
+    remote_get(`session/${session_id}/status`, next);
 }
 
 function fetch_game(game_id: string, next: callback)
