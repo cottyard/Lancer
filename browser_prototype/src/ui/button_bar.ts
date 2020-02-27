@@ -60,7 +60,7 @@ class ButtonBar {
     }
 
     render() {
-        let cost = this.game.player_action[0].cost();
+        let cost = this.game.get_action_cost();
         
         this.dom_element.innerHTML = "";
 

@@ -305,40 +305,59 @@ class Action
     {
     }
 
-    cost(): number
+    cost(buff: FullBoard<Buff>): number
+    {
+        return this.standard_cost() + buff.at(this.move.from).get(this.type);
+    }
+
+    standard_cost(): number
     {
         switch(this.type)
         {
-            case ActionType.Upgrade:
-                return 5;
             case ActionType.Defend:
                 return 2;
             case ActionType.Move:
                 if (this.move.get_skill().is_leap())
                 {
-                    return 4;
+                    return 3;
                 }
                 else
                 {
+                    return 2;
+                }
+            case ActionType.Upgrade:
+                if (is_advanced_unit_ctor(this.unit_type))
+                {
                     return 3;
                 }
+                else
+                {
+                    return 4;
+                }
             case ActionType.Attack:
-                return 6;
+                if (this.move.get_skill().is_leap())
+                {
+                    return 5;
+                }
+                else
+                {
+                    return 4;
+                }
             case ActionType.Recruit:
                 switch(this.unit_type)
                 {
                     case Barbarian:
-                        return 8;
                     case Archer:
-                        return 10;
                     case Soldier:
-                        return 12;
+                        return 10;
                     case Rider:
-                        return 16;
+                        return 15;
                     case Wagon:
                         return 20;
                 }
-            throw new Error("Action.cost");
+                throw new Error("Action.cost");
+            case ActionType.Recall:
+                return 8;
         }
     }
 
@@ -358,7 +377,8 @@ enum ActionType
     Defend = 2,
     Move = 3,
     Attack = 4,
-    Recruit = 5
+    Recruit = 5,
+    Recall = 6
 }
 
 class PlayerAction
@@ -367,9 +387,11 @@ class PlayerAction
     {
     }
 
-    cost(): number
+    cost(buff: FullBoard<Buff>): number
     {
-        return this.actions.map((a) => {return a.cost();}).reduce((a, b) => a + b, 0)
+        return this.actions.map((a) => {
+            return a.cost(buff);
+        }).reduce((a, b) => a + b, 0);
     }
 
     static deserialize(payload: string): PlayerAction
@@ -510,7 +532,15 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
     }
 }
 
-type AdvancedUnitConstructor = new (owner: Player, was: BasicUnit) => AdvancedUnit;
+interface AdvancedUnitConstructor extends UnitConstructor
+{
+    new (owner: Player, was: BasicUnit | null): AdvancedUnit;
+    discriminator: 'AdvancedUnitConstructor';
+}
+
+function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor {
+    return 'fooProperty' in ctor;
+}
 
 abstract class BasicUnit extends UnitConstructor
 {
@@ -554,6 +584,11 @@ abstract class AdvancedUnit extends UnitConstructor
     }
 }
 
+const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends AdvancedUnit
+{
+    static discriminator: 'AdvancedUnitConstructor';
+}
+
 class Rider extends BasicUnit
 {
     readonly promotion_options = [Lancer, Knight];
@@ -574,23 +609,23 @@ class Barbarian extends BasicUnit
     readonly promotion_options = [Warrior, Swordsman];
 }
 
-class Lancer extends AdvancedUnit
+class Lancer extends AdvancedUnitConstructor
 {
 }
 
-class Knight extends AdvancedUnit
+class Knight extends AdvancedUnitConstructor
 {
 }
 
-class Swordsman extends AdvancedUnit
+class Swordsman extends AdvancedUnitConstructor
 {
 }
 
-class Spearman extends AdvancedUnit
+class Spearman extends AdvancedUnitConstructor
 {
 }
 
-class Warrior extends AdvancedUnit
+class Warrior extends AdvancedUnitConstructor
 {
 }
 

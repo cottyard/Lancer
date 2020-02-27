@@ -1,8 +1,8 @@
-class Board<T>
+class FullBoard<T>
 {
-    protected board: (T | null)[][];
+    protected board: (T)[][];
 
-    constructor(initializer: () => (T | null) = () => null)
+    constructor(initializer: () => T)
     {
         this.board = [];
 
@@ -14,7 +14,7 @@ class Board<T>
         }
     }
 
-    at(coord: Coordinate): T | null
+    at(coord: Coordinate): T
     {
         return this.board[coord.x][coord.y];
     }
@@ -23,14 +23,31 @@ class Board<T>
     {
         this.board[coord.x][coord.y] = unit;
     }
-    
+
+    iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
+    {
+        for (let i = 0; i < g.board_size_x; i++) {
+            for (let j = 0; j < g.board_size_y; j++) {
+                foreach(this.board[i][j], new Coordinate(i, j));
+            }
+        }
+    }
+}
+
+class Board<T> extends FullBoard<T | null>
+{
+    constructor(initializer: () => (T | null) = () => null)
+    {
+        super(initializer);
+    }
+
     remove(coord: Coordinate): T | null
     {
         let unit = this.board[coord.x][coord.y];
         this.board[coord.x][coord.y] = null;
         return unit;
     }
-        
+
     move(move: Move): void
     {
         let unit = this.at(move.from);
@@ -43,14 +60,12 @@ class Board<T>
 
     iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
     {
-        for (let i = 0; i < g.board_size_x; i++) {
-            for (let j = 0; j < g.board_size_y; j++) {
-                if (this.board[i][j] != null)
-                {
-                    foreach(this.board[i][j]!, new Coordinate(i, j));
-                }
+        super.iterate_units((unit, coord) => {
+            if (unit != null)
+            {
+                foreach(unit, coord);
             }
-        }
+        });
     }
 }
 

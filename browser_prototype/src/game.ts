@@ -81,9 +81,11 @@ class Game
     show_threats: boolean = true;
 
     player: Player = Player.P1;
-    board: Board<Unit> | null = null;
+    _board: Board<Unit>;
+    buff_board: FullBoard<Buff>;
     last_round_board: Board<Unit> | null = null;
-    displaying_board: Board<Unit>;
+    _displaying_board: Board<Unit>;
+    heat_board: FullBoard<Heat>;
     private _show_last_round: boolean = false;
 
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
@@ -136,7 +138,9 @@ class Game
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
-        this.displaying_board = new board_ctor();
+        this._displaying_board = this._board = new board_ctor();
+        this.buff_board = new FullBoard<Buff>(() => new Buff());
+        this.heat_board = new FullBoard<Heat>(() => new Heat());
     }
 
     set status(value: GameStatus)
@@ -171,6 +175,31 @@ class Game
         return this._status;
     }
 
+    set displaying_board(value: Board<Unit>)
+    {
+        this._displaying_board = value;
+        this.heat_board = Rule.get_heat(value);
+    }
+
+    get displaying_board()
+    {
+        return this._displaying_board;
+    }
+
+    set board(value: Board<Unit>)
+    {
+        this._board = value;
+        if (value)
+        {
+            this.buff_board = Rule.get_buff(value);
+        }
+    }
+
+    get board(): Board<Unit>
+    {
+        return this._board;
+    }
+
     set show_last_round(value: boolean)
     {
         if (value && this.last_round_board)
@@ -181,7 +210,7 @@ class Game
             this.render_board();
             this.render_indicators();
         }
-        else if (!value && this.board)
+        else if (!value)
         {
             this._show_last_round = false;
             this.displaying_board = this.board;
@@ -194,6 +223,15 @@ class Game
     get show_last_round()
     {
         return this._show_last_round;
+    }
+
+    get_action_cost(): number
+    {
+        if (this.buff_board)
+        {
+            return this.player_action[0].cost(this.buff_board);
+        }
+        return 0;
     }
 
     render_indicators(): void
@@ -252,16 +290,7 @@ class Game
     
     render_heat(): void
     {
-        let heatmap = new Board<Heat>(() => new Heat());
-
-        this.displaying_board.iterate_units((unit, coord) => {
-            for (let c of Rule.reachable_by(this.displaying_board, coord))
-            {
-                heatmap.at(c)?.heatup(unit.owner);
-            }
-        });
-
-        heatmap.iterate_units((heat, coord) => {
+        this.heat_board.iterate_units((heat, coord) => {
             this.canvas.paint_heat(coord, heat);
         });
     }
@@ -360,10 +389,6 @@ class Game
 
     update_player_action()
     {
-        if (!this.board)
-        {
-            return;
-        }
         this.player_action[0] = Rule.validate_player_move(this.board, this.player_move);
         this.player_action[0].actions.sort((a1, a2) => a2.type - a1.type);
         this.render_indicators();
@@ -603,8 +628,7 @@ class Game
             }
 
             this.last_round_board = this.board;
-            this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor)
-                .deserialize(board_payload);
+            this.board = <SerializableBoard<Unit>>create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
             
             switch (game_status)
             {
@@ -660,24 +684,6 @@ class Game
     }
 
     get_player_supply_income(player: Player): number {
-        if (!this.board)
-        {
-            return 0;
-        }
         return Rule.count_unit(this.board, player, Wagon) * this.supply_wagon + this.supply_basic_incremental;
-    }
-}
-
-class Heat
-{
-    map = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
-    heatup(player: Player)
-    {
-        this.map.set(player, this.map.get(player)! + 1);
-    }
-
-    get(player: Player): number
-    {
-        return this.map.get(player)!;
     }
 }

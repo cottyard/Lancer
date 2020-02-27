@@ -151,7 +151,7 @@ class GameCanvas
 
             for (let player of [Player.P1, Player.P2])
             {
-                let h = heat.get(player);
+                let h = heat.friendly(player);
                 let repeat = h;
                 if (h > 5)
                 {

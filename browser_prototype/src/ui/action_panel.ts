@@ -80,7 +80,7 @@ class ActionPanel {
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost().toString(),
+            "🍞" + action.action.cost(this.game.buff_board).toString(),
             {'font-weight': 'bold'}
         ));
 
