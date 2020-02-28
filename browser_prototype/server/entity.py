@@ -65,7 +65,12 @@ class Action:
         return f'{self.move}({ActionType.show(self.type)})'
 
     def get_cost(self, buff_board):
-        cost = self.standard_cost() + buff_board.at(self.move.position_from).get(self.type)
+        cost = self.standard_cost()
+        buff = buff_board.at(self.move.position_from)
+        try:
+            cost += buff.get(self.type)
+        except KeyError:
+            pass
         if cost < 1:
             return 1
         return cost

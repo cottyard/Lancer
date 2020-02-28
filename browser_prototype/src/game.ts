@@ -85,7 +85,8 @@ class Game
     buff_board: FullBoard<Buff>;
     last_round_board: Board<Unit> | null = null;
     _displaying_board: Board<Unit>;
-    heat_board: FullBoard<Heat>;
+    displaying_heat_board: FullBoard<Heat>;
+    displaying_buff_board: FullBoard<Buff>;
     private _show_last_round: boolean = false;
 
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
@@ -134,7 +135,8 @@ class Game
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         this._displaying_board = this._board = new board_ctor();
         this.buff_board = new FullBoard<Buff>(() => new Buff());
-        this.heat_board = new FullBoard<Heat>(() => new Heat());
+        this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
+        this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
     }
 
     set status(value: GameStatus)
@@ -172,7 +174,10 @@ class Game
     set displaying_board(value: Board<Unit>)
     {
         this._displaying_board = value;
-        this.heat_board = Rule.get_heat(value);
+        this.displaying_heat_board = Rule.get_heat(value);
+        this.displaying_buff_board = Rule.get_buff(value);
+        this.render_board();
+        this.render_indicators();
     }
 
     get displaying_board()
@@ -199,18 +204,14 @@ class Game
         if (value && this.last_round_board)
         {
             this._show_last_round = true;
-            this.displaying_board = this.last_round_board;
             this.displaying_actions = this.last_round_actions;
-            this.render_board();
-            this.render_indicators();
+            this.displaying_board = this.last_round_board;
         }
         else if (!value)
         {
             this._show_last_round = false;
-            this.displaying_board = this.board;
             this.displaying_actions = this.player_action;
-            this.render_board();
-            this.render_indicators();
+            this.displaying_board = this.board;
         }
     }
 
@@ -284,10 +285,10 @@ class Game
     
     render_heat(): void
     {
-        this.heat_board.iterate_units((heat, coord) => {
+        this.displaying_heat_board.iterate_units((heat, coord) => {
             this.canvas.paint_heat(coord, heat);
         });
-        this.buff_board.iterate_units((buff, coord) => {
+        this.displaying_buff_board.iterate_units((buff, coord) => {
             this.canvas.paint_buff(coord, buff);
         });
     }

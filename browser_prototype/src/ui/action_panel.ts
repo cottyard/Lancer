@@ -61,7 +61,7 @@ class ActionPanel {
         div.appendChild(DomHelper.createText(
             this.getActionTypeText(action.type),
             {
-                color: g.action_style.get(action.type) || "black",
+                color: g.display_action_style.get(action.type) || "black",
                 'font-weight': 'bold',
                 padding: "10px"
             }

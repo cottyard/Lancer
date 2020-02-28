@@ -161,6 +161,10 @@ class Rule
             }
             else if (unit instanceof Swordsman)
             {
+                if (unit.is_perfect())
+                {
+                    return;
+                }
                 if (heat.at(coord).hostile(unit.owner) > 0)
                 {
                     let b = buff.at(coord);
@@ -246,7 +250,7 @@ class Rule
             {
                 if (coord.y == row)
                 {
-                    return Rule.reachable_by_skills(coord, g.skills_for_spawning!.as_list());
+                    return Rule.reachable_by_skills(coord, g.spawning_skills!.as_list());
                 }
             }
             return [];

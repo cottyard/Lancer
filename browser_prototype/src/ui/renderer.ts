@@ -468,6 +468,7 @@
         {
             shrink_length *= 0.6;
             size *= 2;
+            head_size = size * arrow_head;
             this.triangle(
                 new Position(to.x, to.y - shrink_length),
                 new Position(to.x - head_size, to.y - shrink_length - size), 

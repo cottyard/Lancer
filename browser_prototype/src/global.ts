@@ -13,7 +13,7 @@ class Module
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
-    skills_for_spawning: SkillSet | null = null;
+    spawning_skills: SkillSet | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
@@ -148,6 +148,13 @@ class Module
             -----`
     };
 
+    readonly spawning_skills_literal: string =
+        `-xxx-
+         -xxx-
+         --x--
+         -xxx-
+         -xxx-`;
+
     readonly perfect_skills = new Map<UnitConstructor, SkillSet>();
     readonly inborn_skills = new Map<UnitConstructor, SkillSet>();
 
@@ -183,6 +190,8 @@ class Module
             }
         });
 
+        this.spawning_skills = SkillSet.from_literal(this.spawning_skills_literal);
+
         this.display_action_style = new Map<DisplayActionType, string>([
             [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
@@ -200,12 +209,6 @@ class Module
             [ActionType.Upgrade, g.const.STYLE_CYAN],
             [ActionType.Recruit, g.const.STYLE_CYAN],
         ]);
-
-        this.skills_for_spawning = new SkillSet([new Skill(0, 0)]);
-        for (let c of [Rider, Soldier, Barbarian, Archer])
-        {
-            this.skills_for_spawning = this.skills_for_spawning.union(this.perfect_skills.get(c)!)
-        }
     }
 }
 

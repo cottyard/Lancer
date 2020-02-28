@@ -307,7 +307,8 @@ class Action
 
     cost(buff: FullBoard<Buff>): number
     {
-        let cost = this.standard_cost() + buff.at(this.move.from).get(this.type);
+        let buff_cost = buff.at(this.move.from).get(this.type);
+        let cost = this.standard_cost() + (buff_cost || 0);
         if (cost < 1)
         {
             return 1;
@@ -495,6 +496,11 @@ abstract class Unit implements ISerializable
 
     static which_to_spawn(skill: Skill): UnitConstructor | null
     {
+        if (!g.spawning_skills!.has(skill))
+        {
+            return null;
+        }
+        
         if (skill.equals(new Skill(0, 0)))
         {
             return Wagon;
