@@ -1,6 +1,6 @@
 import skills
 from enum import Enum
-from const import board_size_x, board_size_y, skillset_size, skillset_range
+from const import board_size_x, board_size_y, skillset_size, skillset_range, player_1
 import json
 
 class Move:
@@ -190,7 +190,7 @@ class Unit:
     level = 0
     trophy = 0
     
-    def __init__(self, owner, skillset=None, flip_skillset=False):
+    def __init__(self, owner, skillset=None):
         self.owner = owner
         self.perfect_skillset = potential_skillset_map[self.display].copy()
         if skillset is None:
@@ -198,7 +198,7 @@ class Unit:
         else:
             self.skillset = skillset.copy()
 
-        if flip_skillset:
+        if owner == player_1:
             self.skillset.flip()
 
     def endow(self, skill):
@@ -267,8 +267,7 @@ class Unit:
         if creator is None:
             return None
 
-        created = creator(player, SkillSet())
-        created.endow(skill)
+        created = creator(player)
         return created
 
     def serialize(self):

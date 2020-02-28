@@ -69,7 +69,7 @@ def set_out(board):
         (board_size_y - 2, board_setting_2nd_row, player_1)
     ]:
         for i in range(board_size_x):
-            board.put(Position(i, row), setting[i](player, flip_skillset=player==player_1))
+            board.put(Position(i, row), setting[i](player))
 
 class ArriverMap:
     def __init__(self):

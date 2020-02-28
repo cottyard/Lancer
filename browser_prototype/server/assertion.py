@@ -80,7 +80,7 @@ def assert_move_conflict():
     b.put(p1p1, Soldier(player_1))
     b.put(p2p1, Soldier(player_2))
     b.put(p1p2, Soldier(player_1))
-    b.put(p1p3, Rider(player_1))
+    b.put(p1p3, make_perfect(Rider(player_1)))
     b.put(p2p2, Soldier(player_2))
     g = Game(b)
     g.replenish(100)
@@ -101,7 +101,6 @@ def assert_attack_defend():
     p2u1 = Position.from_literal('55')
     p2u2 = Position.from_literal('66')
     p2u3 = Position.from_literal('61')
-    #p2u4 = Position.from_literal('65')
 
     p1u1 = Position.from_literal('54')
     p1u2 = Position.from_literal('53')
@@ -110,13 +109,12 @@ def assert_attack_defend():
     p1u5 = Position.from_literal('56')
 
     b.put(p2u1, Soldier(player_2))
-    b.put(p2u2, Rider(player_2, flip_skillset=True))
+    b.put(p2u2, make_perfect(Rider(player_2)))
     b.put(p2u3, Soldier(player_2))
-    #b.put(p2u4, Barbarian(player_2, flip_skillset=True)))
 
-    b.put(p1u1, Rider(player_1))
+    b.put(p1u1, make_perfect(Rider(player_1)))
     b.put(p1u2, Soldier(player_1))
-    b.put(p1u3, Rider(player_1))
+    b.put(p1u3, make_perfect(Rider(player_1)))
     b.put(p1u4, Soldier(player_1))
     b.put(p1u5, Soldier(player_1))
 
