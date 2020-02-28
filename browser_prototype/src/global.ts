@@ -35,7 +35,8 @@ class Module
         'server_url': window.location.href,
         'player_color_map': new Map<Player, string>()
     };
-    action_style = new Map<DisplayActionType, string>();
+    display_action_style = new Map<DisplayActionType, string>();
+    action_style = new Map<ActionType, string>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined } =
     {
@@ -182,7 +183,7 @@ class Module
             }
         });
 
-        this.action_style = new Map<DisplayActionType, string>([
+        this.display_action_style = new Map<DisplayActionType, string>([
             [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
             [DisplayActionType.Move, g.const.STYLE_BLACK],
@@ -190,6 +191,14 @@ class Module
             [DisplayActionType.Recruit, g.const.STYLE_CYAN],
             [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
+        ]);
+
+        this.action_style = new Map<ActionType, string>([
+            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
+            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+            [ActionType.Move, g.const.STYLE_BLACK],
+            [ActionType.Upgrade, g.const.STYLE_CYAN],
+            [ActionType.Recruit, g.const.STYLE_CYAN],
         ]);
 
         this.skills_for_spawning = new SkillSet([new Skill(0, 0)]);

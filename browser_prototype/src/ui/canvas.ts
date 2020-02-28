@@ -171,12 +171,60 @@ class GameCanvas
         });
     }
 
+    paint_buff(coordinate: Coordinate, buff: Buff)
+    {
+        let size_y = 5;
+        let size_x = 4;
+        let space = 10;
+        let small_space = 8;
+        let begin = GameCanvas.get_grid_position(coordinate).add(
+            new PositionDelta(g.settings.grid_size - size_x - 2, 3));
+
+        using(new Renderer(this.am_ctx), (renderer) => {
+            renderer.translate(begin);
+            let offset = 0;
+            let last_upwards: boolean | null = null;
+            for (let type of [ActionType.Move, ActionType.Attack, ActionType.Defend, ActionType.Upgrade])
+            {
+                let b = buff.get(type);
+                if (b == 0)
+                {
+                    continue;
+                }
+                
+                let top = 0; 
+                let bottom = size_y;
+                let upwards = b < 0;
+                if (!upwards)
+                {
+                    [top, bottom] = [bottom, top];
+                    
+                }
+
+                if (last_upwards != null)
+                {
+                    offset += last_upwards == upwards ? space : small_space;
+                }
+
+                let style = g.action_style.get(type)!;
+                renderer.set_color(style)
+                renderer.triangle(
+                    new Position(-offset, top),
+                    new Position(-offset - size_x, bottom), 
+                    new Position(-offset + size_x, bottom), 
+                    1, style);
+                
+                last_upwards = upwards;
+            }
+        });
+    }
+
     paint_actions(player_action: DisplayPlayerAction, board: Board<Unit>)
     {
         for (let a of player_action.actions)
         {
             const skill = a.action.move.get_skill();
-            const color = g.action_style.get(a.type)!;
+            const color = g.display_action_style.get(a.type)!;
             const shrink = g.settings.grid_size / 2 - 5;
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);

@@ -458,10 +458,11 @@
         this.ctx.restore();
     }
 
-    arrow(from: Position, to: Position, style: string, shrink_length: number, width: number = 3): void
+    arrow(from: Position, to: Position, style: string, shrink_length: number, width: number = 3, arrow_head = 0.6): void
     {
         this.set_color(style);
         let size = 3;
+        let head_size = size * arrow_head;
 
         if (from.equals(to))
         {
@@ -469,8 +470,8 @@
             size *= 2;
             this.triangle(
                 new Position(to.x, to.y - shrink_length),
-                new Position(to.x - size / 1.5, to.y - shrink_length - size), 
-                new Position(to.x + size / 1.5, to.y - shrink_length - size), 
+                new Position(to.x - head_size, to.y - shrink_length - size), 
+                new Position(to.x + head_size, to.y - shrink_length - size), 
                 width, style);
             return;
         }
@@ -485,7 +486,7 @@
         this.ctx.translate(to.x, to.y);
         this.ctx.rotate(direction.add(90).to_radian().value);
         this.triangle(
-            new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size), 
+            new Position(0, 0), new Position(-head_size, size), new Position(head_size, size), 
             width, style);
         this.ctx.restore();
     }

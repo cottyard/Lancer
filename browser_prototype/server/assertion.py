@@ -163,7 +163,7 @@ def assert_buffs():
         PlayerMove.from_literal(player_2, "")])
 
     assert(g.supply[player_1] == 29) # 40 - 16 + 5
- 
+
 assert_input()
 assert_invalid_input()
 assert_clash()

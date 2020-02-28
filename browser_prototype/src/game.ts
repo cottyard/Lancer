@@ -248,13 +248,13 @@ class Game
         {
             this.canvas.paint_grid_indicator(this.selected);
         }
-        for (let player_action of this.displaying_actions)
-        {
-            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
-        }
         if (this.show_heat)
         {
             this.render_heat();
+        }
+        for (let player_action of this.displaying_actions)
+        {
+            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
         }
         if (this.show_last_round)
         {
@@ -286,6 +286,9 @@ class Game
     {
         this.heat_board.iterate_units((heat, coord) => {
             this.canvas.paint_heat(coord, heat);
+        });
+        this.buff_board.iterate_units((buff, coord) => {
+            this.canvas.paint_buff(coord, buff);
         });
     }
 
