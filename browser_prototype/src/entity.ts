@@ -544,7 +544,7 @@ interface AdvancedUnitConstructor extends UnitConstructor
 }
 
 function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor {
-    return 'fooProperty' in ctor;
+    return 'discriminator' in ctor && ctor['discriminator'] == 'AdvancedUnitConstructor';
 }
 
 abstract class BasicUnit extends UnitConstructor
@@ -591,7 +591,7 @@ abstract class AdvancedUnit extends UnitConstructor
 
 const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends AdvancedUnit
 {
-    static discriminator: 'AdvancedUnitConstructor';
+    static discriminator: 'AdvancedUnitConstructor' = 'AdvancedUnitConstructor';
 }
 
 class Rider extends BasicUnit

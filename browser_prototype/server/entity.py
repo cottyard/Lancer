@@ -64,26 +64,39 @@ class Action:
     def __repr__(self):
         return f'{self.move}({ActionType.show(self.type)})'
 
-    def get_cost(self):
-        if self.type == ActionType.Move:
+    def get_cost(self, buff_board):
+        cost = self.standard_cost() + buff_board.at(self.move.position_from).get(self.type)
+        if cost < 1:
+            return 1
+        return cost
+
+    def standard_cost(self):
+        if self.type == ActionType.Defend:
+            return 2
+        elif self.type == ActionType.Move:
             if self.move.get_skill().is_leap():
-                return 4
-            else:
                 return 3
-        try:
+            else:
+                return 2
+        elif self.type == ActionType.Upgrade:
+            if self.unit_type not in promotion_map:
+                return 3
+            else:
+                return 4
+        elif self.type == ActionType.Attack:
+            if self.move.get_skill().is_leap():
+                return 5
+            else:
+                return 4
+        elif self.type == ActionType.Recruit:
             return {
-                ActionType.Upgrade: 5,
-                ActionType.Defend: 2,
-                ActionType.Attack: 6,
-            }[self.type]
-        except KeyError:
-            return {
-                Barbarian: 8,
-                Soldier: 12,
+                Barbarian: 10,
+                Soldier: 10,
                 Archer: 10,
-                Rider: 16,
+                Rider: 15,
                 Wagon: 20
             }[self.unit_type]
+        raise Exception("unsupported type")
 
     def serialize(self):
         return json.dumps([self.type.value, self.unit_type.__name__, self.move.serialize()])
@@ -102,8 +115,8 @@ class PlayerAction:
     def copy(self):
         return PlayerAction(self.player, self.action_list.copy())
 
-    def get_cost(self):
-        return sum([action.get_cost() for action in self.action_list])
+    def get_cost(self, buff_board):
+        return sum([action.get_cost(buff_board) for action in self.action_list])
 
     def __repr__(self):
         return ','.join([str(a) for a in self.action_list])
@@ -355,12 +368,12 @@ class SkillSet:
 class Rider(Unit):
     display = "RDR"
     level = 2
-    trophy = 8
+    trophy = 5
 
 class Soldier(Unit):
     display = "SLD"
     level = 1
-    trophy = 6
+    trophy = 5
 
 class Archer(Unit):
     display = "ACH"
@@ -370,32 +383,32 @@ class Archer(Unit):
 class Barbarian(Unit):
     display = "BAR"
     level = 1
-    trophy = 4
+    trophy = 0
 
 class Lancer(Unit):
     display = "LAN"
     level = 3
-    trophy = 8
+    trophy = 15
 
 class Knight(Unit):
     display = "KNT"
     level = 3
-    trophy = 8
+    trophy = 15
 
 class Swordsman(Unit):
     display = "SWD"
     level = 2
-    trophy = 5
+    trophy = 10
 
 class Spearman(Unit):
     display = "SPR"
     level = 2
-    trophy = 6
+    trophy = 10
 
 class Warrior(Unit):
     display = "WAR"
     level = 2
-    trophy = 4
+    trophy = 0
 
 class King(Unit):
     display = "KING"
@@ -417,7 +430,8 @@ promotion_map = {
     Rider: [Lancer, Knight],
     Soldier: [Swordsman, Spearman],
     Archer: [Warrior, Spearman],
-    Barbarian: [Warrior, Swordsman]
+    Barbarian: [Warrior, Swordsman],
+    Wagon: []
 }
 
 potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)

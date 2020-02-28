@@ -1,6 +1,6 @@
 from entity import Action, ActionType, InvalidParameter, \
-    King, Move, PlayerAction, PlayerMove, Position, Unit
-from board import Board, ForceBoard
+    King, Move, PlayerAction, PlayerMove, Position, Unit, Lancer, Knight, Warrior, Swordsman, Spearman
+from board import Board, ForceBoard, HeatBoard, BuffMap
 from const import player_1, player_2, board_size_y
 
 max_unit_count = 28
@@ -258,18 +258,18 @@ def validate_player_move(board, player_move):
             for move in moves
         ])
 
-def all_valid_moves(board, player, include_endowment=False):
-    all_moves = []
+def all_reachable_positions(board, player, include_endowment=False):
+    all_ = []
     def each(u, position):
         if u.owner != player:
             return
-        all_moves.extend(
-            valid_moves(board, position, include_endowment))
+        all_.extend(
+            reachable_positions(board, position, include_endowment))
             
     board.iterate_units(each)
-    return all_moves
+    return all_
 
-def valid_moves(board, position, include_endowment=False):
+def reachable_positions(board, position, include_endowment=False):
     unit = board.at(position)
     
     if include_endowment:
@@ -279,4 +279,46 @@ def valid_moves(board, position, include_endowment=False):
 
     skill_list = skillset.list_skills()
     in_reach = [position.get_new_position(skill.delta) for skill in skill_list]
-    return [Move(position, pos) for pos in in_reach if pos is not None]
+    return [pos for pos in in_reach if pos is not None]
+
+def get_heat_board(board):
+    heat_board = HeatBoard()
+    for player in [player_1, player_2]:
+        for pos in all_reachable_positions(board, player):
+            heat_board.heatup(pos, player)
+    return heat_board
+
+def get_buff_board(board):
+    heat = get_heat_board(board)
+    buff = Board(BuffMap)
+
+    def each(unit, position):
+        if type(unit) == Lancer:
+            for pos in reachable_positions(board, position):
+                other = board.at(pos)
+                if other and other.owner == unit.owner:
+                    b = buff.at(pos)
+                    b.add(ActionType.Move, -1)
+                    b.add(ActionType.Attack, -1)
+        elif type(unit) == Knight:
+            for pos in reachable_positions(board, position):
+                other = board.at(pos)
+                if other and other.owner == unit.owner:
+                    b = buff.at(pos)
+                    b.add(ActionType.Defend, -1)
+        elif type(unit) == Warrior:
+            for pos in reachable_positions(board, position):
+                other = board.at(pos)
+                if other and other.owner != unit.owner:
+                    b = buff.at(pos)
+                    b.add(ActionType.Move, 1)
+        elif type(unit) == Swordsman:
+            if heat.heat(position, player_2 if unit.owner == player_1 else player_1) > 0:
+                b = buff.at(position)
+                b.add(ActionType.Upgrade, -2)
+        elif type(unit) == Spearman:
+            b = buff.at(position)
+            b.add(ActionType.Attack, -1)
+
+    board.iterate_units(each)
+    return buff

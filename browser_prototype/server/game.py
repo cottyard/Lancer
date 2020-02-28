@@ -14,7 +14,7 @@ class GameStatus(Enum):
     Draw = 3
 
 class Game:
-    supply_initial = 24
+    supply_initial = 20
     supply_basic_incremental = 20
     supply_wagon = 2
     msg_not_enough_supply = "not enough supply"
@@ -65,9 +65,11 @@ class Game:
         next_game.round_count = self.round_count + 1
         next_game.martyr_list = martyr_list
 
+        buff_board = rule.get_buff_board(self.board)
+
         for player_action in player_action_map.values():
             player = player_action.player
-            next_game.supply[player] = self.supply[player] - player_action.get_cost()
+            next_game.supply[player] = self.supply[player] - player_action.get_cost(buff_board)
             next_game.supply[player] += Game.supply_basic_incremental
             next_game.supply[player] += self.wagon_supply(player)
             next_game.supply[player] += self.trophy_supply(player, martyr_list)
@@ -76,7 +78,8 @@ class Game:
 
     def validate_player_move(self, player_move):
         player_action = rule.validate_player_move(self.board, player_move)
-        if player_action.get_cost() > self.supply[player_action.player]:
+        buff_board = rule.get_buff_board(self.board)
+        if player_action.get_cost(buff_board) > self.supply[player_action.player]:
             raise rule.InvalidMoveException(Game.msg_not_enough_supply)
         return player_action
 

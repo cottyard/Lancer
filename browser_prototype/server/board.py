@@ -1,6 +1,6 @@
 from const import board_size_x, board_size_y, player_1, player_2
 from copy import deepcopy
-from entity import Position, Wagon, Archer, Rider, King, Soldier, Barbarian, Unit
+from entity import Position, Wagon, Archer, Rider, King, Soldier, Barbarian, Unit, ActionType
 import json
 
 board_setting_1st_row = [Archer, Wagon, Archer, Rider, King, Rider, Archer, Wagon, Archer]
@@ -100,6 +100,21 @@ class HeatMap:
 
     def get(self, player):
         return self.map[player]        
+
+class BuffMap:
+    def __init__(self):
+        self.map = {
+            ActionType.Attack: 0,
+            ActionType.Defend: 0,
+            ActionType.Move: 0,
+            ActionType.Upgrade: 0
+        }
+    
+    def add(self, type_, amount):
+        self.map[type_] += amount
+    
+    def get(self, type_):
+        return self.map[type_]
 
 class BattleOutcome:
     def __init__(self, player_won, arriver_map, reinforcers_map):

@@ -1,5 +1,6 @@
 from game import Game
-from entity import Soldier, Rider, Barbarian, Spearman, Position, PlayerMove, Move, Skill, SkillSet, PositionDelta
+from entity import Soldier, Rider, Lancer, Knight, Warrior, Swordsman, Barbarian, \
+    Spearman, Position, PlayerMove, Move, Skill, SkillSet, PositionDelta
 from const import player_1, player_2
 from board import Board
 import rule
@@ -138,8 +139,34 @@ def assert_attack_defend():
 
     assert(g.board.at(Position.from_literal('46')).owner == player_1)
 
+def make_perfect(unit):
+    for s in unit.perfect_skillset.list_skills():
+        unit.endow(s)
+    return unit
+
+def assert_buffs():
+    b = Board()
+
+    b.put(Position.from_literal('55'), make_perfect(Lancer(player_1, SkillSet())))
+    b.put(Position.from_literal('66'), make_perfect(Knight(player_1, SkillSet())))
+    b.put(Position.from_literal('46'), make_perfect(Knight(player_1, SkillSet())))
+    b.put(Position.from_literal('68'), make_perfect(Warrior(player_2, SkillSet())))
+    b.put(Position.from_literal('78'), make_perfect(Spearman(player_1, SkillSet())))
+    b.put(Position.from_literal('88'), make_perfect(Spearman(player_1, SkillSet())))
+    b.put(Position.from_literal('53'), make_perfect(Soldier(player_1)))
+    b.put(Position.from_literal('52'), make_perfect(Soldier(player_2)))
+    b.put(Position.from_literal('59'), Swordsman(player_1, SkillSet()))
+
+    g = Game(b)
+    g = g.make_move([
+        PlayerMove.from_literal(player_1, "4241 4442 5563 4857 6757 7757"),
+        PlayerMove.from_literal(player_2, "")])
+
+    assert(g.supply[player_1] == 29) # 40 - 16 + 5
+ 
 assert_input()
 assert_invalid_input()
 assert_clash()
 assert_move_conflict()
 assert_attack_defend()
+assert_buffs()
