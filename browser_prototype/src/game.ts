@@ -90,7 +90,7 @@ class Game
 
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
     player_names: Map<Player, string> = new Map<Player, string>();
-    supplies: Map<Player, number> = new Map<Player, number>();
+    supplies: Map<Player, number> = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
     private _status: GameStatus = GameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
     last_round_victims: Coordinate[] = [];
@@ -118,15 +118,9 @@ class Game
             <HTMLCanvasElement>document.getElementById('static'), 
             <HTMLCanvasElement>document.getElementById('animate'),
             <HTMLCanvasElement>document.getElementById('animate-transparent'));
-        this.action_panel = new ActionPanel(
-            <HTMLDivElement>document.getElementById('action-panel'),
-            this);
-        this.status_bar = new StatusBar(
-            <HTMLDivElement>document.getElementById('status-bar'),
-            this);
-        this.button_bar = new ButtonBar(
-            <HTMLDivElement>document.getElementById('button-bar'),
-            this);
+        this.action_panel = new ActionPanel(<HTMLDivElement>document.getElementById('action-panel'), this);
+        this.status_bar = new StatusBar(<HTMLDivElement>document.getElementById('status-bar'), this);
+        this.button_bar = new ButtonBar(<HTMLDivElement>document.getElementById('button-bar'), this);
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
@@ -415,10 +409,8 @@ class Game
         this.canvas.paint_background();
 
         let random_unit = g.all_unit_types[Math.floor(Math.random() * g.all_unit_types.length)];
-
-        let lancer = new random_unit(Player.P1, <BasicUnit>this.displaying_board.at(new Coordinate(1,7)));
-        lancer.perfect.as_list().forEach(s => {lancer.endow(s);});
-        this.displaying_board.put(new Coordinate(4,4), lancer);
+        let random_player = Math.floor(Math.random() * 2) + 1;
+        this.displaying_board.put(new Coordinate(4,4), this.create_perfect(random_player, random_unit));
         
         this.render_board();
         this.render_indicators();
@@ -426,6 +418,37 @@ class Game
         this.button_bar.render();
 
         this.start_query_game();
+    }
+
+    create_perfect(player: Player, ctor: UnitConstructor): Unit
+    {
+        let unit = new ctor(player, null);
+        unit.perfect.as_list().forEach(s => {unit.endow(s);});
+        return unit;
+    }
+
+    test_run()
+    {
+        this.canvas.paint_background();
+
+        this.displaying_board.put(new Coordinate(4,4), this.create_perfect(Player.P1, Lancer));
+        this.displaying_board.put(new Coordinate(5,5), this.create_perfect(Player.P1, Knight));
+        this.displaying_board.put(new Coordinate(3,5), this.create_perfect(Player.P1, Knight));
+        this.displaying_board.put(new Coordinate(5,7), this.create_perfect(Player.P2, Warrior));
+        this.displaying_board.put(new Coordinate(6,7), this.create_perfect(Player.P1, Spearman));
+        this.displaying_board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
+        this.displaying_board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
+        this.displaying_board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
+        this.displaying_board.put(new Coordinate(4,8), new Swordsman(Player.P1));
+
+        this.board = this.displaying_board;
+        
+        this.render_board();
+        this.render_indicators();
+        this.status_bar.render();
+        this.button_bar.render();
+
+        this.status = GameStatus.WaitForPlayer;
     }
 
     new_game()

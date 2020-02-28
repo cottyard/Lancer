@@ -113,7 +113,7 @@ class ButtonBar {
             if (this.game.status == GameStatus.WaitForPlayer)
             {
                 let supply = this.game.get_player_supply(this.game.player);
-                if (!supply)
+                if (supply == undefined)
                 {
                     throw new Error("cannot get game supply");
                 }

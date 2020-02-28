@@ -307,7 +307,12 @@ class Action
 
     cost(buff: FullBoard<Buff>): number
     {
-        return this.standard_cost() + buff.at(this.move.from).get(this.type);
+        let cost = this.standard_cost() + buff.at(this.move.from).get(this.type);
+        if (cost < 1)
+        {
+            return 1;
+        }
+        return cost;
     }
 
     standard_cost(): number
