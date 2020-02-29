@@ -84,10 +84,10 @@ class Action:
             else:
                 return 2
         elif self.type == ActionType.Upgrade:
-            if self.unit_type not in promotion_map:
-                return 3
-            else:
+            if self.unit_type.basic:
                 return 4
+            else:
+                return 3
         elif self.type == ActionType.Attack:
             if self.move.get_skill().is_leap():
                 return 5
@@ -193,6 +193,8 @@ class Unit:
     display = ""
     level = 0
     trophy = 0
+    basic = False
+    advanced = False
     
     def __init__(self, owner, skillset=None):
         self.owner = owner
@@ -221,10 +223,7 @@ class Unit:
         return self.skillset == self.perfect_skillset
 
     def is_promotion_ready(self):
-        return not self.is_advanced() and self.is_perfect()
-
-    def is_advanced(self):
-        return type(self) not in promotion_map
+        return not self.advanced and self.is_perfect()
 
     def potential_skillset(self):
         return self.ultimate_skillset().subtract(self.skillset)
@@ -377,46 +376,55 @@ class Rider(Unit):
     display = "RDR"
     level = 2
     trophy = 5
+    basic = True
 
 class Soldier(Unit):
     display = "SLD"
     level = 1
     trophy = 5
+    basic = True
 
 class Archer(Unit):
     display = "ACH"
     level = 1
     trophy = 5
+    basic = True
 
 class Barbarian(Unit):
     display = "BAR"
     level = 1
     trophy = 0
+    basic = True
 
 class Lancer(Unit):
     display = "LAN"
     level = 3
     trophy = 15
+    advanced = True
 
 class Knight(Unit):
     display = "KNT"
     level = 3
     trophy = 15
+    advanced = True
 
 class Swordsman(Unit):
     display = "SWD"
     level = 2
     trophy = 10
+    advanced = True
 
 class Spearman(Unit):
     display = "SPR"
     level = 2
     trophy = 10
+    advanced = True
 
 class Warrior(Unit):
     display = "WAR"
     level = 2
     trophy = 0
+    advanced = True
 
 class King(Unit):
     display = "KING"
@@ -438,8 +446,7 @@ promotion_map = {
     Rider: [Lancer, Knight],
     Soldier: [Swordsman, Spearman],
     Archer: [Warrior, Spearman],
-    Barbarian: [Warrior, Swordsman],
-    Wagon: []
+    Barbarian: [Warrior, Swordsman]
 }
 
 potential_skillset_map = convert_skill_list_map_to_skillset_map(skills.potential_skill_list_map)

@@ -471,6 +471,7 @@ class Game
         this.displaying_board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
         this.displaying_board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
         this.displaying_board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
+        this.displaying_board.put(new Coordinate(1,1), this.create_perfect(Player.P2, Soldier));
         this.displaying_board.put(new Coordinate(4,8), new Swordsman(Player.P1));
 
         this.displaying_board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));

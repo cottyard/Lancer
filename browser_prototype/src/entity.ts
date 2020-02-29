@@ -332,13 +332,13 @@ class Action
                     return 2;
                 }
             case ActionType.Upgrade:
-                if (is_advanced_unit_ctor(this.unit_type))
+                if (is_basic_unit_ctor(this.unit_type))
                 {
-                    return 3;
+                    return 4;
                 }
                 else
                 {
-                    return 4;
+                    return 3;
                 }
             case ActionType.Attack:
                 if (this.move.get_skill().is_leap())
@@ -419,6 +419,7 @@ abstract class Unit implements ISerializable
     readonly perfect: SkillSet;
     current: SkillSet;
     display: string;
+    readonly promotion_options: AdvancedUnitConstructor[] = [];
 
     constructor(public owner: Player)
     {
@@ -500,7 +501,7 @@ abstract class Unit implements ISerializable
         {
             return null;
         }
-        
+
         if (skill.equals(new Skill(0, 0)))
         {
             return Wagon;
@@ -543,20 +544,25 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
     }
 }
 
+interface BasicUnitConstructor extends UnitConstructor
+{
+    new (owner: Player): BasicUnit;
+    discriminator: 'BasicUnitConstructor';
+}
+
 interface AdvancedUnitConstructor extends UnitConstructor
 {
     new (owner: Player, was: BasicUnit | null): AdvancedUnit;
     discriminator: 'AdvancedUnitConstructor';
 }
 
-function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor {
-    return 'discriminator' in ctor && ctor['discriminator'] == 'AdvancedUnitConstructor';
+function is_basic_unit_ctor(ctor: UnitConstructor): ctor is BasicUnitConstructor 
+{
+    return 'discriminator' in ctor && ctor['discriminator'] == 'BasicUnitConstructor';
 }
 
 abstract class BasicUnit extends UnitConstructor
 {
-    abstract readonly promotion_options: AdvancedUnitConstructor[];
-
     is_promotion_ready(): boolean
     {
         return this.is_perfect();
@@ -573,7 +579,7 @@ abstract class BasicUnit extends UnitConstructor
                     <UnitConstructor>future_type)!);
             }
         }
-            
+
         return potentials;
     }
 }
@@ -600,22 +606,27 @@ const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends Advance
     static discriminator: 'AdvancedUnitConstructor' = 'AdvancedUnitConstructor';
 }
 
-class Rider extends BasicUnit
+const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
+{
+    static discriminator: 'BasicUnitConstructor' = 'BasicUnitConstructor';
+}
+
+class Rider extends BasicUnitConstructor
 {
     readonly promotion_options = [Lancer, Knight];
 }
 
-class Soldier extends BasicUnit
+class Soldier extends BasicUnitConstructor
 {
     readonly promotion_options = [Swordsman, Spearman];
 }
 
-class Archer extends BasicUnit
+class Archer extends BasicUnitConstructor
 {
     readonly promotion_options = [Warrior, Spearman];
 }
 
-class Barbarian extends BasicUnit
+class Barbarian extends BasicUnitConstructor
 {
     readonly promotion_options = [Warrior, Swordsman];
 }
