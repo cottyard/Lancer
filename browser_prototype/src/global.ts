@@ -25,7 +25,9 @@ class Module
         'STYLE_GOLD': '#ffd700',
         'STYLE_BLUE_LIGHT': '#80ccff',
         'STYLE_GREEN_LIGHT': '#80e080',
-        'STYLE_GREEN': '#079400'
+        'STYLE_GREEN': '#079400',
+        'STYLE_TEAL': '#0292B7',
+        'STYLE_TERQUOISE': '#1AC8DB'
     };
     settings = {
         'cvs_size': this.cvs_size,
@@ -198,6 +200,7 @@ class Module
             [DisplayActionType.Move, g.const.STYLE_BLACK],
             [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
             [DisplayActionType.Recruit, g.const.STYLE_CYAN],
+            [DisplayActionType.Recall, g.const.STYLE_GOLD],
             [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
         ]);
@@ -208,6 +211,7 @@ class Module
             [ActionType.Move, g.const.STYLE_BLACK],
             [ActionType.Upgrade, g.const.STYLE_CYAN],
             [ActionType.Recruit, g.const.STYLE_CYAN],
+            [ActionType.Recall, g.const.STYLE_GOLD]
         ]);
     }
 }

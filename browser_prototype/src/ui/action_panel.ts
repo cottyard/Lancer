@@ -212,14 +212,20 @@ class ActionPanel {
         return div;
     }
 
-    getMainUnit(action: DisplayAction): Unit {
-        const unit = action.type === DisplayActionType.Recruit
-            ? new action.action.unit_type(this.game.player)
-            : this.game.board!.at(action.action.move.from);
-        if (unit == null) {
-            throw new Error("Action on non-existing unit.");
+    getMainUnit(action: DisplayAction): Unit 
+    {
+        if (action.type === DisplayActionType.Recruit)
+        {
+            return new action.action.unit_type(this.game.player);
         }
-        return unit;
+        else if (action.type === DisplayActionType.Recall)
+        {
+            return this.game.board.at(action.action.move.to)!;
+        }
+        else
+        {
+            return this.game.board!.at(action.action.move.from)!;
+        }
     }
 
     getTargetUnit(action: DisplayAction): Unit | null {
@@ -263,6 +269,8 @@ class ActionPanel {
                 return "attacks";
             case DisplayActionType.Recruit:
                 return "recruited";
+            case DisplayActionType.Recall:
+                return "recalled";
             case DisplayActionType.MoveAssist:
                 return "assisting";
             case DisplayActionType.AttackAssist:

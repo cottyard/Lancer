@@ -219,17 +219,56 @@ class GameCanvas
         });
     }
 
+    mark_this_grid(center: Position, color: string, reverse: boolean = false)
+    {
+        let pos = new Position(center.x, center.y - g.settings.grid_size / 4 - 10);
+        let size = 7;
+        let tip_y = 0;
+        let bottom_y = -size;
+        if (reverse)
+        {
+            [tip_y, bottom_y] = [bottom_y, tip_y];
+        }
+
+        using(new Renderer(this.am_ctx), (renderer) => {
+            renderer.set_color(color);
+            renderer.translate(pos);
+            renderer.triangle(
+                new Position(0, tip_y),
+                new Position(-size, bottom_y), 
+                new Position(size, bottom_y), 
+                1, color);
+        });
+    }
+
     paint_actions(player_action: DisplayPlayerAction, board: Board<Unit>)
     {
         for (let a of player_action.actions)
         {
-            const skill = a.action.move.get_skill();
-            const color = g.display_action_style.get(a.type)!;
-            const shrink = g.settings.grid_size / 2 - 5;
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
-            const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
+            const color = g.display_action_style.get(a.type)!;
 
+            if (a.type == DisplayActionType.Recall)
+            {
+                this.mark_this_grid(from, color);
+                this.mark_this_grid(to, color, true);
+                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
+                continue;
+            }
+            else if (a.type == DisplayActionType.Recruit)
+            {
+                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
+                if (a.action.move.from.equals(a.action.move.to))
+                {
+                    this.mark_this_grid(to, color);
+                    continue;
+                }
+            }
+
+            const skill = a.action.move.get_skill();
+            const shrink = g.settings.grid_size / 2 - 5;
+            const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;
             let rider_move = false;
 
@@ -326,11 +365,6 @@ class GameCanvas
                         color, shrink, width
                     );
                 });
-            }
-
-            if (a.type == DisplayActionType.Recruit)
-            {
-                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
             }
         }
     }

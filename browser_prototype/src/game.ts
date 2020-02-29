@@ -17,8 +17,9 @@ enum DisplayActionType
     Move = 3,
     Attack = 4,
     Recruit = 5,
-    MoveAssist = 6,
-    AttackAssist = 7
+    Recall = 6,
+    MoveAssist = 7,
+    AttackAssist = 8
 }
 
 class DisplayAction
@@ -236,12 +237,17 @@ class Game
 
         for (let option of this.options_upgrade)
         {
-            this.canvas.paint_grid_indicator(option, g.const.STYLE_CYAN, 2);
+            this.canvas.paint_grid_indicator(option, g.const.STYLE_TERQUOISE, 2);
         }
         for (let option of this.options_capable)
         {
             this.canvas.paint_grid_indicator(option);
         }
+        for (let option of this.options_recall)
+        {
+            this.canvas.paint_grid_indicator(option, g.const.STYLE_GOLD, 3);
+        }
+        
         if (this.current)
         {
             this.canvas.paint_grid_indicator(this.current);
@@ -275,6 +281,7 @@ class Game
         this.show_threats = true;
         this.options_capable = [];
         this.options_upgrade = [];
+        this.options_recall = [];
         this.render_indicators();
     }
 
@@ -451,7 +458,7 @@ class Game
         unit.perfect.as_list().forEach(s => {unit.endow(s);});
         return unit;
     }
-
+    
     test_run()
     {
         this.canvas.paint_background();
@@ -465,6 +472,8 @@ class Game
         this.displaying_board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
         this.displaying_board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
         this.displaying_board.put(new Coordinate(4,8), new Swordsman(Player.P1));
+
+        this.displaying_board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
 
         this.board = this.displaying_board;
         

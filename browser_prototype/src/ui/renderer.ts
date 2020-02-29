@@ -464,19 +464,6 @@
         let size = 3;
         let head_size = size * arrow_head;
 
-        if (from.equals(to))
-        {
-            shrink_length *= 0.6;
-            size *= 2;
-            head_size = size * arrow_head;
-            this.triangle(
-                new Position(to.x, to.y - shrink_length),
-                new Position(to.x - head_size, to.y - shrink_length - size), 
-                new Position(to.x + head_size, to.y - shrink_length - size), 
-                width, style);
-            return;
-        }
-
         from = this.go_towards(from, to, shrink_length);
         to = this.go_towards(to, from, shrink_length);
 

@@ -139,8 +139,9 @@ class Rule
         {
             return false;
         }
+
         let king_side: Coordinate[] = this.reachable_by(board, king_coord[0]);
-        return king_side.indexOf(coord) > -1;
+        return king_side.findIndex((c) => c.equals(coord)) > -1;
     }
 
     static get_heat(board: Board<Unit>): FullBoard<Heat>
