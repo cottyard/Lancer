@@ -101,6 +101,8 @@ class Action:
                 Rider: 15,
                 Wagon: 20
             }[self.unit_type]
+        elif self.type == ActionType.Recall:
+            return 8
         raise Exception("unsupported type")
 
     def serialize(self):
@@ -136,6 +138,7 @@ class ActionType(Enum):
     Move = 3
     Attack = 4
     Recruit = 5
+    Recall = 6
 
     @classmethod
     def show(self, action_type):
@@ -144,7 +147,8 @@ class ActionType(Enum):
             ActionType.Defend: 'DEF',
             ActionType.Move: 'MOV',
             ActionType.Attack: 'ATK',
-            ActionType.Recruit: 'REC'
+            ActionType.Recruit: 'RCR',
+            ActionType.Recall: 'RCL'
         }[action_type]
 
 class Position:

@@ -34,6 +34,7 @@ def make_move(board, player_move_list):
     run_defend_phase(board, player_action_list, force_board)
     martyr_list += run_clash_phase(next_board, player_action_list, force_board)
     martyr_list += run_battle_phase(next_board, player_action_list, force_board, board)
+    run_recall_phase(next_board, player_action_list)
     run_recruit_phase(next_board, player_action_list)
 
     return next_board, player_action_map, martyr_list
@@ -154,6 +155,15 @@ def run_battle_phase(board, player_action_list, force_board, last_board):
     force_board.iterate_battles(settle_battle)
     return martyr_list
 
+def run_recall_phase(board, player_action_list):
+    for player_action in player_action_list:
+        for action in player_action.extract_actions(lambda a: a.type == ActionType.Recall):
+            if board.at(action.move.position_from) is None:
+                recalled = board.at(action.move.position_to)
+                if recalled is not None and recalled.owner == player_action.player:
+                    board.remove(action.move.position_to)
+                    board.put(action.move.position_from, recalled)
+
 def run_recruit_phase(board, player_action_list):
     for player_action in player_action_list:
         for action in player_action.action_list:
@@ -204,9 +214,33 @@ def count_unit(board, player, unit_type=None):
     board.iterate_units(count_unit)
     return count
 
+def is_king_side(board, player, position):
+    king_position = find_unit(board, King, player)
+    if king_position is None:
+        return False
+    king_side = reachable_positions(board, king_position)
+    return position in king_side
+
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
     if unit is None:
+        if is_king_side(board, player, move.position_from):
+            recalled = board.at(move.position_to)
+            if recalled is None:
+                raise InvalidMoveException("recalled grid is empty")
+            if recalled.owner != player:
+                raise InvalidMoveException("recalled unit is enemy")
+
+            heat_board = get_heat_board(board)
+            enemy_player = player_2 if recalled.owner == player_1 else player_1
+
+            if heat_board.heat(move.position_to, enemy_player) > 0:
+                raise InvalidMoveException("recalled unit is under attack")
+            if heat_board.heat(move.position_from, enemy_player) > 0:
+                raise InvalidMoveException("recall destination is under attack")
+
+            return Action(move, ActionType.Recall, type(recalled))
+
         if move.position_from.y != spawn_row[player]:
             raise InvalidMoveException("grid is empty")
         elif count_unit(board, player) >= max_unit_count:

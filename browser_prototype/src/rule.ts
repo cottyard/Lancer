@@ -45,11 +45,11 @@ class Rule
                 }
 
                 let heat = this.get_heat(board);
-                if (heat.at(move.from).hostile(player) > 0)
+                if (heat.at(move.to).hostile(player) > 0)
                 {
                     throw new InvalidMove("recalled unit is under attack");
                 }
-                if (heat.at(move.to).hostile(player) > 0)
+                if (heat.at(move.from).hostile(player) > 0)
                 {
                     throw new InvalidMove("recall destination is under attack");
                 }

@@ -1,6 +1,6 @@
 from game import Game
 from entity import Soldier, Rider, Lancer, Knight, Warrior, Swordsman, Barbarian, \
-    Spearman, Position, PlayerMove, Move, Skill, SkillSet, PositionDelta
+    Spearman, King, Position, PlayerMove, Move, Skill, SkillSet, PositionDelta
 from const import player_1, player_2
 from board import Board
 import rule
@@ -162,9 +162,47 @@ def assert_buffs():
 
     assert(g.supply[player_1] == 29) # 40 - 16 + 5
 
+def assert_recall():
+    b = Board()
+
+    b.put(Position.from_literal('55'), King(player_1))
+    b.put(Position.from_literal('57'), make_perfect(Soldier(player_2, SkillSet())))
+
+    b.put(Position.from_literal('88'), make_perfect(Soldier(player_2, SkillSet())))
+    b.put(Position.from_literal('89'), make_perfect(Lancer(player_1, SkillSet())))
+
+    b.put(Position.from_literal('11'), make_perfect(Lancer(player_1, SkillSet())))
+    
+    g = Game(b)
+    try:
+        g = g.make_move([
+            PlayerMove.from_literal(player_1, "5478"),
+            PlayerMove.from_literal(player_2, "")])
+    except:
+        pass
+    else:
+        raise Exception()
+
+    try:
+        g = g.make_move([
+            PlayerMove.from_literal(player_1, "4500"),
+            PlayerMove.from_literal(player_2, "")])
+    except:
+        pass
+    else:
+        raise Exception()
+
+    g = g.make_move([
+        PlayerMove.from_literal(player_1, "5400"),
+        PlayerMove.from_literal(player_2, "")])
+    
+    assert(g.board.at(Position.from_literal('11')) is None)
+    assert(g.board.at(Position.from_literal('65')).owner == player_1)
+
 assert_input()
 assert_invalid_input()
 assert_clash()
 assert_move_conflict()
 assert_attack_defend()
 assert_buffs()
+assert_recall()
