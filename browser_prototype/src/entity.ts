@@ -1,6 +1,6 @@
 class InvalidParameter extends Error {}
 
-class Coordinate implements IHashable, ISerializable
+class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 {
     constructor(public x: number, public y: number)
     {
@@ -230,6 +230,11 @@ enum Player
     P2 = 2
 }
 
+function opponent(player: Player)
+{
+    return player == Player.P1 ? Player.P2 : Player.P1;
+}
+
 function deserialize_player(payload: string): Player
 {
     return Player[<keyof typeof Player>('P' + payload)];
@@ -240,7 +245,7 @@ function serialize_player(player: Player)
     return JSON.stringify(player);
 }
 
-class Move implements ISerializable
+class Move implements ISerializable, ICopyable<Move>
 {
     constructor(public from: Coordinate, public to: Coordinate)
     {
@@ -264,6 +269,11 @@ class Move implements ISerializable
     static deserialize(payload: string)
     {
         return new Move(Coordinate.deserialize(payload.slice(0, 2)), Coordinate.deserialize(payload.slice(2, 4)));
+    }
+
+    copy(): Move
+    {
+        return new Move(this.from.copy(), this.to.copy());
     }
 }
 
@@ -299,10 +309,15 @@ class PlayerMove implements ISerializable
     }
 }
 
-class Action
+class Action implements ICopyable<Action>
 {
     constructor(public move: Move, public type: ActionType, public unit_type: UnitConstructor)
     {
+    }
+
+    copy(): Action
+    {
+        return new Action(this.move.copy(), this.type, this.unit_type);
     }
 
     cost(buff: FullBoard<Buff>): number
@@ -428,6 +443,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     current: SkillSet;
     display: string;
     readonly promotion_options: AdvancedUnitConstructor[] = [];
+    readonly level: number = 0;
 
     constructor(public owner: Player)
     {
@@ -497,6 +513,22 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     is_advanced(): boolean
     {
         return false;
+    }
+
+    duel(other: Unit): Unit | null
+    {
+        if (this.level == other.level)
+        {
+            return null;
+        }
+        else if (this.level > other.level)
+        {
+            return this;
+        }
+        else
+        {
+            return other;
+        }
     }
 
     promote(skill: Skill): Unit | null
@@ -653,45 +685,55 @@ const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
 class Rider extends BasicUnitConstructor
 {
     readonly promotion_options = [Lancer, Knight];
+    readonly level = 2;
 }
 
 class Soldier extends BasicUnitConstructor
 {
     readonly promotion_options = [Swordsman, Spearman];
+    readonly level = 1;
 }
 
 class Archer extends BasicUnitConstructor
 {
     readonly promotion_options = [Warrior, Spearman];
+    readonly level = 1;
 }
 
 class Barbarian extends BasicUnitConstructor
 {
     readonly promotion_options = [Warrior, Swordsman];
+    readonly level = 1;
 }
 
 class Lancer extends AdvancedUnitConstructor
 {
+    readonly level = 3;
 }
 
 class Knight extends AdvancedUnitConstructor
 {
+    readonly level = 3;
 }
 
 class Swordsman extends AdvancedUnitConstructor
 {
+    readonly level = 2;
 }
 
 class Spearman extends AdvancedUnitConstructor
 {
+    readonly level = 2;
 }
 
 class Warrior extends AdvancedUnitConstructor
 {
+    readonly level = 2;
 }
 
 class King extends UnitConstructor
 {
+    readonly level = 1;
 }
 
 class Wagon extends UnitConstructor

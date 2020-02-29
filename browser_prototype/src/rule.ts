@@ -354,11 +354,11 @@ class Rule
             (player_move) => this.validate_player_move(board, player_move));
 
         let next_board = board.copy();
-        //let force_board = new FullBoard<Force>(() => new Force());
+        let force_board = new FullBoard<Force>(() => new Force());
         
         this.process_upgrade_phase(next_board, player_actions);
-        // run_defend_phase(board, player_actions, force_board);
-        // run_clash_phase(next_board, player_actions, force_board);
+        this.process_defend_phase(next_board, player_actions, force_board);
+        this.process_clash_phase(next_board, player_actions);
 
         // run_battle_phase(next_board, player_actions, force_board, board);
         // run_recall_phase(next_board, player_actions);
@@ -390,6 +390,77 @@ class Rule
                     {
                         throw new Error("upgrade error");
                     }
+                }
+            }
+        }
+    }
+
+    static process_defend_phase(board: Board<Unit>, player_actions: PlayerAction[], force_board: FullBoard<Force>)
+    {
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.extract((a) => a.type == ActionType.Defend))
+            {
+                let unit = board.at(action.move.from)!;
+                force_board.at(action.move.to).reinforcers.get(player_action.player)!.push(unit);
+            }
+        }
+    }
+
+    static process_clash_phase(board: Board<Unit>, player_actions: PlayerAction[])
+    {
+        let clash_board = new Board<Action>();
+
+        type ClashPair = {
+            [k in Player]: Action
+        };
+        let clashes: ClashPair[] = [];
+ 
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.actions)
+            {
+                if (action.type != ActionType.Attack)
+                {
+                    continue;
+                }
+
+                let other = clash_board.at(action.move.to);
+                if (other != null && other.move.to == action.move.from)
+                {
+                    clashes.push(<ClashPair>{
+                        [player_action.player]: action,
+                        [opponent(player_action.player)]: other
+                    });
+                }
+                clash_board.put(action.move.from, action);
+            }
+        }
+
+        for (let clash of clashes)
+        {
+            let a1 = clash[Player.P1];
+            let a2 = clash[Player.P2];
+            let u1 = board.at(a1.move.from)!;
+            let u2 = board.at(a2.move.from)!;
+            
+            let surviver = u1.duel(u2);
+            let ceased = [];
+            if (surviver == null)
+            {
+                ceased.push(a1, a2);
+            }
+            else
+            {
+                ceased.push(surviver == u1 ? a2 : a1);
+            }
+
+            for (let action of ceased)
+            {
+                board.remove(action.move.from);
+                for (let player_action of player_actions)
+                {
+                    player_action.extract((a) => a === action);
                 }
             }
         }
@@ -431,7 +502,7 @@ class Heat
 
     hostile(player: Player): number
     {
-        return this.map.get(player == Player.P1 ? Player.P2 : Player.P1)!;
+        return this.map.get(opponent(player))!;
     }
 }
 

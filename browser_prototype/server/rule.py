@@ -59,7 +59,6 @@ def run_defend_phase(board, player_action_list, force_board):
                 action.move.position_to,
                 player_action.player,
                 BoardUnit(unit, action.move.position_from))
-    return force_board
 
 def run_clash_phase(board, player_action_list, force_board):
     clash_board = Board()
