@@ -77,6 +77,7 @@ class Game
     selected: Coordinate | null = null;
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
+    options_recall: Coordinate[] = [];
     show_heat: boolean = false;
     show_threats: boolean = true;
 
@@ -400,11 +401,31 @@ class Game
         {
             this.options_capable = Rule.able_to_reach(this.displaying_board, coord);
             this.options_upgrade = [];
+            this.options_recall = [];
         }
         else
         {
-            this.options_capable = Rule.reachable_by(this.displaying_board, coord);
-            this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);
+            let unit = this.displaying_board.at(coord);
+            if (unit)
+            {
+                this.options_capable = Rule.reachable_by(this.displaying_board, coord);
+                this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);    
+                this.options_recall = [];
+            }
+            else
+            {
+                this.options_capable = [];
+                if (Rule.is_king_side(this.displaying_board, this.player, coord))
+                {
+                    this.options_upgrade = [];
+                    this.options_recall = Rule.recallable_by(this.displaying_board, this.player, coord);
+                }
+                else
+                {
+                    this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
+                    this.options_recall = [];
+                }
+            }
         }
     }
 

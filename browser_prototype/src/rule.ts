@@ -294,17 +294,57 @@ class Rule
         let unit = board.at(coord);
         if (!unit)
         {
-            for (let row of this.spawn_row.values())
-            {
-                if (coord.y == row)
-                {
-                    return Rule.reachable_by_skills(coord, g.spawning_skills!.as_list());
-                }
-            }
             return [];
         }
 
         return Rule.reachable_by_skills(coord, unit.potential().as_list());
+    }
+
+    static spawnable_by(board: Board<Unit>, coord: Coordinate): Coordinate[]
+    {
+        let unit = board.at(coord);
+        if (unit)
+        {
+            return [];
+        }
+        for (let row of this.spawn_row.values())
+        {
+            if (coord.y == row)
+            {
+                return Rule.reachable_by_skills(coord, g.spawning_skills!.as_list());
+            }
+        }
+        return [];
+    }
+
+    static recallable_by(board: Board<Unit>, player: Player, coord: Coordinate): Coordinate[]
+    {
+        let unit = board.at(coord);
+        if (unit)
+        {
+            return [];
+        }
+
+        if (!this.is_king_side(board, player, coord))
+        {
+            return [];
+        }
+
+        let heat = this.get_heat(board);
+        if (heat.at(coord).hostile(player) > 0)
+        {
+            return [];
+        }
+
+        let all: Coordinate[] = [];
+        board.iterate_units((u, c) => {
+            if (u.owner == player && heat.at(c).hostile(player) == 0)
+            {
+                all.push(c);
+            }
+        });
+
+        return all;
     }
 }
 
