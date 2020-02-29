@@ -34,7 +34,7 @@ class FullBoard<T>
     }
 }
 
-class Board<T> extends FullBoard<T | null>
+class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopyable<Board<T>>
 {
     constructor(initializer: () => (T | null) = () => null)
     {
@@ -67,9 +67,23 @@ class Board<T> extends FullBoard<T | null>
             }
         });
     }
+
+    copy(): Board<T>
+    {
+        let count = 0;
+        let copy_initializer = () =>
+        {
+            let j = count % g.board_size_y;
+            let i = Math.floor(count / g.board_size_y);
+            count++;
+            let u = this.board[i][j];
+            return u == null ? null : u.copy();
+        };
+        return new Board<T>(copy_initializer);
+    }
 }
 
-class SerializableBoard<T extends ISerializable> extends Board<T> implements ISerializable
+class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T> implements ISerializable
 {
     serialize(): string
     {
@@ -91,12 +105,13 @@ class SerializableBoard<T extends ISerializable> extends Board<T> implements ISe
     }
 }
 
-interface SerializableBoardConstructor<T extends ISerializable, _> extends IDeserializable<SerializableBoard<T>>
+interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _> extends IDeserializable<SerializableBoard<T>>
 {
     deserialize(payload: string): SerializableBoard<T>;
 }
 
-function create_serializable_board_ctor<T extends ISerializable, C extends IDeserializable<T>>(unit_ctor: C): SerializableBoardConstructor<T, C>
+function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, C extends IDeserializable<T>>(
+    unit_ctor: C): SerializableBoardConstructor<T, C>
 {
     return class _ extends SerializableBoard<T>
     {

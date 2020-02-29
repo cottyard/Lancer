@@ -50,3 +50,8 @@ interface ISerializable
 {
     serialize(): string;
 }
+
+interface ICopyable<T>
+{
+    copy(): T;
+}

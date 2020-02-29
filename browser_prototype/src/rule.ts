@@ -347,6 +347,53 @@ class Rule
 
         return all;
     }
+
+    static make_move(board: Board<Unit>, player_moves: PlayerMove[]): Board<Unit>
+    {
+        let player_actions: PlayerAction[] = player_moves.map(
+            (player_move) => this.validate_player_move(board, player_move));
+
+        let next_board = board.copy();
+        //let force_board = new FullBoard<Force>(() => new Force());
+        
+        this.process_upgrade_phase(next_board, player_actions);
+        // run_defend_phase(board, player_actions, force_board);
+        // run_clash_phase(next_board, player_actions, force_board);
+
+        // run_battle_phase(next_board, player_actions, force_board, board);
+        // run_recall_phase(next_board, player_actions);
+        // run_recruit_phase(next_board, player_actions);
+
+        return next_board;
+    }
+
+    static process_upgrade_phase(board: Board<Unit>, player_actions: PlayerAction[])
+    {
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.extract((a) => a.type == ActionType.Upgrade))
+            {
+                let unit = board.at(action.move.from)!;
+                let skill = action.move.get_skill();
+                if (unit.is_promotion_ready())
+                {
+                    let promoted = unit.promote(skill);
+                    if (promoted == null)
+                    {
+                        throw new Error("promotion error");
+                    }
+                    board.put(action.move.from, promoted);
+                }
+                else
+                {
+                    if (!unit.endow(skill))
+                    {
+                        throw new Error("upgrade error");
+                    }
+                }
+            }
+        }
+    }
 }
 
 class Buff
@@ -386,4 +433,10 @@ class Heat
     {
         return this.map.get(player == Player.P1 ? Player.P2 : Player.P1)!;
     }
+}
+
+class Force
+{
+    reinforcers = new Map<Player, Unit[]>([[Player.P1, []], [Player.P2, []]]);
+    arriver = new Map<Player, Unit | null>([[Player.P1, null], [Player.P2, null]]);
 }

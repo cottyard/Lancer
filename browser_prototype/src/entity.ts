@@ -75,7 +75,7 @@ class Skill implements IHashable
     }
 }
 
-class SkillSet implements ISerializable
+class SkillSet implements ISerializable, ICopyable<SkillSet>
 {
     private map: boolean[][];
 
@@ -412,9 +412,17 @@ class PlayerAction
 
         return new PlayerAction(player, actions);
     }
+
+    extract(filter: (a: Action) => boolean): Action[]
+    {
+        let extracted = this.actions.filter(filter);
+        let remaining = this.actions.filter((a) => !filter(a));
+        this.actions = remaining;
+        return extracted;
+    }
 }
 
-abstract class Unit implements ISerializable
+abstract class Unit implements ISerializable, ICopyable<Unit>
 {
     readonly perfect: SkillSet;
     current: SkillSet;
@@ -431,6 +439,14 @@ abstract class Unit implements ISerializable
     serialize(): string
     {
         return JSON.stringify([this.display, this.owner, this.current.serialize()]);
+    }
+
+    copy(): Unit
+    {
+        let ctor = <UnitConstructor>this.constructor;
+        let u = new ctor(this.owner);
+        u.current = this.current.copy();
+        return u;        
     }
     
     endow_inborn(): void
@@ -483,6 +499,24 @@ abstract class Unit implements ISerializable
         return false;
     }
 
+    promote(skill: Skill): Unit | null
+    {
+        if (!this.is_promotion_ready())
+        {
+            return null;
+        }
+
+        let ctor = Unit.which_has_skill(skill, this.promotion_options);
+        if (ctor == null)
+        {
+            return null;
+        }
+
+        let promoted = new (<AdvancedUnitConstructor>ctor)(this.owner, this);
+        promoted.endow(skill);
+        return promoted;
+    }
+
     static spawn_from_skill(player: Player, skill: Skill): Unit | null
     {
         let ctor = Unit.which_to_spawn(skill);
@@ -508,15 +542,20 @@ abstract class Unit implements ISerializable
         }
         else
         {
-            for (let c of [Rider, Soldier, Barbarian, Archer])
-            {
-                if (g.perfect_skills.get(c)!.has(skill))
-                {
-                    return c;
-                }
-            }
-            return null;
+            return this.which_has_skill(skill, [Rider, Soldier, Barbarian, Archer]);
         }
+    }
+
+    static which_has_skill(skill: Skill, ctors: UnitConstructor[]): UnitConstructor | null
+    {
+        for (let c of ctors)
+        {
+            if (g.perfect_skills.get(c)!.has(skill))
+            {
+                return c;
+            }
+        }
+        return null;
     }
 }
 
