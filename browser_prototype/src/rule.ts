@@ -32,6 +32,31 @@ class Rule
         let unit = board.at(move.from);
         if (unit == null)
         {
+            if (this.is_king_side(board, player, move.from))
+            {
+                let recalled = board.at(move.to);
+                if (recalled == null)
+                {
+                    throw new InvalidMove("recalled grid is empty");
+                }
+                if (recalled.owner != player)
+                {
+                    throw new InvalidMove("recalled unit is enemy");
+                }
+
+                let heat = this.get_heat(board);
+                if (heat.at(move.from).hostile(player) > 0)
+                {
+                    throw new InvalidMove("recalled unit is under attack");
+                }
+                if (heat.at(move.to).hostile(player) > 0)
+                {
+                    throw new InvalidMove("recall destination is under attack");
+                }
+
+                return new Action(move, ActionType.Recall, recalled.type());
+            }
+
             if (move.from.y != this.spawn_row.get(player))
             {
                 throw new InvalidMove("grid is empty");
@@ -105,6 +130,17 @@ class Rule
                 throw new InvalidMove(`skill not available ${skill.hash()}`);
             }
         }
+    }
+
+    static is_king_side(board: Board<Unit>, player: Player, coord: Coordinate): boolean
+    {
+        let king_coord = this.where(board, player, King);
+        if (king_coord.length != 1)
+        {
+            return false;
+        }
+        let king_side: Coordinate[] = this.reachable_by(board, king_coord[0]);
+        return king_side.indexOf(coord) > -1;
     }
 
     static get_heat(board: Board<Unit>): FullBoard<Heat>
@@ -193,6 +229,18 @@ class Rule
             }
         })
         return count;
+    }
+
+    static where(board: Board<Unit>, player: Player, unit_type: UnitConstructor): Coordinate[]
+    {
+        let found: Coordinate[] = [];
+        board.iterate_units((unit, coord) => {
+            if (unit.owner == player && unit.constructor == unit_type)
+            {
+                found.push(coord);
+            }
+        })
+        return found;
     }
 
     static reachable_by_skills(coord: Coordinate, skills: Skill[]): Coordinate[]
