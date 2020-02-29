@@ -251,9 +251,10 @@ class GameCanvas
 
             if (a.type == DisplayActionType.Recall)
             {
+                let recalled = board.at(a.action.move.to)!;
                 this.mark_this_grid(from, color);
                 this.mark_this_grid(to, color, true);
-                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
+                this.paint_unit(CanvasUnitFactory(recalled), a.action.move.from, true);
                 continue;
             }
             else if (a.type == DisplayActionType.Recruit)
