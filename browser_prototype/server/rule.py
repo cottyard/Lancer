@@ -31,9 +31,9 @@ def make_move(board, player_move_list):
     martyr_list = []
 
     run_upgrade_phase(next_board, player_action_list)
-    run_defend_phase(board, player_action_list, force_board)
+    run_defend_phase(next_board, player_action_list, force_board)
     martyr_list += run_clash_phase(next_board, player_action_list, force_board)
-    martyr_list += run_battle_phase(next_board, player_action_list, force_board, board)
+    martyr_list += run_battle_phase(next_board, player_action_list, force_board)
     run_recall_phase(next_board, player_action_list)
     run_recruit_phase(next_board, player_action_list)
 
@@ -103,7 +103,7 @@ def run_clash_phase(board, player_action_list, force_board):
 
     return martyr_list
 
-def run_battle_phase(board, player_action_list, force_board, last_board):
+def run_battle_phase(board, player_action_list, force_board):
     for player_action in player_action_list:
         for action in player_action.extract_actions(
                 lambda a: a.type in (ActionType.Attack, ActionType.Move)):

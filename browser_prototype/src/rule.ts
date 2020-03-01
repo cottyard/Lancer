@@ -360,8 +360,8 @@ class Rule
         this.process_defend_phase(next_board, player_actions, force_board);
         this.process_clash_phase(next_board, player_actions);
 
-        process_battle_phase(next_board, player_actions, force_board, board);
-        // run_recall_phase(next_board, player_actions);
+        this.process_battle_phase(next_board, player_actions, force_board);
+        this.process_recall_phase(next_board, player_actions);
         // run_recruit_phase(next_board, player_actions);
 
         return next_board;
@@ -466,7 +466,7 @@ class Rule
         }
     }
 
-    static process_battle_phase(board: Board<Unit>, player_actions: PlayerAction[], force_board: FullBoard<Force>, last_board: Board<Unit>)
+    static process_battle_phase(board: Board<Unit>, player_actions: PlayerAction[], force_board: FullBoard<Force>)
     {
         for (let player_action of player_actions)
         {
@@ -526,6 +526,45 @@ class Rule
             }
 
             force_board.iterate_units(settle_battle);
+        }
+    }
+
+    static process_recall_phase(board: Board<Unit>, player_actions: PlayerAction[])
+    {
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.extract((a) => a.type == ActionType.Recall))
+            {
+                if (board.at(action.move.from) == null)
+                {
+                    let recalled = board.at(action.move.to);
+                    if (recalled != null && recalled.owner == player_action.player)
+                    {
+                        board.remove(action.move.to);
+                        board.put(action.move.from, recalled);
+                    }
+                }
+            }
+        }
+    }
+
+    static process_recruit_phase(board: Board<Unit>, player_actions: PlayerAction[])
+    {
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.actions)
+            {
+                if (action.type != ActionType.Recruit)
+                {
+                    throw new Error("unprocessed action");
+                }
+                if (board.at(action.move.from) == null)
+                {
+                    let skill = action.move.get_skill();
+                    let recruited = Unit.spawn_from_skill(player_action.player, skill);
+                    board.put(action.move.from, recruited);
+                }
+            }
         }
     }
 }
