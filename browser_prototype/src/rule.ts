@@ -360,7 +360,7 @@ class Rule
         this.process_defend_phase(next_board, player_actions, force_board);
         this.process_clash_phase(next_board, player_actions);
 
-        // run_battle_phase(next_board, player_actions, force_board, board);
+        process_battle_phase(next_board, player_actions, force_board, board);
         // run_recall_phase(next_board, player_actions);
         // run_recruit_phase(next_board, player_actions);
 
@@ -463,6 +463,69 @@ class Rule
                     player_action.extract((a) => a === action);
                 }
             }
+        }
+    }
+
+    static process_battle_phase(board: Board<Unit>, player_actions: PlayerAction[], force_board: FullBoard<Force>, last_board: Board<Unit>)
+    {
+        for (let player_action of player_actions)
+        {
+            for (let action of player_action.extract((a) => a.type == ActionType.Attack || a.type == ActionType.Move))
+            {
+                let target = action.move.to;
+                if (force_board.at(target).arriver.get(player_action.player) == null)
+                {
+                    let unit = board.remove(action.move.from)!;
+                    force_board.at(target).arriver.set(player_action.player, unit);
+                }
+                else
+                {
+                    let unit = board.at(action.move.from)!;
+                    force_board.at(target).reinforcers.get(player_action.player)!.push(unit);
+                }
+            }
+
+            function settle_battle(force: Force, where: Coordinate)
+            {
+                let u1 = force.arriver.get(Player.P1);
+                let u2 = force.arriver.get(Player.P2);
+
+                if (u1 == null && u2 == null)
+                {
+                    return;
+                }
+
+                let r1 = force.reinforcers.get(Player.P1)!.length;
+                let r2 = force.reinforcers.get(Player.P2)!.length;
+                
+                let winner: Unit | null | undefined = null;
+                if (r1 > r2)
+                {
+                    winner = u1;
+                }
+                else if (r2 > r1)
+                {
+                    winner = u2;
+                }
+                else
+                {
+                    if (u1 == null || u2 == null)
+                    {
+                        winner = u1 || u2;
+                    }
+                    else
+                    {
+                        winner = u1.duel(u2);
+                    }
+                }
+
+                if (winner)
+                {
+                    board.put(where, winner);
+                }
+            }
+
+            force_board.iterate_units(settle_battle);
         }
     }
 }
