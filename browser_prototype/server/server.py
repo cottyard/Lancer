@@ -168,7 +168,9 @@ class ServerGame:
         try:
             next_game = self.game.make_move(sg_player_move.as_list())
         except Exception as e:
+            import traceback
             print('exception during game.make_move:', e)
+            traceback.print_exc(file=sys.stdout)
             return None
         else:
             return ServerGame(

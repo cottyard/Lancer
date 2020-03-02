@@ -223,7 +223,7 @@ class Unit:
         return self.skillset == self.perfect_skillset
 
     def is_promotion_ready(self):
-        return not self.advanced and self.is_perfect()
+        return self.basic and self.is_perfect()
 
     def potential_skillset(self):
         return self.ultimate_skillset().subtract(self.skillset)
