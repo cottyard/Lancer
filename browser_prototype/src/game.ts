@@ -109,7 +109,6 @@ class Game
     current_game_id: string | null = null;
     query_handle: number | null = null;
 
-    supply_wagon = 2
     supply_basic_incremental = 20
 
     constructor()
@@ -475,6 +474,7 @@ class Game
         this.displaying_board.put(new Coordinate(4,8), new Swordsman(Player.P1));
 
         this.displaying_board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
+        this.displaying_board.put(new Coordinate(3,3), this.create_perfect(Player.P1, Wagon));
 
         this.board = this.displaying_board;
         
@@ -742,6 +742,13 @@ class Game
     }
 
     get_player_supply_income(player: Player): number {
-        return Rule.count_unit(this.board, player, Wagon) * this.supply_wagon + this.supply_basic_incremental;
+        let wagon_revenue = 0;
+        this.board.iterate_units((unit: Unit, _) => {
+            if (unit.owner == player && is_wagon(unit))
+            {
+                wagon_revenue += unit.revenue();
+            }
+        })
+        return wagon_revenue + this.supply_basic_incremental;
     }
 }

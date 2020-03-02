@@ -84,10 +84,10 @@ class Action:
             else:
                 return 2
         elif self.type == ActionType.Upgrade:
-            if self.unit_type.basic:
-                return 4
-            else:
+            if self.unit_type.advanced:
                 return 3
+            else:
+                return 4
         elif self.type == ActionType.Attack:
             if self.move.get_skill().is_leap():
                 return 5
@@ -99,7 +99,7 @@ class Action:
                 Soldier: 10,
                 Archer: 10,
                 Rider: 15,
-                Wagon: 20
+                Wagon: 15
             }[self.unit_type]
         elif self.type == ActionType.Recall:
             return 8
@@ -253,6 +253,9 @@ class Unit:
             return self
         else:
             return other
+    
+    def get_trophy(self):
+        return self.trophy
 
     @classmethod
     def which_creator_has_skill(self, creator_list, skill):
@@ -399,13 +402,13 @@ class Barbarian(Unit):
 class Lancer(Unit):
     display = "LAN"
     level = 3
-    trophy = 15
+    trophy = 10
     advanced = True
 
 class Knight(Unit):
     display = "KNT"
     level = 3
-    trophy = 15
+    trophy = 10
     advanced = True
 
 class Swordsman(Unit):
@@ -434,7 +437,10 @@ class King(Unit):
 class Wagon(Unit):
     display = "WAG"
     level = 0
-    trophy = 20
+    
+    def get_trophy(self):
+        return 20 if self.is_perfect() else 10
+
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):
     return {

@@ -347,13 +347,13 @@ class Action implements ICopyable<Action>
                     return 2;
                 }
             case ActionType.Upgrade:
-                if (is_basic_unit_ctor(this.unit_type))
+                if (is_advanced_unit_ctor(this.unit_type))
                 {
-                    return 4;
+                    return 3;
                 }
                 else
                 {
-                    return 3;
+                    return 4;
                 }
             case ActionType.Attack:
                 if (this.move.get_skill().is_leap())
@@ -374,7 +374,7 @@ class Action implements ICopyable<Action>
                     case Rider:
                         return 15;
                     case Wagon:
-                        return 20;
+                        return 15;
                 }
                 throw new Error("Action.cost");
             case ActionType.Recall:
@@ -632,6 +632,16 @@ function is_basic_unit_ctor(ctor: UnitConstructor): ctor is BasicUnitConstructor
     return 'discriminator' in ctor && ctor['discriminator'] == 'BasicUnitConstructor';
 }
 
+function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor 
+{
+    return 'discriminator' in ctor && ctor['discriminator'] == 'AdvancedUnitConstructor';
+}
+
+function is_wagon(unit: Unit): unit is Wagon 
+{
+    return unit.constructor == Wagon;
+}
+
 abstract class BasicUnit extends UnitConstructor
 {
     is_promotion_ready(): boolean
@@ -738,4 +748,8 @@ class King extends UnitConstructor
 
 class Wagon extends UnitConstructor
 {
+    revenue(): number
+    {
+        return this.is_perfect() ? 2 : 1;
+    }
 }

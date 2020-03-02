@@ -2,7 +2,7 @@ type CanvasUnitConstructor = new (unit: Unit) => CanvasUnit;
 
 let CanvasUnitFactory = function(unit: Unit): CanvasUnit
 {
-    let cmap: Map<UnitConstructor, CanvasUnitConstructor> = new Map([
+    let cmap = new Map<UnitConstructor, CanvasUnitConstructor>([
         [Rider, CanvasRider],
         [Soldier, CanvasSoldier],
         [Archer, CanvasArcher],

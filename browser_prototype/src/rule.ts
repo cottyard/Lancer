@@ -362,7 +362,7 @@ class Rule
 
         this.process_battle_phase(next_board, player_actions, force_board);
         this.process_recall_phase(next_board, player_actions);
-        // run_recruit_phase(next_board, player_actions);
+        this.process_recruit_phase(next_board, player_actions);
 
         return next_board;
     }

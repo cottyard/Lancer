@@ -16,7 +16,6 @@ class GameStatus(Enum):
 class Game:
     supply_initial = 20
     supply_basic_incremental = 20
-    supply_wagon = 2
     msg_not_enough_supply = "not enough supply"
 
     def __init__(self, board=None):
@@ -88,7 +87,13 @@ class Game:
             self.supply[player] += amount
 
     def wagon_supply(self, player):
-        return rule.count_unit(self.board, player, Wagon) * Game.supply_wagon
+        revenue = 0
+        def collect_revenue(u, _):
+            nonlocal revenue
+            if u.owner == player and type(u) == Wagon:
+                revenue += 2 if u.is_perfect() else 1
+        self.board.iterate_units(collect_revenue)
+        return revenue
     
     def trophy_supply(self, player, martyr_list):
         total = 0
@@ -97,7 +102,7 @@ class Game:
                 continue
             unit = martyr.board_unit.unit
             if unit.owner != player:
-                total += unit.trophy
+                total += unit.get_trophy()
         return total
 
     def count_unit(self, player):
