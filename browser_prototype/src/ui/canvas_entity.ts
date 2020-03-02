@@ -317,7 +317,7 @@ class CanvasWagon extends CanvasHaloUnit
 
     paint_unit(renderer: Renderer): void
     {
-        renderer.wagon(this.color);
+        renderer.wagon(this.color, this.unit.is_perfect());
     }
 }
 
