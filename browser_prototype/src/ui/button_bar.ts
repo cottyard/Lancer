@@ -1,6 +1,6 @@
 class ButtonBar {
     dom_element: HTMLDivElement;
-    game: Game;
+    game: OnlineGame;
     submit: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
     heat: HTMLButtonElement | null = null;
@@ -8,7 +8,7 @@ class ButtonBar {
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(dom_element: HTMLDivElement, game: Game) {
+    constructor(dom_element: HTMLDivElement, game: OnlineGame) {
         this.dom_element = dom_element;
         this.game = game;
     }

@@ -1,7 +1,6 @@
 class ActionPanel {
-
     dom_element: HTMLDivElement;
-    game: Game;
+    game: OnlineGame;
     dragging: null | {
         action: DisplayAction,
         offsetX: number,
@@ -19,7 +18,7 @@ class ActionPanel {
         (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
-    constructor(dom_element: HTMLDivElement, game: Game) {
+    constructor(dom_element: HTMLDivElement, game: OnlineGame) {
         this.dom_element = dom_element;
         this.game = game;
         this.dragging = null;

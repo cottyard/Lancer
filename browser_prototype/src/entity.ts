@@ -444,6 +444,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     display: string;
     readonly promotion_options: AdvancedUnitConstructor[] = [];
     readonly level: number = 0;
+    readonly trophy: number = 0;
 
     constructor(public owner: Player)
     {
@@ -503,6 +504,11 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     is_promotion_ready(): boolean
     {
         return false;
+    }
+
+    get_trophy(): number
+    {
+        return this.trophy;
     }
 
     is_perfect(): boolean
@@ -696,18 +702,21 @@ class Rider extends BasicUnitConstructor
 {
     readonly promotion_options = [Lancer, Knight];
     readonly level = 2;
+    readonly trophy = 5;
 }
 
 class Soldier extends BasicUnitConstructor
 {
     readonly promotion_options = [Swordsman, Spearman];
     readonly level = 1;
+    readonly trophy = 5;
 }
 
 class Archer extends BasicUnitConstructor
 {
     readonly promotion_options = [Warrior, Spearman];
     readonly level = 1;
+    readonly trophy = 5;
 }
 
 class Barbarian extends BasicUnitConstructor
@@ -719,21 +728,25 @@ class Barbarian extends BasicUnitConstructor
 class Lancer extends AdvancedUnitConstructor
 {
     readonly level = 3;
+    readonly trophy = 10;
 }
 
 class Knight extends AdvancedUnitConstructor
 {
     readonly level = 3;
+    readonly trophy = 10;
 }
 
 class Swordsman extends AdvancedUnitConstructor
 {
     readonly level = 2;
+    readonly trophy = 10;
 }
 
 class Spearman extends AdvancedUnitConstructor
 {
     readonly level = 2;
+    readonly trophy = 10;
 }
 
 class Warrior extends AdvancedUnitConstructor
@@ -751,5 +764,10 @@ class Wagon extends UnitConstructor
     revenue(): number
     {
         return this.is_perfect() ? 2 : 1;
+    }
+
+    get_trophy(): number
+    {
+        return this.is_perfect() ? 20 : 10;
     }
 }

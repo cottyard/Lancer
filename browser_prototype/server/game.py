@@ -38,12 +38,6 @@ class Game:
         self.round_count = 0
         self.martyr_list = []
 
-    def player_moved(self, player):
-        return self.last_player_action[player] is not None
-    
-    def get_last_player_action(self, player):
-        return self.last_player_action[player]
- 
     def get_status(self):
         return {
             0: GameStatus.Ongoing,

@@ -141,24 +141,3 @@ function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
         }
     };
 }
-
-function set_out(board: Board<Unit>): void
-{
-    let board_layout: [number, UnitConstructor[], Player][] = [
-        [0, g.layout_1st, Player.P2],
-        [1, g.layout_2nd, Player.P2],
-        [g.board_size_y - 1, g.layout_1st, Player.P1],
-        [g.board_size_y - 2, g.layout_2nd, Player.P1]
-    ];
-
-    let row, setting, player;
-    for ([row, setting, player] of board_layout)
-    {
-        for (let i = 0; i < g.board_size_x; i++)
-        {
-            let unit = new setting[i](player);
-            unit.endow_inborn();
-            board.put(new Coordinate(i, row), unit);
-        }
-    }
-}
