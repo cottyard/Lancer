@@ -1,6 +1,6 @@
 class ActionPanel {
     dom_element: HTMLDivElement;
-    game: OnlineGame;
+    game: IRenderableGame;
     dragging: null | {
         action: DisplayAction,
         offsetX: number,
@@ -18,7 +18,7 @@ class ActionPanel {
         (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
-    constructor(dom_element: HTMLDivElement, game: OnlineGame) {
+    constructor(dom_element: HTMLDivElement, game: IRenderableGame) {
         this.dom_element = dom_element;
         this.game = game;
         this.dragging = null;
@@ -34,7 +34,7 @@ class ActionPanel {
     render() {
         this.dom_element.innerHTML = "";
         
-        new DisplayPlayerAction(this.game.player_action[0]).actions.forEach((action, index) => {
+        new DisplayPlayerAction(this.game.get_action()).actions.forEach((action, index) => {
             this.dom_element.appendChild(this.renderAction(action, index));
         });
     }
@@ -79,7 +79,7 @@ class ActionPanel {
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.game.buff_board).toString(),
+            "🍞" + action.action.cost(this.game.get_buff()).toString(),
             {'font-weight': 'bold'}
         ));
 
@@ -100,10 +100,7 @@ class ActionPanel {
             });
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
-            this.game.player_move.moves.splice(
-                this.game.player_move.moves.findIndex(move => move.equals(action.action.move)),
-                1);
-            this.game.update_player_action();
+            this.game.delete_move(action.action.move);
             e.cancelBubble = true;
         });
 
@@ -153,15 +150,15 @@ class ActionPanel {
             
             // Update orders.
             const dragging_move = this.dragging.action.action.move;
-            const ordered_moves = this.game.player_move.moves
+            const ordered_moves = this.game.get_move().moves
                 .map((move, index) => {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
                     return {move, order};
                 })
                 .sort((a, b) => a.order - b.order)
                 .map(({move}) => move);
-            this.game.player_move.moves = ordered_moves;
-            this.game.update_player_action();
+            
+            this.game.get_move().moves = ordered_moves;
 
             this.dragging.placeholder.remove();
             this.dragging = null;
@@ -197,7 +194,7 @@ class ActionPanel {
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
-            this.game.canvas.paint_grid_indicator(action.action.move.from);
+            this.game.highlight(action.action.move.from);
         });
 
         div.addEventListener("mouseleave", () => {
@@ -205,7 +202,7 @@ class ActionPanel {
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
-            this.game.render_indicators();
+            this.game.refresh();
         });
 
         return div;
@@ -215,22 +212,22 @@ class ActionPanel {
     {
         if (action.type === DisplayActionType.Recruit)
         {
-            return new action.action.unit_type(this.game.player);
+            return new action.action.unit_type(this.game.get_context().player);
         }
         else if (action.type === DisplayActionType.Recall)
         {
-            return this.game.board.at(action.action.move.to)!;
+            return this.game.get_context().present.board.at(action.action.move.to)!;
         }
         else
         {
-            return this.game.board!.at(action.action.move.from)!;
+            return this.game.get_context().present.board.at(action.action.move.from)!;
         }
     }
 
     getTargetUnit(action: DisplayAction): Unit | null {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.game.board!.at(action.action.move.to);
+            return this.game.get_context().present.board.at(action.action.move.to);
         }
         return null;
     }

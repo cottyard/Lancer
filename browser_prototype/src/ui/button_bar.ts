@@ -1,6 +1,7 @@
-class ButtonBar {
+class ButtonBar 
+{
     dom_element: HTMLDivElement;
-    game: OnlineGame;
+    game: IRenderableGame & IOnlineGame;
     submit: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
     heat: HTMLButtonElement | null = null;
@@ -8,7 +9,7 @@ class ButtonBar {
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(dom_element: HTMLDivElement, game: OnlineGame) {
+    constructor(dom_element: HTMLDivElement, game: IRenderableGame & IOnlineGame) {
         this.dom_element = dom_element;
         this.game = game;
     }
@@ -16,7 +17,15 @@ class ButtonBar {
     set view_last_round(value: boolean)
     {
         this._view_last_round = value;
-        this.game.show_last_round = value;
+        if (value)
+        {
+            this.game.show_present();
+        }
+        else
+        {
+            this.game.show_last();
+        }
+        
         this.update_last_round_name();
     }
     
@@ -28,7 +37,14 @@ class ButtonBar {
     set show_heat(value: boolean)
     {
         this._show_heat = value;
-        this.game.show_heat = value;
+        if (value)
+        {
+            this.game.show_last();
+        }
+        else
+        {
+            this.game.hide_heat();
+        }
         this.update_heat_name();
     }
 
@@ -87,11 +103,11 @@ class ButtonBar {
             }
 
             let player_name = DomHelper.createTextArea();
-            player_name.textContent = this.game.player_name;
+            player_name.textContent = this.game.get_context().get_player_name(this.game.get_context().player)!;
             player_name.onfocus = () => { player_name.select() };
             player_name.onkeyup = () => {
                 if (player_name.value) { 
-                    this.game.player_name = player_name.value; 
+                    this.game.set_name(player_name.value); 
                 }
             };
             player_name.style.width = "80px";
@@ -110,9 +126,9 @@ class ButtonBar {
         {
             let submit_button = DomHelper.createButton();
         
-            if (this.game.status == GameStatus.WaitForPlayer)
+            if (this.game.status() == GameStatus.WaitForPlayer)
             {
-                let supply = this.game.get_player_supply(this.game.player);
+                let supply = this.game.get_context().present.get_supply(this.game.get_context().player);
                 if (supply == undefined)
                 {
                     throw new Error("cannot get game supply");
@@ -129,7 +145,7 @@ class ButtonBar {
                     submit_button.onclick = () => { this.game.submit_move(); };
                 }
             }
-            else if (this.game.status == GameStatus.WaitForOpponent)
+            else if (this.game.status() == GameStatus.WaitForOpponent)
             {
                 submit_button.disabled = true;
                 submit_button.innerText = "Waiting for opponent...";
@@ -148,12 +164,12 @@ class ButtonBar {
         {
             let text: string;
 
-            if (this.game.status == GameStatus.Tied)
+            if (this.game.status() == GameStatus.Tied)
             {
                 text = 'Game is tied.';
             }
-            else if ((this.game.status == GameStatus.WonByPlayer1 && this.game.player == Player.P1) ||
-                    (this.game.status == GameStatus.WonByPlayer2 && this.game.player == Player.P2))
+            else if ((this.game.status() == GameStatus.WonByPlayer1 && this.game.get_context().player == Player.P1) ||
+                    (this.game.status() == GameStatus.WonByPlayer2 && this.game.get_context().player == Player.P2))
             {
                 text = 'You are victorious!';
             }
@@ -185,14 +201,14 @@ class ButtonBar {
                 if (!this.view_last_round)
                 {
                     this.view_last_round_handle = setTimeout(() => {
-                        this.game.show_last_round = true;
+                        this.game.show_last();
                     }, 200);
                 }
             };
             this.last_round.onmouseleave = () => {
                 if (!this.view_last_round)
                 {
-                    this.game.show_last_round = false;
+                    this.game.show_present();
                 }
                 if (this.view_last_round_handle)
                 {
@@ -201,25 +217,23 @@ class ButtonBar {
                 }
             };
 
-            if (!this.game.last_round_board)
+            if (this.game.get_context().history.length == 0)
             {
                 this.last_round.disabled = true;
             }
             this.dom_element.appendChild(this.last_round);
 
-
             this.heat = DomHelper.createButton();
                 
             this.heat.onmouseenter = () => { 
-                this.game.render_heat();
+                this.game.show_heat();
             };
             this.heat.onmouseleave = () => { 
-                this.game.render_indicators();
+                this.game.hide_heat();
             };
 
             this.heat.onclick = () => { 
                 this.show_heat = !this.show_heat;
-                this.game.render_indicators();
             };
             
             this.dom_element.appendChild(this.heat);

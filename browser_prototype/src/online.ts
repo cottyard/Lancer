@@ -1,3 +1,17 @@
+interface IOnlineGame
+{
+    status(): GameStatus;
+    is_playing(): boolean;
+    is_in_queue(): boolean;
+    is_finished(): boolean;
+    is_not_started(): boolean;
+    new_game(): void;
+    submit_move(): void;
+    set_name(name: string): void;
+    has_moved(player: Player): boolean;
+    consumed_milliseconds(player: Player): number;
+}
+
 enum GameStatus
 {
     NotStarted,
@@ -10,61 +24,7 @@ enum GameStatus
     Tied
 }
 
-enum DisplayActionType
-{
-    Upgrade = 1,
-    Defend = 2,
-    Move = 3,
-    Attack = 4,
-    Recruit = 5,
-    Recall = 6,
-    MoveAssist = 7,
-    AttackAssist = 8
-}
-
-class DisplayAction
-{
-    constructor(public type: DisplayActionType, public action: Action)
-    {
-    }
-}
-
-class DisplayPlayerAction
-{
-    player: Player;
-    actions: DisplayAction[];
-
-    constructor(player_action: PlayerAction)
-    {
-        this.player = player_action.player;
-
-        let first_arriver = new HashMap<Coordinate, true>();
-        this.actions = player_action.actions.map((a: Action) =>
-        {
-            let type = <DisplayActionType><unknown>a.type;
-            if (a.type == ActionType.Attack || a.type == ActionType.Move)
-            {
-                let arriver = first_arriver.get(a.move.to);
-                first_arriver.put(a.move.to, true);
-                let is_first = !arriver;
-                if (!is_first)
-                {
-                    if (a.type == ActionType.Attack)
-                    {
-                        type = DisplayActionType.AttackAssist;
-                    }
-                    else
-                    {
-                        type = DisplayActionType.MoveAssist;
-                    }
-                }
-            }
-            return new DisplayAction(type, a);
-        });
-    }
-}
-
-class OnlineGame
+class OnlineGame implements IOnlineGame
 {
     canvas: GameCanvas;
     action_panel: ActionPanel;

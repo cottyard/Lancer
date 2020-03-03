@@ -1,8 +1,8 @@
 class StatusBar {
     dom_element: HTMLDivElement;
-    game: Game;
+    game: IRenderableGame & IOnlineGame;
  
-    constructor(dom_element: HTMLDivElement, game: Game) {
+    constructor(dom_element: HTMLDivElement, game: IRenderableGame & IOnlineGame) {
         this.dom_element = dom_element;
         this.game = game;
     }
@@ -20,20 +20,22 @@ class StatusBar {
 
         if (this.game.is_playing() || this.game.is_finished())
         {
+            
+
             [Player.P1, Player.P2].forEach(player => {
                 this.dom_element.appendChild(this.player_status(
                     player,
-                    this.game.get_player_name(player) || "",
-                    this.game.get_player_supply(player) || 0,
-                    this.game.get_player_supply_income(player),
+                    this.game.get_context().get_player_name(player) || "",
+                    this.game.get_context().present.get_supply(player) || 0,
+                    this.game.get_context().present.get_supply_income(player),
                     cost,
-                    player === this.game.player
+                    player === this.game.get_context().player
                 ));
                 
                 if (player == Player.P1)
                 {
                     this.dom_element.appendChild(DomHelper.createText(
-                        `Round ${this.game.round_count}`,
+                        `Round ${this.game.get_context().present.round_count}`,
                         {
                             'text-align': 'center',
                             fontWeight: "bold",
@@ -88,7 +90,7 @@ class StatusBar {
 
         div.appendChild(DomHelper.createText(`(+${income})`));
 
-        let moved = this.game.player_moved.get(player);
+        let moved = this.game.has_moved(player);
         let text = null;
         if (moved)
         {
@@ -105,7 +107,7 @@ class StatusBar {
             }));
         }
 
-        let consumed = this.game.player_consumed_milliseconds.get(player);
+        let consumed = this.game.consumed_milliseconds(player);
         if (consumed != undefined)
         {
             div.appendChild(DomHelper.createText(
