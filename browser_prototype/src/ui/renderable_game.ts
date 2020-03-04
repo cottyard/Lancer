@@ -429,16 +429,18 @@ class RenderableGame implements IRenderableGame
             else
             {
                 this.options_capable = [];
-                if (Rule.is_king_side(this.displaying_board, this.context.player, coord))
+                for (let player of Player.values())
                 {
-                    this.options_upgrade = [];
-                    this.options_recall = Rule.recallable_by(this.displaying_board, this.context.player, coord);
+                    if (Rule.is_king_side(this.displaying_board, player, coord))
+                    {
+                        this.options_upgrade = [];
+                        this.options_recall = Rule.recallable_by(this.displaying_board, player, coord);
+                        return;
+                    }
                 }
-                else
-                {
-                    this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
-                    this.options_recall = [];
-                }
+                
+                this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
+                this.options_recall = [];
             }
         }
     }
