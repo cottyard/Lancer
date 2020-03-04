@@ -458,6 +458,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
         this.perfect = g.perfect_skills.get(this.type())!;
         this.current = new SkillSet();
         this.display = this.constructor.name;
+        this.endow_inborn();
     }
 
     serialize(): string
@@ -570,7 +571,6 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
             return null;
         }
         let unit = new ctor(player);
-        unit.endow(skill);
         return unit;
     }
 

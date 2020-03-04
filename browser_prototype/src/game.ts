@@ -115,7 +115,6 @@ class Game
             for (let i = 0; i < g.board_size_x; i++)
             {
                 let unit = new setting[i](player);
-                unit.endow_inborn();
                 board.put(new Coordinate(i, row), unit);
             }
         }
