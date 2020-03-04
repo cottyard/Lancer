@@ -1,8 +1,16 @@
 class InsufficientSupply extends Error {}
 
+enum GameStatus
+{
+    Ongoing,
+    WonByPlayer1,
+    WonByPlayer2,
+    Tied
+}
+
 class Game
 {
-    readonly supply_basic_incremental = 20;
+    static readonly supply_basic_incremental = 20;
     constructor(
         readonly round_count: number,
         readonly board: Board<Unit>, 
@@ -28,7 +36,7 @@ class Game
         {
             let supply = this.supplies.get(player)!;
             supply -= actions.get(player)!.cost(buff);
-            supply += this.get_supply_income(player);
+            supply += this.supply_income(player);
             supply += martyrs.reduce<number>((total: number, martyr: Martyr) => {
                 return total + martyr.quester.unit.owner != player ? martyr.relic : 0;
             }, 0);
@@ -44,6 +52,28 @@ class Game
             martyrs);
     }
 
+    status(): GameStatus
+    {
+        let king_1 = Rule.count_unit(this.board, Player.P1, King);
+        let king_2 = Rule.count_unit(this.board, Player.P2, King);
+        if (king_1 && king_2)
+        {
+            return GameStatus.Ongoing;
+        }
+        else if (king_1)
+        {
+            return GameStatus.WonByPlayer1;
+        }
+        else if (king_2)
+        {
+            return GameStatus.WonByPlayer2;
+        }
+        else
+        {
+            return GameStatus.Tied;
+        }
+    }
+
     validate_move(move: PlayerMove): PlayerAction
     {
         let action = Rule.validate_player_move(this.board, move);
@@ -55,11 +85,11 @@ class Game
         return action;
     }
 
-    get_supply(player: Player): number | undefined {
+    supply(player: Player): number | undefined {
         return this.supplies.get(player);
     }
 
-    get_supply_income(player: Player): number {
+    supply_income(player: Player): number {
         let wagon_revenue = 0;
         this.board.iterate_units((unit: Unit, _) => {
             if (unit.owner == player && is_wagon(unit))
@@ -67,7 +97,7 @@ class Game
                 wagon_revenue += unit.revenue();
             }
         })
-        return wagon_revenue + this.supply_basic_incremental;
+        return wagon_revenue + Game.supply_basic_incremental;
     }
 
     static set_out(board: Board<Unit>): void
@@ -96,7 +126,9 @@ class Game
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         this.set_out(board);
-        let supplies = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
+        let supplies = new Map<Player, number>([
+            [Player.P1, Game.supply_basic_incremental], 
+            [Player.P2, Game.supply_basic_incremental]]);
         return new Game(0, board, supplies, null, []);
     }
 }
@@ -108,7 +140,6 @@ class GameContext
 
     constructor(public player: Player, public player_names: Map<Player, string>, public present: Game)
     {
-        this.history.push(present);
         this.buff = Rule.get_buff(present.board);
     }
 
@@ -138,7 +169,7 @@ class GameContext
         return true;
     }
 
-    get_player_name(player: Player): string | undefined 
+    player_name(player: Player): string | undefined 
     {
         return this.player_names.get(player);
     }

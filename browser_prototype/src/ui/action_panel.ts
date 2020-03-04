@@ -34,9 +34,12 @@ class ActionPanel {
     render() {
         this.dom_element.innerHTML = "";
         
-        new DisplayPlayerAction(this.game.get_action()).actions.forEach((action, index) => {
-            this.dom_element.appendChild(this.renderAction(action, index));
-        });
+        for (let player of Player.values())
+        {
+            new DisplayPlayerAction(this.game.action(player)).actions.forEach((action, index) => {
+                this.dom_element.appendChild(this.renderAction(action, index));
+            });
+        }
     }
 
     renderAction(action: DisplayAction, index: number): HTMLElement {
@@ -79,7 +82,7 @@ class ActionPanel {
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.game.get_buff()).toString(),
+            "🍞" + action.action.cost(this.game.buff()).toString(),
             {'font-weight': 'bold'}
         ));
 
@@ -131,7 +134,6 @@ class ActionPanel {
             });
         });
 
-        // Get order of dragging unit.
         const get_dragging_order = (): number => {
             if (this.dragging == null) {
                 throw new Error("not dragging");
@@ -142,23 +144,25 @@ class ActionPanel {
             );
         }
 
-        // Callback when mouse leaves.
         const mouseup = () => {
             if (this.dragging == null) {
                 return;
             }
             
-            // Update orders.
             const dragging_move = this.dragging.action.action.move;
-            const ordered_moves = this.game.get_move().moves
-                .map((move, index) => {
-                    const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
-                    return {move, order};
-                })
-                .sort((a, b) => a.order - b.order)
-                .map(({move}) => move);
+
+            for (let player of Player.values())
+            {
+                const ordered_moves = this.game.move(player).moves
+                    .map((move, index) => {
+                        const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
+                        return {move, order};
+                    })
+                    .sort((a, b) => a.order - b.order)
+                    .map(({move}) => move);
             
-            this.game.get_move().moves = ordered_moves;
+                this.game.set_moves(player, ordered_moves);
+            }
 
             this.dragging.placeholder.remove();
             this.dragging = null;
@@ -212,22 +216,22 @@ class ActionPanel {
     {
         if (action.type === DisplayActionType.Recruit)
         {
-            return new action.action.unit_type(this.game.get_context().player);
+            return new action.action.unit_type(this.game.context.player);
         }
         else if (action.type === DisplayActionType.Recall)
         {
-            return this.game.get_context().present.board.at(action.action.move.to)!;
+            return this.game.context.present.board.at(action.action.move.to)!;
         }
         else
         {
-            return this.game.get_context().present.board.at(action.action.move.from)!;
+            return this.game.context.present.board.at(action.action.move.from)!;
         }
     }
 
     getTargetUnit(action: DisplayAction): Unit | null {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.game.get_context().present.board.at(action.action.move.to);
+            return this.game.context.present.board.at(action.action.move.to);
         }
         return null;
     }

@@ -149,7 +149,7 @@ class GameCanvas
             let offset = 5;
             let size = 3;
 
-            for (let player of [Player.P1, Player.P2])
+            for (let player of Player.values())
             {
                 let h = heat.friendly(player);
                 let repeat = h;
@@ -267,7 +267,7 @@ class GameCanvas
                 }
             }
 
-            const skill = a.action.move.get_skill();
+            const skill = a.action.move.which_skill();
             const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;

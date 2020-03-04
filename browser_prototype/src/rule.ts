@@ -70,7 +70,7 @@ class Rule
                 let skill: Skill;
                 try
                 {
-                    skill = move.get_skill();
+                    skill = move.which_skill();
                 }
                 catch (InvalidParameter)
                 {
@@ -95,7 +95,7 @@ class Rule
         let skill: Skill;
         try
         {
-            skill = move.get_skill();
+            skill = move.which_skill();
         }
         catch (InvalidParameter)
         {
@@ -376,7 +376,7 @@ class Rule
             for (let action of player_action.extract((a) => a.type == ActionType.Upgrade))
             {
                 let unit = board.at(action.move.from)!;
-                let skill = action.move.get_skill();
+                let skill = action.move.which_skill();
                 if (unit.is_promotion_ready())
                 {
                     let promoted = unit.promote(skill);
@@ -607,7 +607,7 @@ class Rule
                 }
                 if (board.at(action.move.from) == null)
                 {
-                    let skill = action.move.get_skill();
+                    let skill = action.move.which_skill();
                     let recruited = Unit.spawn_from_skill(player_action.player, skill);
                     board.put(action.move.from, recruited);
                 }

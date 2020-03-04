@@ -1,6 +1,6 @@
 interface IOnlineGame
 {
-    status(): GameStatus;
+    status(): OnlineGameStatus;
     is_playing(): boolean;
     is_in_queue(): boolean;
     is_finished(): boolean;
@@ -12,7 +12,7 @@ interface IOnlineGame
     consumed_milliseconds(player: Player): number;
 }
 
-enum GameStatus
+enum OnlineGameStatus
 {
     NotStarted,
     InQueue,
@@ -24,7 +24,7 @@ enum GameStatus
     Tied
 }
 
-class OnlineGame implements IOnlineGame
+class OnlineGame implements IRenderableGame, IOnlineGame
 {
     canvas: GameCanvas;
     action_panel: ActionPanel;
@@ -54,7 +54,7 @@ class OnlineGame implements IOnlineGame
     player_name: string = `player${Math.floor(10000 * Math.random())}`;
     player_names: Map<Player, string> = new Map<Player, string>();
     supplies: Map<Player, number> = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
-    private _status: GameStatus = GameStatus.NotStarted;
+    private _status: OnlineGameStatus = OnlineGameStatus.NotStarted;
     last_round_actions: PlayerAction[] = [];
     last_round_victims: Coordinate[] = [];
     last_round_trophy: number[] = [];
@@ -100,7 +100,7 @@ class OnlineGame implements IOnlineGame
         this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
     }
 
-    set status(value: GameStatus)
+    set_status(value: OnlineGameStatus)
     {
         if (this._status != value)
         {
@@ -110,15 +110,15 @@ class OnlineGame implements IOnlineGame
             this.button_bar.render();
         }
 
-        if (value == GameStatus.InQueue)
+        if (value == OnlineGameStatus.InQueue)
         {
             this.current_game_id = null;
         }
 
-        if ([GameStatus.WaitForPlayer,
-             GameStatus.WonByPlayer1,
-             GameStatus.WonByPlayer2, 
-             GameStatus.Tied].indexOf(value) > -1)
+        if ([OnlineGameStatus.WaitForPlayer,
+             OnlineGameStatus.WonByPlayer1,
+             OnlineGameStatus.WonByPlayer2, 
+             OnlineGameStatus.Tied].indexOf(value) > -1)
         {
             this.round_begin_time = new Date();
             this.player_move.moves = [];
@@ -127,7 +127,7 @@ class OnlineGame implements IOnlineGame
         }
     }
 
-    get status()
+    status(): OnlineGameStatus
     {
         return this._status;
     }
@@ -443,7 +443,7 @@ class OnlineGame implements IOnlineGame
         this.status_bar.render();
         this.button_bar.render();
 
-        this.status = GameStatus.WaitForPlayer;
+        this.set_status(OnlineGameStatus.WaitForPlayer);
     }
 
     new_game()
@@ -456,7 +456,7 @@ class OnlineGame implements IOnlineGame
         new_game(player_name, (session: string) => {
             console.log('new session:', session)
             this.session_id = session;
-            this.status = GameStatus.InQueue;
+            this.set_status(OnlineGameStatus.InQueue);
         });
     }
 
@@ -466,7 +466,7 @@ class OnlineGame implements IOnlineGame
         {
             let milliseconds_consumed: number = new Date().getTime() - this.round_begin_time.getTime();
             submit_move(this.current_game_id, this.player_move, milliseconds_consumed, (_: string) => {
-                this.status = GameStatus.WaitForOpponent;
+                this.set_status(OnlineGameStatus.WaitForOpponent);
             });
         }
     }
@@ -507,7 +507,7 @@ class OnlineGame implements IOnlineGame
     {
         this.session_id = session;
         this.player_name = player_name;
-        this.status = GameStatus.InQueue;
+        this.set_status(OnlineGameStatus.InQueue);
     }
 
 
@@ -515,7 +515,7 @@ class OnlineGame implements IOnlineGame
     {
         if (!this.session_id)
         {
-            this._status = GameStatus.NotStarted;
+            this._status = OnlineGameStatus.NotStarted;
             return;
         }
 
@@ -526,12 +526,13 @@ class OnlineGame implements IOnlineGame
 
             if (!this.latest_game_id)
             {
-                this._status = GameStatus.InQueue;
+                this._status = OnlineGameStatus.InQueue;
                 return;
             }
 
             let updated = false;
-            [Player.P1, Player.P2].forEach((player) =>
+
+            for (let player of Player.values())
             {
                 let current_moved = this.player_moved.get(player);
                 let moved = status['player_moved'][player];
@@ -549,7 +550,7 @@ class OnlineGame implements IOnlineGame
                     this.player_consumed_milliseconds.set(player, time);
                     updated = true;
                 }
-            });
+            }
 
             if (updated)
             {
@@ -571,7 +572,7 @@ class OnlineGame implements IOnlineGame
             return;
         }
 
-        this.status = GameStatus.Loading;
+        this.set_status(OnlineGameStatus.Loading);
 
         fetch_game(this.latest_game_id, (serialized_game) => {
             let game_payload: string;
@@ -620,7 +621,7 @@ class OnlineGame implements IOnlineGame
 
             if (!player_name_check)
             {
-                this.status = GameStatus.NotStarted;
+                this.set_status(OnlineGameStatus.NotStarted);
                 throw new Error(`Player name ${this.player_name} not found in ${player_name_map}`);
             }
             
@@ -651,16 +652,16 @@ class OnlineGame implements IOnlineGame
             switch (game_status)
             {
                 case 1:
-                    this.status = GameStatus.WonByPlayer1;
+                    this.set_status(OnlineGameStatus.WonByPlayer1);
                     break;
                 case 2:
-                    this.status = GameStatus.WonByPlayer2;
+                    this.set_status(OnlineGameStatus.WonByPlayer2);
                     break;
                 case 3:
-                    this.status = GameStatus.Tied;
+                    this.set_status(OnlineGameStatus.Tied);
                     break;
                 default:
-                    this.status = GameStatus.WaitForPlayer;
+                    this.set_status(OnlineGameStatus.WaitForPlayer);
             }
         });
     }
@@ -668,29 +669,29 @@ class OnlineGame implements IOnlineGame
     is_playing(): boolean
     {
         return [
-            GameStatus.WaitForOpponent,
-            GameStatus.WaitForPlayer,
-            GameStatus.Loading,
-        ].indexOf(this.status) > -1;
+            OnlineGameStatus.WaitForOpponent,
+            OnlineGameStatus.WaitForPlayer,
+            OnlineGameStatus.Loading,
+        ].indexOf(this.status()) > -1;
     }
 
     is_in_queue(): boolean
     {
-        return this.status == GameStatus.InQueue;
+        return this.status() == OnlineGameStatus.InQueue;
     }
     
     is_finished(): boolean
     {
         return [
-            GameStatus.WonByPlayer1, 
-            GameStatus.WonByPlayer2, 
-            GameStatus.Tied
-        ].indexOf(this.status) > -1;
+            OnlineGameStatus.WonByPlayer1, 
+            OnlineGameStatus.WonByPlayer2, 
+            OnlineGameStatus.Tied
+        ].indexOf(this.status()) > -1;
     }
 
     is_not_started(): boolean
     {
-        return this.status == GameStatus.NotStarted;
+        return this.status() == OnlineGameStatus.NotStarted;
     }
 
     get_player_name(player: Player): string | undefined {

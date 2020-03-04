@@ -8,7 +8,7 @@ class StatusBar {
     }
 
     render() {
-        let cost = this.game.get_action_cost();
+        let cost = this.game.action_cost(this.game.context.player);
         this.dom_element.innerHTML = "";
 
         DomHelper.applyStyle(this.dom_element, {
@@ -20,29 +20,28 @@ class StatusBar {
 
         if (this.game.is_playing() || this.game.is_finished())
         {
-            
-
-            [Player.P1, Player.P2].forEach(player => {
+            for (let player of Player.values())
+            {
                 this.dom_element.appendChild(this.player_status(
                     player,
-                    this.game.get_context().get_player_name(player) || "",
-                    this.game.get_context().present.get_supply(player) || 0,
-                    this.game.get_context().present.get_supply_income(player),
+                    this.game.context.player_name(player) || "",
+                    this.game.context.present.supply(player) || 0,
+                    this.game.context.present.supply_income(player),
                     cost,
-                    player === this.game.get_context().player
+                    player === this.game.context.player
                 ));
                 
                 if (player == Player.P1)
                 {
                     this.dom_element.appendChild(DomHelper.createText(
-                        `Round ${this.game.get_context().present.round_count}`,
+                        `Round ${this.game.context.present.round_count}`,
                         {
                             'text-align': 'center',
                             fontWeight: "bold",
                             flexGrow: 1,
                         }));
                 }
-            });
+            }
         }
     }
     
@@ -118,6 +117,81 @@ class StatusBar {
             ));
         }
 
+        return div;
+    }
+}
+
+
+class SolitudeStatusBar {
+    dom_element: HTMLDivElement;
+    game: IRenderableGame;
+ 
+    constructor(dom_element: HTMLDivElement, game: IRenderableGame) {
+        this.dom_element = dom_element;
+        this.game = game;
+    }
+
+    render() {
+        this.dom_element.innerHTML = "";
+
+        DomHelper.applyStyle(this.dom_element, {
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            height: "40px"
+        });
+
+        for (let player of Player.values())
+        {
+            this.dom_element.appendChild(this.player_status(
+                player,
+                this.game.context.player_name(player) || "",
+                this.game.context.present.supply(player) || 0,
+                this.game.context.present.supply_income(player),
+                this.game.action_cost(player)
+            ));
+            
+            if (player == Player.P1)
+            {
+                this.dom_element.appendChild(DomHelper.createText(
+                    `Round ${this.game.context.present.round_count}`,
+                    {
+                        'text-align': 'center',
+                        fontWeight: "bold",
+                        flexGrow: 1,
+                    }));
+            }
+        }
+    }
+    
+    player_status(
+        player: Player,
+        name: string,
+        supply: number,
+        income: number,
+        cost: number
+    ): HTMLElement {
+        const div = DomHelper.createDiv({
+            display: "flex",
+            flexDirection: "row",
+            marginLeft: "10px",
+            marginRight: "10px",
+            alignItems: "center",
+            fontWeight: "normal",
+        });
+        div.appendChild(DomHelper.createText(name, {
+            color: g.settings.player_color_map.get(player)!
+        }));
+        div.appendChild(DomHelper.createText("🍞", {
+        }));
+
+        let remaining = supply - cost;
+        div.appendChild(DomHelper.createText(remaining.toString(), {
+            color: remaining < 0 ? "red" : "black",
+            marginRight: "5px"
+        }));
+
+        div.appendChild(DomHelper.createText(`(+${income})`));
         return div;
     }
 }

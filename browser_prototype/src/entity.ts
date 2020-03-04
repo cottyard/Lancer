@@ -230,6 +230,13 @@ enum Player
     P2 = 2
 }
 
+module Player {
+    export function* values() {
+        yield Player.P1;
+        yield Player.P2;
+    }
+}
+
 function opponent(player: Player)
 {
     return player == Player.P1 ? Player.P2 : Player.P1;
@@ -237,7 +244,7 @@ function opponent(player: Player)
 
 function deserialize_player(payload: string): Player
 {
-    return Player[<keyof typeof Player>('P' + payload)];
+    return <Player>Player[<keyof typeof Player>('P' + payload)];
 }
 
 function serialize_player(player: Player)
@@ -256,7 +263,7 @@ class Move implements ISerializable, ICopyable<Move>
         return this.from.equals(other.from) && this.to.equals(other.to);
     }
 
-    get_skill(): Skill
+    which_skill(): Skill
     {
         return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
     }
@@ -338,7 +345,7 @@ class Action implements ICopyable<Action>
             case ActionType.Defend:
                 return 2;
             case ActionType.Move:
-                if (this.move.get_skill().is_leap())
+                if (this.move.which_skill().is_leap())
                 {
                     return 3;
                 }
@@ -356,7 +363,7 @@ class Action implements ICopyable<Action>
                     return 4;
                 }
             case ActionType.Attack:
-                if (this.move.get_skill().is_leap())
+                if (this.move.which_skill().is_leap())
                 {
                     return 5;
                 }
