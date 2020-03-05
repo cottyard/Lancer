@@ -1,4 +1,9 @@
-class ActionPanel {
+interface IActionPanel extends IComponent
+{
+}
+
+class ActionPanel implements IActionPanel 
+{
     dom_element: HTMLDivElement;
     game: IRenderableGame;
     dragging: null | {

@@ -1,4 +1,10 @@
-class StatusBar {
+interface IStatusBar
+{
+    render(): void;
+}
+
+class StatusBar implements IStatusBar
+{
     dom_element: HTMLDivElement;
     game: IRenderableGame & IOnlineGame;
  
@@ -121,8 +127,8 @@ class StatusBar {
     }
 }
 
-
-class SolitudeStatusBar {
+class SolitudeStatusBar implements IStatusBar
+{
     dom_element: HTMLDivElement;
     game: IRenderableGame;
  

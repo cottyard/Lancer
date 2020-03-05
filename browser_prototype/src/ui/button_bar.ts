@@ -1,4 +1,9 @@
-class ButtonBar 
+interface IButtonBar
+{
+    render(): void;
+}
+
+class ButtonBar implements IButtonBar
 {
     dom_element: HTMLDivElement;
     game: IRenderableGame & IOnlineGame;
@@ -226,12 +231,17 @@ class ButtonBar
             this.heat = DomHelper.createButton();
                 
             this.heat.onmouseenter = () => { 
-                this.game.show_heat();
+                if (!this.show_heat)
+                {
+                    this.game.show_heat();
+                }
             };
             this.heat.onmouseleave = () => { 
-                this.game.hide_heat();
+                if (!this.show_heat)
+                {
+                    this.game.hide_heat();
+                }
             };
-
             this.heat.onclick = () => { 
                 this.show_heat = !this.show_heat;
             };
@@ -243,7 +253,7 @@ class ButtonBar
     }
 }
 
-class SolitudeButtonBar 
+class SolitudeButtonBar implements IButtonBar
 {
     dom_element: HTMLDivElement;
     game: IRenderableGame;

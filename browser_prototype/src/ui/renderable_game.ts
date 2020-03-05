@@ -15,16 +15,12 @@ interface IRenderableGame
     show_present(): void;
     show_heat(): void;
     hide_heat(): void;
+    run(): void;
 }
 
 class RenderableGame implements IRenderableGame
 {
-    context: GameContext;
-
     canvas: GameCanvas;
-    action_panel: ActionPanel;
-    status_bar: SolitudeStatusBar;
-    button_bar: SolitudeButtonBar;
     player_moved = new Map<Player, boolean>();
     player_consumed_milliseconds = new Map<Player, number>();
 
@@ -51,22 +47,19 @@ class RenderableGame implements IRenderableGame
 
     displaying_actions = this.player_actions;
 
-    constructor()
+    constructor(
+        public context: GameContext,
+        public components: {
+            action_panel: IActionPanel,
+            status_bar: IStatusBar, 
+            button_bar: IButtonBar
+        })
     {
-        this.context = new GameContext(
-            Player.P1, 
-            new Map<Player, string>([[Player.P1, 'player1'], [Player.P2, 'player2']]), 
-            Game.new_game());
-
         this.canvas = new GameCanvas(
             <HTMLCanvasElement>document.getElementById('background'),
             <HTMLCanvasElement>document.getElementById('static'), 
             <HTMLCanvasElement>document.getElementById('animate'),
             <HTMLCanvasElement>document.getElementById('animate-transparent'));
-
-        this.action_panel = new ActionPanel(<HTMLDivElement>document.getElementById('action-panel'), this);
-        this.status_bar = new SolitudeStatusBar(<HTMLDivElement>document.getElementById('status-bar'), this);
-        this.button_bar = new SolitudeButtonBar(<HTMLDivElement>document.getElementById('button-bar'), this);
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
@@ -90,11 +83,14 @@ class RenderableGame implements IRenderableGame
 
         this._displaying_board = this.context.present.board;
         this.displaying_board = this.context.present.board;
+    }
 
+    run()
+    {
         this.render_board();
         this.render_indicators();
-        this.status_bar.render();
-        this.button_bar.render();
+        this.components.status_bar.render();
+        this.components.button_bar.render();
     }
 
     create_perfect(player: Player, ctor: UnitConstructor): Unit
@@ -257,7 +253,7 @@ class RenderableGame implements IRenderableGame
                 this.canvas.paint_victim_indicator(martyr.quester.hometown, martyr.relic);
             }
         }
-        this.action_panel.render();
+        this.components.action_panel.render();
     }
 
     clear_grid_incicators(): void
@@ -405,8 +401,8 @@ class RenderableGame implements IRenderableGame
         }
         
         this.render_indicators();
-        this.status_bar.render();
-        this.button_bar.render();
+        this.components.status_bar.render();
+        this.components.button_bar.render();
     }
 
     update_options(coord: Coordinate)
@@ -438,7 +434,7 @@ class RenderableGame implements IRenderableGame
                         return;
                     }
                 }
-                
+
                 this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
                 this.options_recall = [];
             }
