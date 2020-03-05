@@ -429,7 +429,7 @@ class Rule
                 }
 
                 let other = clash_board.at(action.move.to);
-                if (other != null && other.move.to == action.move.from)
+                if (other != null && other.move.to.equals(action.move.from))
                 {
                     clashes.push(<ClashPair>{
                         [player_action.player]: action,
