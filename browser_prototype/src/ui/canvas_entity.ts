@@ -36,7 +36,7 @@ abstract class CanvasUnit
 
     constructor(protected unit: Unit)
     {
-        this.color = g.settings.player_color_map.get(this.unit.owner)!;
+        this.color = g.settings.player_color_map[this.unit.owner];
     }
 
     paint(renderer: Renderer): void

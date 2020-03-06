@@ -55,3 +55,11 @@ interface ICopyable<T>
 {
     copy(): T;
 }
+
+function extract<T>(array: T[], filter: (a: T) => a is T): T[]
+{
+    let extracted = array.filter(filter);
+    let remaining = array.filter((a) => !filter(a));
+    array.splice(0, array.length, ...remaining);
+    return extracted;
+}

@@ -149,7 +149,7 @@ class GameCanvas
             let offset = 5;
             let size = 3;
 
-            for (let player of Player.values())
+            for (let player of Player.both())
             {
                 let h = heat.friendly(player);
                 let repeat = h;
@@ -164,7 +164,7 @@ class GameCanvas
                 {
                     renderer.circle(
                         new Position(offset, size * 2.5 * i), 
-                        size, 1, g.settings.player_color_map.get(player));
+                        size, 1, g.settings.player_color_map[player]);
                 }
                 offset += 8;
             }

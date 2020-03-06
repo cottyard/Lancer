@@ -39,9 +39,9 @@ class ActionPanel implements IActionPanel
     render() {
         this.dom_element.innerHTML = "";
         
-        for (let player of Player.values())
+        for (let player of Player.both())
         {
-            new DisplayPlayerAction(this.game.action(player)).actions.forEach((action, index) => {
+            new DisplayPlayerAction(this.game.context.action(player)).actions.forEach((action, index) => {
                 this.dom_element.appendChild(this.renderAction(action, index));
             });
         }
@@ -87,7 +87,7 @@ class ActionPanel implements IActionPanel
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.game.buff()).toString(),
+            "🍞" + action.action.cost(this.game.context.buff()).toString(),
             {'font-weight': 'bold'}
         ));
 
@@ -108,7 +108,7 @@ class ActionPanel implements IActionPanel
             });
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
-            this.game.delete_move(action.action.move);
+            this.game.context.move(action.player).extract((m): m is Move => m.equals(action.action.move));
             e.cancelBubble = true;
         });
 
@@ -156,18 +156,16 @@ class ActionPanel implements IActionPanel
             
             const dragging_move = this.dragging.action.action.move;
 
-            for (let player of Player.values())
-            {
-                const ordered_moves = this.game.move(player).moves
-                    .map((move, index) => {
-                        const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
-                        return {move, order};
-                    })
-                    .sort((a, b) => a.order - b.order)
-                    .map(({move}) => move);
-            
-                this.game.set_moves(player, ordered_moves);
-            }
+            let player = this.dragging.action.player;
+            const ordered_moves = this.game.context.move(player).moves
+                .map((move, index) => {
+                    const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
+                    return {move, order};
+                })
+                .sort((a, b) => a.order - b.order)
+                .map(({move}) => move);
+        
+            this.game.context.prepare_moves(player, ordered_moves);
 
             this.dragging.placeholder.remove();
             this.dragging = null;
@@ -221,7 +219,7 @@ class ActionPanel implements IActionPanel
     {
         if (action.type === DisplayActionType.Recruit)
         {
-            return new action.action.unit_type(this.game.context.player);
+            return new action.action.unit_type(action.player);
         }
         else if (action.type === DisplayActionType.Recall)
         {

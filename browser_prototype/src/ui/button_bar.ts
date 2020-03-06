@@ -5,8 +5,6 @@ interface IButtonBar
 
 class ButtonBar implements IButtonBar
 {
-    dom_element: HTMLDivElement;
-    game: IRenderableGame & IOnlineGame;
     submit: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
     heat: HTMLButtonElement | null = null;
@@ -14,9 +12,7 @@ class ButtonBar implements IButtonBar
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame & IOnlineGame) {
-        this.dom_element = dom_element;
-        this.game = game;
+    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public online_game: IOnlineGame) {
     }
 
     set view_last_round(value: boolean)
@@ -81,7 +77,7 @@ class ButtonBar implements IButtonBar
     }
 
     render() {
-        let cost = this.game.action_cost(this.game.context.player);
+        let cost = this.game.context.action_cost(this.online_game.player);
         
         this.dom_element.innerHTML = "";
 
@@ -92,12 +88,12 @@ class ButtonBar implements IButtonBar
             height: "40px"
         });
 
-        if (!this.game.is_playing())
+        if (!this.online_game.is_playing())
         {
             let new_game = DomHelper.createButton();
-            new_game.onclick = () => { this.game.new_game(); };
+            new_game.onclick = () => { this.online_game.new_game(); };
             
-            if (this.game.is_in_queue())
+            if (this.online_game.is_in_queue())
             {
                 new_game.innerText = "Finding opponent..."
                 new_game.disabled = true;
@@ -108,17 +104,17 @@ class ButtonBar implements IButtonBar
             }
 
             let player_name = DomHelper.createTextArea();
-            player_name.textContent = this.game.context.player_name(this.game.context.player)!;
+            player_name.textContent = this.game.context.player_name(this.online_game.player);
             player_name.onfocus = () => { player_name.select() };
             player_name.onkeyup = () => {
                 if (player_name.value) { 
-                    this.game.set_name(player_name.value); 
+                    this.online_game.set_name(player_name.value); 
                 }
             };
             player_name.style.width = "80px";
             player_name.style.resize = "none";
             
-            if (this.game.is_in_queue())
+            if (this.online_game.is_in_queue())
             {
                 player_name.readOnly = true;
             }
@@ -127,13 +123,13 @@ class ButtonBar implements IButtonBar
             this.dom_element.appendChild(player_name);
         }
 
-        if (this.game.is_playing())
+        if (this.online_game.is_playing())
         {
             let submit_button = DomHelper.createButton();
         
-            if (this.game.status() == OnlineGameStatus.WaitForPlayer)
+            if (this.online_game.status == OnlineGameStatus.WaitForPlayer)
             {
-                let supply = this.game.context.present.supply(this.game.context.player);
+                let supply = this.game.context.present.supply(this.online_game.player);
                 if (supply == undefined)
                 {
                     throw new Error("cannot get game supply");
@@ -147,10 +143,10 @@ class ButtonBar implements IButtonBar
                 else
                 {
                     submit_button.innerText = "Submit Move";
-                    submit_button.onclick = () => { this.game.submit_move(); };
+                    submit_button.onclick = () => { this.online_game.submit_move(); };
                 }
             }
-            else if (this.game.status() == OnlineGameStatus.WaitForOpponent)
+            else if (this.online_game.status == OnlineGameStatus.WaitForOpponent)
             {
                 submit_button.disabled = true;
                 submit_button.innerText = "Waiting for opponent...";
@@ -165,16 +161,16 @@ class ButtonBar implements IButtonBar
             this.submit = submit_button;
         }
 
-        if (this.game.is_finished())
+        if (this.online_game.is_finished())
         {
             let text: string;
 
-            if (this.game.status() == OnlineGameStatus.Tied)
+            if (this.online_game.status == OnlineGameStatus.Tied)
             {
                 text = 'Game is tied.';
             }
-            else if ((this.game.status() == OnlineGameStatus.WonByPlayer1 && this.game.context.player == Player.P1) ||
-                    (this.game.status() == OnlineGameStatus.WonByPlayer2 && this.game.context.player == Player.P2))
+            else if ((this.online_game.status == OnlineGameStatus.WonByPlayer1 && this.online_game.player == Player.P1) ||
+                    (this.online_game.status == OnlineGameStatus.WonByPlayer2 && this.online_game.player == Player.P2))
             {
                 text = 'You are victorious!';
             }
@@ -194,7 +190,7 @@ class ButtonBar implements IButtonBar
             flexGrow: 1
         }));
         
-        if (!this.game.is_not_started() && !this.game.is_in_queue())
+        if (!this.online_game.is_not_started() && !this.online_game.is_in_queue())
         {
             this.last_round = DomHelper.createButton();
             
@@ -222,7 +218,7 @@ class ButtonBar implements IButtonBar
                 }
             };
 
-            if (this.game.context.history.length == 0)
+            if (!this.game.context.last())
             {
                 this.last_round.disabled = true;
             }
@@ -255,8 +251,6 @@ class ButtonBar implements IButtonBar
 
 class SolitudeButtonBar implements IButtonBar
 {
-    dom_element: HTMLDivElement;
-    game: IRenderableGame;
     apply: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
     heat: HTMLButtonElement | null = null;
@@ -264,9 +258,8 @@ class SolitudeButtonBar implements IButtonBar
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame) {
-        this.dom_element = dom_element;
-        this.game = game;
+    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame) {
+        game.context.on_next(this.render.bind(this));
     }
 
     set view_last_round(value: boolean)
@@ -343,10 +336,10 @@ class SolitudeButtonBar implements IButtonBar
         let apply_button = DomHelper.createButton();
     
         let insufficient = false;
-        for (let player of Player.values())
+        for (let player of Player.both())
         {
             let supply = this.game.context.present.supply(player)!;
-            let cost = this.game.action_cost(player);
+            let cost = this.game.context.action_cost(player);
             if (cost > supply)
             {
                 insufficient = true;
@@ -360,8 +353,14 @@ class SolitudeButtonBar implements IButtonBar
         }
         else
         {
-            apply_button.innerText = "Apply Move";
-            apply_button.onclick = () => { this.game.apply_moves(); };
+            apply_button.innerText = "Next Round";
+            apply_button.onclick = () => { 
+                for (let player of Player.both())
+                {
+                    this.game.context.make_move(player);
+                }
+                this.game.show_present();
+            };
         }
     
         this.dom_element.appendChild(apply_button);
@@ -406,26 +405,27 @@ class SolitudeButtonBar implements IButtonBar
         };
 
         this.last_round.onmouseenter = () => { 
-            if (!this.view_last_round)
+            if (this.view_last_round)
             {
-                this.view_last_round_handle = setTimeout(() => {
-                    this.game.show_last();
-                }, 200);
+                return;
             }
+            this.view_last_round_handle = setTimeout(() => {
+                this.game.show_last();
+            }, 200);
         };
         this.last_round.onmouseleave = () => {
-            if (!this.view_last_round)
-            {
-                this.game.show_present();
-            }
             if (this.view_last_round_handle)
             {
                 clearTimeout(this.view_last_round_handle);
                 this.view_last_round_handle = null;
             }
+            if (!this.view_last_round)
+            {
+                this.game.show_present();
+            }
         };
 
-        if (this.game.context.history.length == 0)
+        if (!this.game.context.last())
         {
             this.last_round.disabled = true;
         }

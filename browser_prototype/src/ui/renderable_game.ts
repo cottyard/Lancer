@@ -2,13 +2,6 @@ interface IRenderableGame
 {
     context: GameContext;
     displaying_board: Board<Unit>;
-    action(player: Player): PlayerAction;
-    action_cost(player: Player): number;
-    move(player: Player): PlayerMove;
-    buff(): FullBoard<Buff>;
-    delete_move(move: Move): void;
-    set_moves(player: Player, moves: Move[]): void;
-    apply_moves(): void;
     refresh(): void;
     highlight(coord: Coordinate): void;
     show_last(): void;
@@ -21,8 +14,6 @@ interface IRenderableGame
 class RenderableGame implements IRenderableGame
 {
     canvas: GameCanvas;
-    player_moved = new Map<Player, boolean>();
-    player_consumed_milliseconds = new Map<Player, number>();
 
     current: Coordinate | null = null;
     selected: Coordinate | null = null;
@@ -37,15 +28,7 @@ class RenderableGame implements IRenderableGame
     displaying_buff_board: FullBoard<Buff>;
     private _show_last_round: boolean = false;
 
-    player_moves = new Map<Player, PlayerMove>([
-        [Player.P1, new PlayerMove(Player.P1)],
-        [Player.P2, new PlayerMove(Player.P2)]]);
-
-    player_actions = new Map<Player, PlayerAction>([
-        [Player.P1, new PlayerAction(Player.P1)],
-        [Player.P2, new PlayerAction(Player.P2)]]);
-
-    displaying_actions = this.player_actions;
+    displaying_actions: Players<PlayerAction>;
 
     constructor(
         public context: GameContext,
@@ -72,6 +55,7 @@ class RenderableGame implements IRenderableGame
 
         //let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         //this._displaying_board = new board_ctor();
+        this.displaying_actions = this.context.player_actions;
         this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
         this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
 
@@ -88,9 +72,28 @@ class RenderableGame implements IRenderableGame
     run()
     {
         this.render_board();
-        this.render_indicators();
-        this.components.status_bar.render();
-        this.components.button_bar.render();
+        this.refresh();
+    }
+
+    test_run()
+    {
+        this.canvas.paint_background();
+
+        this.context.present.board.put(new Coordinate(4,4), this.create_perfect(Player.P1, Lancer));
+        this.context.present.board.put(new Coordinate(5,5), this.create_perfect(Player.P1, Knight));
+        this.context.present.board.put(new Coordinate(3,5), this.create_perfect(Player.P1, Knight));
+        this.context.present.board.put(new Coordinate(5,7), this.create_perfect(Player.P2, Warrior));
+        this.context.present.board.put(new Coordinate(6,7), this.create_perfect(Player.P1, Spearman));
+        this.context.present.board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
+        this.context.present.board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
+        this.context.present.board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
+        this.context.present.board.put(new Coordinate(1,1), this.create_perfect(Player.P2, Soldier));
+        this.context.present.board.put(new Coordinate(4,8), new Swordsman(Player.P1));
+
+        this.context.present.board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
+        this.context.present.board.put(new Coordinate(3,3), this.create_perfect(Player.P1, Wagon));
+       
+        this.run();
     }
 
     create_perfect(player: Player, ctor: UnitConstructor): Unit
@@ -98,55 +101,6 @@ class RenderableGame implements IRenderableGame
         let unit = new ctor(player, null);
         unit.perfect.as_list().forEach(s => {unit.endow(s);});
         return unit;
-    }
-
-    action(player: Player): PlayerAction
-    {
-        return this.player_actions.get(player)!;
-    }
-
-    move(player: Player): PlayerMove
-    {
-        return this.player_moves.get(player)!;
-    }
-
-    buff(): FullBoard<Buff>
-    {
-        return this.context.buff;
-    }
-
-    delete_move(move: Move)
-    {
-        for (let player of this.player_moves.keys())
-        {
-            let moves = this.player_moves.get(player)!.moves;
-            moves.splice(
-                moves.findIndex(m => m.equals(move)),
-                1);
-        }
-        this.update_player_action();
-    }
-
-    set_moves(player: Player, moves: Move[])
-    {
-        this.player_moves.get(player)!.moves = moves;
-        this.update_player_action();
-    }
-
-    apply_moves()
-    {
-        this.context.make_move(this.player_moves);
-        this.reset_player_move();
-        this.show_last_round = false;
-    }
-
-    reset_player_move()
-    {
-        for (let player of Player.values())
-        {
-            this.player_moves.get(player)!.moves = [];
-        }
-        this.update_player_action();
     }
 
     highlight(coord: Coordinate)
@@ -157,6 +111,8 @@ class RenderableGame implements IRenderableGame
     refresh()
     {
         this.render_indicators();
+        this.components.status_bar.render();
+        this.components.button_bar.render();
     }
 
     set displaying_board(value: Board<Unit>)
@@ -175,16 +131,16 @@ class RenderableGame implements IRenderableGame
 
     set show_last_round(value: boolean)
     {
-        if (value && this.context.present.last_actions)
+        if (value && this.context.last())
         {
             this._show_last_round = true;
-            this.displaying_actions = this.context.present.last_actions;
+            this.displaying_actions = this.context.present.last_actions!;
             this.displaying_board = this.context.last()!.board;
         }
         else if (!value)
         {
             this._show_last_round = false;
-            this.displaying_actions = this.player_actions;
+            this.displaying_actions = this.context.player_actions;
             this.displaying_board = this.context.present.board;
         }
     }
@@ -202,15 +158,6 @@ class RenderableGame implements IRenderableGame
     show_present()
     {
         this.show_last_round = false;
-    }
-
-    action_cost(player: Player): number
-    {
-        if (this.context.buff)
-        {
-            return this.player_actions.get(player)!.cost(this.context.buff);
-        }
-        return 0;
     }
 
     render_indicators(): void
@@ -242,7 +189,7 @@ class RenderableGame implements IRenderableGame
         {
             this.render_heat();
         }
-        for (let player_action of this.displaying_actions.values())
+        for (let player_action of Player.values(this.displaying_actions))
         {
             this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
         }
@@ -365,44 +312,16 @@ class RenderableGame implements IRenderableGame
         {
             let selected = this.selected;
 
-            for (let player of Player.values())
+            for (let player of Player.both())
             {
-                let player_move = this.player_moves.get(player)!;
-                player_move.moves = player_move.moves.filter(
-                    (move) => !move.from.equals(selected)
-                );
-    
-                player_move.moves.push(new Move(this.selected, this.current));
-    
-                try
-                {
-                    this.update_player_action();
-                }
-                catch (e)
-                {
-                    player_move.moves.pop();
-                }
+                this.context.move(player).extract((move: Move): move is Move => move.from.equals(selected));
+                this.context.prepare_move(player, new Move(this.selected, this.current));
             }
         }
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);
         this.render_indicators();
-    }
-
-    update_player_action()
-    {
-        for (let player of Player.values())
-        {
-            let move = this.player_moves.get(player)!;
-            let action = Rule.validate_player_move(this.context.present.board, move);
-            this.player_actions.set(player, action);
-            this.player_actions.get(player)!.actions.sort((a1, a2) => a2.type - a1.type);
-        }
-        
-        this.render_indicators();
-        this.components.status_bar.render();
-        this.components.button_bar.render();
     }
 
     update_options(coord: Coordinate)
@@ -425,7 +344,7 @@ class RenderableGame implements IRenderableGame
             else
             {
                 this.options_capable = [];
-                for (let player of Player.values())
+                for (let player of Player.both())
                 {
                     if (Rule.is_king_side(this.displaying_board, player, coord))
                     {
@@ -464,7 +383,7 @@ enum DisplayActionType
 
 class DisplayAction
 {
-    constructor(public type: DisplayActionType, public action: Action)
+    constructor(public player: Player, public type: DisplayActionType, public action: Action)
     {
     }
 }
@@ -499,7 +418,7 @@ class DisplayPlayerAction
                     }
                 }
             }
-            return new DisplayAction(type, a);
+            return new DisplayAction(this.player, type, a);
         });
     }
 }

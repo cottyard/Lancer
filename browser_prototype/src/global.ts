@@ -35,7 +35,10 @@ class Module
         'grid_size': this.cvs_size / 9,
         'piece_font': "40px Courier New",
         'server_url': window.location.href,
-        'player_color_map': new Map<Player, string>()
+        'player_color_map': {
+            [Player.P1]: this.const.STYLE_RED_LIGHT,
+            [Player.P2]: this.const.STYLE_BLUE_LIGHT
+        }
     };
     display_action_style = new Map<DisplayActionType, string>();
     action_style = new Map<ActionType, string>();
@@ -162,11 +165,6 @@ class Module
 
     initialize()
     {
-        g.settings.player_color_map = new Map<Player, string>([
-            [Player.P1, g.const.STYLE_RED_LIGHT],
-            [Player.P2, g.const.STYLE_BLUE_LIGHT]
-        ]);
-        
         this.all_unit_types.forEach((type: UnitConstructor) =>
         {
             this.unit_type_by_name.set(type.name, type);

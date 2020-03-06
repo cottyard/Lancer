@@ -2,10 +2,10 @@ class InvalidMove extends Error {}
 
 class Rule
 {
-    static spawn_row = new Map<Player, number>([
-        [Player.P1, g.board_size_y - 1],
-        [Player.P2, 0]
-    ]);
+    static spawn_row: Players<number> = {
+        [Player.P1]: g.board_size_y - 1,
+        [Player.P2]: 0
+    }
 
     static validate_player_move(board: Board<Unit>, player_move: PlayerMove): PlayerAction
     {
@@ -57,7 +57,7 @@ class Rule
                 return new Action(move, ActionType.Recall, recalled.type());
             }
 
-            if (move.from.y != this.spawn_row.get(player))
+            if (move.from.y != this.spawn_row[player])
             {
                 throw new InvalidMove("grid is empty");
             }
@@ -308,7 +308,7 @@ class Rule
         {
             return [];
         }
-        for (let row of this.spawn_row.values())
+        for (let row of Player.values(this.spawn_row))
         {
             if (coord.y == row)
             {
@@ -348,12 +348,12 @@ class Rule
         return all;
     }
 
-    static make_move(board: Board<Unit>, moves: Map<Player, PlayerMove>): [Board<Unit>, Martyr[]]
+    static make_move(board: Board<Unit>, moves: Players<PlayerMove>): [Board<Unit>, Martyr[]]
     {
-        let actions = new Map<Player, PlayerAction>([
-            [Player.P1, this.validate_player_move(board, moves.get(Player.P1)!)],
-            [Player.P2, this.validate_player_move(board, moves.get(Player.P2)!)]
-        ]);
+        let actions: Players<PlayerAction> = {
+            [Player.P1]: this.validate_player_move(board, moves[Player.P1]),
+            [Player.P2]: this.validate_player_move(board, moves[Player.P2])
+        };
 
         let next_board = board.copy();
         let force_board = new FullBoard<Force>(() => new Force());
@@ -369,11 +369,11 @@ class Rule
         return [next_board, martyrs];
     }
 
-    static process_upgrade_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>)
+    static process_upgrade_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
-            for (let action of player_action.extract((a) => a.type == ActionType.Upgrade))
+            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Upgrade))
             {
                 let unit = board.at(action.move.from)!;
                 let skill = action.move.which_skill();
@@ -397,19 +397,19 @@ class Rule
         }
     }
 
-    static process_defend_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>, force_board: FullBoard<Force>)
+    static process_defend_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>)
     {
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
-            for (let action of player_action.extract((a) => a.type == ActionType.Defend))
+            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Defend))
             {
                 let unit = board.at(action.move.from)!;
-                force_board.at(action.move.to).reinforcers.get(player_action.player)!.push(unit);
+                force_board.at(action.move.to).reinforcers[player_action.player].push(unit);
             }
         }
     }
 
-    static process_clash_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>): Martyr[]
+    static process_clash_phase(board: Board<Unit>, player_actions: Players<PlayerAction>): Martyr[]
     {
         let clash_board = new Board<Action>();
         let martyrs: Martyr[] = [];
@@ -419,7 +419,7 @@ class Rule
         };
         let clashes: ClashPair[] = [];
  
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
             for (let action of player_action.actions)
             {
@@ -452,14 +452,14 @@ class Rule
             let ceased = [];
             if (surviver == null)
             {
-                player_actions.get(Player.P1)!.extract((a) => a == a1);
-                player_actions.get(Player.P2)!.extract((a) => a == a2);
+                player_actions[Player.P1].extract((a): a is Action => a == a1);
+                player_actions[Player.P2].extract((a): a is Action => a == a2);
                 ceased.push(a1, a2);
             }
             else
             {
                 let action = clash[surviver.owner];
-                player_actions.get(surviver.owner)!.extract((a) => a == action);
+                player_actions[surviver.owner].extract((a): a is Action => a == action);
                 ceased.push(action);
             }
 
@@ -473,22 +473,22 @@ class Rule
         return martyrs;
     }
 
-    static process_battle_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>, force_board: FullBoard<Force>): Martyr[]
+    static process_battle_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>): Martyr[]
     {
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
-            for (let action of player_action.extract((a) => a.type == ActionType.Attack || a.type == ActionType.Move))
+            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Attack || a.type == ActionType.Move))
             {
                 let target = action.move.to;
-                if (force_board.at(target).arriver.get(player_action.player) == null)
+                if (force_board.at(target).arriver[player_action.player] == null)
                 {
                     let unit = board.remove(action.move.from)!;
-                    force_board.at(target).arriver.set(player_action.player, new Quester(unit, action.move.from));
+                    force_board.at(target).arriver[player_action.player] = new Quester(unit, action.move.from);
                 }
                 else
                 {
                     let unit = board.at(action.move.from)!;
-                    force_board.at(target).reinforcers.get(player_action.player)!.push(unit);
+                    force_board.at(target).reinforcers[player_action.player].push(unit);
                 }
             }
         }
@@ -497,16 +497,16 @@ class Rule
 
         function settle_battle(force: Force, where: Coordinate)
         {
-            let q1 = force.arriver.get(Player.P1);
-            let q2 = force.arriver.get(Player.P2);
+            let q1 = force.arriver[Player.P1];
+            let q2 = force.arriver[Player.P2];
 
             if (q1 == null && q2 == null)
             {
                 return;
             }
 
-            let r1 = force.reinforcers.get(Player.P1)!.length;
-            let r2 = force.reinforcers.get(Player.P2)!.length;
+            let r1 = force.reinforcers[Player.P1].length;
+            let r2 = force.reinforcers[Player.P2].length;
             
             let conqueror: Unit | null;
 
@@ -517,7 +517,7 @@ class Rule
                     conqueror = q1.unit.duel(q2.unit);
                     if (conqueror)
                     {
-                        let fallen = force.arriver.get(opponent(conqueror.owner))!;
+                        let fallen = force.arriver[opponent(conqueror.owner)]!;
                         martyrs.push(new Martyr(fallen, 0));
                     }
                     else
@@ -576,11 +576,11 @@ class Rule
         return martyrs;
     }
 
-    static process_recall_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>)
+    static process_recall_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
-            for (let action of player_action.extract((a) => a.type == ActionType.Recall))
+            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Recall))
             {
                 if (board.at(action.move.from) == null)
                 {
@@ -595,9 +595,9 @@ class Rule
         }
     }
 
-    static process_recruit_phase(board: Board<Unit>, player_actions: Map<Player, PlayerAction>)
+    static process_recruit_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
-        for (let player_action of player_actions.values())
+        for (let player_action of Player.values(player_actions))
         {
             for (let action of player_action.actions)
             {
@@ -638,27 +638,37 @@ class Buff
 
 class Heat
 {
-    map = new Map<Player, number>([[Player.P1, 0], [Player.P2, 0]]);
+    map: Players<number> = {
+        [Player.P1]: 0,
+        [Player.P2]: 0
+    };
+
     heatup(player: Player)
     {
-        this.map.set(player, this.map.get(player)! + 1);
+        this.map[player] += 1;
     }
 
     friendly(player: Player): number
     {
-        return this.map.get(player)!;
+        return this.map[player];
     }
 
     hostile(player: Player): number
     {
-        return this.map.get(opponent(player))!;
+        return this.map[opponent(player)];
     }
 }
 
 class Force
 {
-    reinforcers = new Map<Player, Unit[]>([[Player.P1, []], [Player.P2, []]]);
-    arriver = new Map<Player, Quester | null>([[Player.P1, null], [Player.P2, null]]);
+    reinforcers: Players<Unit[]> = {
+        [Player.P1]: [],
+        [Player.P2]: []
+    };
+    arriver: Players<Quester | null> = {
+        [Player.P1]: null,
+        [Player.P2]: null
+    };
 }
 
 class Martyr

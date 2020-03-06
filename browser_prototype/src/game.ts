@@ -14,34 +14,36 @@ class Game
     constructor(
         readonly round_count: number,
         readonly board: Board<Unit>, 
-        readonly supplies: Map<Player, number>,
-        readonly last_actions: Map<Player, PlayerAction> | null,
+        readonly supplies: Players<number>,
+        readonly last_actions: Players<PlayerAction> | null,
         readonly martyrs: Martyr[])
     {
     }
 
-    make_move(moves: Map<Player, PlayerMove>): Game
+    make_move(moves: Players<PlayerMove>): Game
     {
-        let actions = new Map<Player, PlayerAction>();
-        for (let player of moves.keys())
-        {
-            actions.set(player, this.validate_move(moves.get(player)!));
+        let actions = {
+            [Player.P1]: this.validate_move(moves[Player.P1]),
+            [Player.P2]: this.validate_move(moves[Player.P2])
         }
 
         let [next_board, martyrs] = Rule.make_move(this.board, moves);
-        let supplies = new Map<Player, number>();
+        let supplies = {
+            [Player.P1]: 0,
+            [Player.P2]: 0
+        };
 
         let buff = Rule.get_buff(this.board);
-        for (let player of actions.keys())
+        for (let player of Player.both())
         {
-            let supply = this.supplies.get(player)!;
-            supply -= actions.get(player)!.cost(buff);
+            let supply = this.supplies[player];
+            supply -= actions[player].cost(buff);
             supply += this.supply_income(player);
             supply += martyrs.reduce<number>((total: number, martyr: Martyr) => {
                 return total + martyr.quester.unit.owner != player ? martyr.relic : 0;
             }, 0);
 
-            supplies.set(player, supply);
+            supplies[player] = supply;
         }
 
         return new Game(
@@ -78,18 +80,20 @@ class Game
     {
         let action = Rule.validate_player_move(this.board, move);
         let buff = Rule.get_buff(this.board);
-        if (action.cost(buff) > this.supplies.get(action.player)!)
+        if (action.cost(buff) > this.supplies[action.player])
         {
             throw new InsufficientSupply();
         }
         return action;
     }
 
-    supply(player: Player): number | undefined {
-        return this.supplies.get(player);
+    supply(player: Player): number
+    {
+        return this.supplies[player];
     }
 
-    supply_income(player: Player): number {
+    supply_income(player: Player): number 
+    {
         let wagon_revenue = 0;
         this.board.iterate_units((unit: Unit, _) => {
             if (unit.owner == player && is_wagon(unit))
@@ -125,21 +129,54 @@ class Game
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         this.set_out(board);
-        let supplies = new Map<Player, number>([
-            [Player.P1, Game.supply_basic_incremental], 
-            [Player.P2, Game.supply_basic_incremental]]);
+        let supplies = {
+            [Player.P1]: Game.supply_basic_incremental,
+            [Player.P2]: Game.supply_basic_incremental
+        };
         return new Game(0, board, supplies, null, []);
     }
 }
 
-class GameContext
+interface IGameContext
 {
-    buff: FullBoard<Buff>;
-    history: Game[] = [];
+    last(): Game | null;
+    buff(): FullBoard<Buff>;
+    moved(player: Player): boolean;
+    move(player: Player): PlayerMove;
+    action(player: Player): PlayerAction;
+    action_cost(player: Player): number;
+    prepare_move(player: Player, move: Move): boolean;
+    prepare_moves(player: Player, moves: Move[]): boolean;
+    filter_moves(player: Player, filter: (move: Move) => move is Move): Move[];
+    make_move(player: Player): void;
+    player_name(player: Player): string;
+    on_next(listener: Function): void;
+}
 
-    constructor(public player: Player, public player_names: Map<Player, string>, public present: Game)
+class GameContext implements IGameContext
+{
+    private _buff: FullBoard<Buff>;
+    private history: Game[] = [];
+    private listeners: Function[] = [];
+
+    readonly player_moved: Players<boolean> = {
+        [Player.P1]: false,
+        [Player.P2]: false,
+    };
+    
+    readonly player_moves: Players<PlayerMove> = {
+        [Player.P1]: new PlayerMove(Player.P1),
+        [Player.P2]: new PlayerMove(Player.P2),
+    };
+
+    readonly player_actions: Players<PlayerAction> = {
+        [Player.P1]: new PlayerAction(Player.P1),
+        [Player.P2]: new PlayerAction(Player.P2),
+    }
+
+    constructor(public player_names: Players<string>, public present: Game)
     {
-        this.buff = Rule.get_buff(present.board);
+        this._buff = Rule.get_buff(present.board);
     }
 
     last(): Game | null
@@ -151,12 +188,96 @@ class GameContext
         return null;
     }
 
-    make_move(moves: Map<Player, PlayerMove>): boolean
+    buff(): FullBoard<Buff>
+    {
+        return this._buff;
+    }
+
+    on_next(listener: Function)
+    {
+        this.listeners.push(listener);
+    }
+
+    moved(player: Player): boolean
+    {
+        return this.player_moved[player];
+    }
+
+    move(player: Player): PlayerMove
+    {
+        return this.player_moves[player];
+    }
+
+    action(player: Player): PlayerAction
+    {
+        return this.player_actions[player];
+    }
+
+    action_cost(player: Player): number
+    {
+        return this.player_actions[player].cost(this._buff);
+    }
+
+    filter_moves(player: Player, keep: (move: Move) => move is Move)
+    {
+        let removed = this.player_moves[player].extract(keep);
+        this.update_action(player);
+        return removed;
+    }
+
+    update_action(player: Player)
+    {
+        this.player_actions[player] = Rule.validate_player_move(this.present.board, this.player_moves[player]);
+        this.player_actions[player].actions.sort((a1, a2) => a2.type - a1.type);
+    }
+
+    prepare_move(player: Player, move: Move): boolean
+    {
+        this.player_moves[player].moves.push(move);
+        try
+        {
+            this.update_action(player);
+        }
+        catch
+        {
+            this.player_moves[player].moves.pop();
+            return false;
+        }
+        return true;
+    }
+
+    prepare_moves(player: Player, moves: Move[]): boolean
+    {
+        let old = this.player_moves[player].moves;
+        this.player_moves[player].moves = moves;
+        try
+        {
+            this.update_action(player);
+        }
+        catch
+        {
+            this.player_moves[player].moves = old;
+            return false;
+        }
+        return true;
+    }
+
+    make_move(player: Player)
+    {
+        this.player_moved[player] = true;
+
+        if (this.player_moved[opponent(player)])
+        {
+            this.next_game();
+        }
+    }
+
+    next_game(): boolean
     {
         let next_game;
         try
         {
-            next_game = this.present.make_move(moves);
+            next_game = this.present.make_move(this.player_moves);
         }
         catch
         {
@@ -164,12 +285,28 @@ class GameContext
         }
         this.history.push(this.present);
         this.present = next_game;
-        this.buff = Rule.get_buff(this.present.board);
+        this._buff = Rule.get_buff(this.present.board);
+
+        for (let player of Player.both())
+        {
+            this.player_moved[player] = false;
+            this.player_moves[player] = new PlayerMove(player);
+            this.player_actions[player] = new PlayerAction(player);
+        }
+
+        for (let listener of this.listeners)
+        {
+            listener();
+        }
         return true;
     }
 
-    player_name(player: Player): string | undefined 
+    player_name(player: Player): string
     {
-        return this.player_names.get(player);
+        return this.player_names[player];
     }
 }
+
+// class OnlineGameContext implements IGameContext
+// {
+// }

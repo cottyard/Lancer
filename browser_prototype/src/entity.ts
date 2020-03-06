@@ -230,12 +230,26 @@ enum Player
     P2 = 2
 }
 
-module Player {
-    export function* values() {
+module Player
+{
+    export function* both()
+    {
         yield Player.P1;
         yield Player.P2;
     }
+
+    export function* values<T>(players: Players<T>)
+    {
+        yield players[Player.P1];
+        yield players[Player.P2];
+    }
 }
+
+type Players<T> =
+{
+    [Player.P1]: T,
+    [Player.P2]: T,
+};
 
 function opponent(player: Player)
 {
@@ -298,6 +312,11 @@ class PlayerMove implements ISerializable
     pop(): void
     {
         this.moves.pop();
+    }
+
+    extract(filter: (m: Move) => m is Move): Move[]
+    {
+        return extract(this.moves, filter);
     }
 
     serialize(): string
@@ -435,12 +454,9 @@ class PlayerAction
         return new PlayerAction(player, actions);
     }
 
-    extract(filter: (a: Action) => boolean): Action[]
+    extract(filter: (a: Action) => a is Action): Action[]
     {
-        let extracted = this.actions.filter(filter);
-        let remaining = this.actions.filter((a) => !filter(a));
-        this.actions = remaining;
-        return extracted;
+        return extract(this.actions, filter);
     }
 }
 

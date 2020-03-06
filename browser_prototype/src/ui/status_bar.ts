@@ -5,16 +5,11 @@ interface IStatusBar
 
 class StatusBar implements IStatusBar
 {
-    dom_element: HTMLDivElement;
-    game: IRenderableGame & IOnlineGame;
- 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame & IOnlineGame) {
-        this.dom_element = dom_element;
-        this.game = game;
+    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public online_game: IOnlineGame) {
     }
 
     render() {
-        let cost = this.game.action_cost(this.game.context.player);
+        let cost = this.game.context.action_cost(this.online_game.player);
         this.dom_element.innerHTML = "";
 
         DomHelper.applyStyle(this.dom_element, {
@@ -24,9 +19,9 @@ class StatusBar implements IStatusBar
             height: "40px"
         });
 
-        if (this.game.is_playing() || this.game.is_finished())
+        if (this.online_game.is_playing() || this.online_game.is_finished())
         {
-            for (let player of Player.values())
+            for (let player of Player.both())
             {
                 this.dom_element.appendChild(this.player_status(
                     player,
@@ -34,7 +29,7 @@ class StatusBar implements IStatusBar
                     this.game.context.present.supply(player) || 0,
                     this.game.context.present.supply_income(player),
                     cost,
-                    player === this.game.context.player
+                    player === this.online_game.player
                 ));
                 
                 if (player == Player.P1)
@@ -82,7 +77,7 @@ class StatusBar implements IStatusBar
             fontWeight: is_me ? "bold" : "normal",
         });
         div.appendChild(DomHelper.createText(name, {
-            color: g.settings.player_color_map.get(player)!
+            color: g.settings.player_color_map[player]
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));
@@ -95,7 +90,7 @@ class StatusBar implements IStatusBar
 
         div.appendChild(DomHelper.createText(`(+${income})`));
 
-        let moved = this.game.has_moved(player);
+        let moved = this.online_game.has_moved(player);
         let text = null;
         if (moved)
         {
@@ -112,7 +107,7 @@ class StatusBar implements IStatusBar
             }));
         }
 
-        let consumed = this.game.consumed_milliseconds(player);
+        let consumed = this.online_game.consumed_milliseconds(player);
         if (consumed != undefined)
         {
             div.appendChild(DomHelper.createText(
@@ -147,14 +142,14 @@ class SolitudeStatusBar implements IStatusBar
             height: "40px"
         });
 
-        for (let player of Player.values())
+        for (let player of Player.both())
         {
             this.dom_element.appendChild(this.player_status(
                 player,
                 this.game.context.player_name(player) || "",
                 this.game.context.present.supply(player) || 0,
                 this.game.context.present.supply_income(player),
-                this.game.action_cost(player)
+                this.game.context.action_cost(player)
             ));
             
             if (player == Player.P1)
@@ -186,7 +181,7 @@ class SolitudeStatusBar implements IStatusBar
             fontWeight: "normal",
         });
         div.appendChild(DomHelper.createText(name, {
-            color: g.settings.player_color_map.get(player)!
+            color: g.settings.player_color_map[player]
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));
