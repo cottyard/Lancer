@@ -1,4 +1,4 @@
-interface IRenderableGame
+interface IRenderController
 {
     displaying_board: Board<Unit>;
     refresh(): void;
@@ -10,7 +10,7 @@ interface IRenderableGame
     run(): void;
 }
 
-class RenderableGame implements IRenderableGame
+class RenderController implements IRenderController
 {
     canvas: GameCanvas;
 
@@ -33,36 +33,30 @@ class RenderableGame implements IRenderableGame
         public context: IGameContext,
         public components: {
             action_panel: IActionPanel,
-            status_bar: IStatusBar, 
-            button_bar: IButtonBar
+            status_bar: IStatusBar,
+            button_bar: IButtonBar;
         })
     {
         this.canvas = new GameCanvas(
-            <HTMLCanvasElement>document.getElementById('background'),
-            <HTMLCanvasElement>document.getElementById('static'), 
-            <HTMLCanvasElement>document.getElementById('animate'),
-            <HTMLCanvasElement>document.getElementById('animate-transparent'));
+            <HTMLCanvasElement> document.getElementById('background'),
+            <HTMLCanvasElement> document.getElementById('static'),
+            <HTMLCanvasElement> document.getElementById('animate'),
+            <HTMLCanvasElement> document.getElementById('animate-transparent'));
 
         this.canvas.animate.addEventListener("mousedown", this.on_mouse_down.bind(this));
         this.canvas.animate.addEventListener("mouseup", this.on_mouse_up.bind(this));
         this.canvas.animate.addEventListener("mousemove", this.on_mouse_move.bind(this));
         this.canvas.animate.addEventListener("mouseleave", this.clear_grid_incicators.bind(this));
-        this.canvas.animate.addEventListener("touchstart",  this.on_touch.bind(this));
+        this.canvas.animate.addEventListener("touchstart", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchmove", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        //let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
-        //this._displaying_board = new board_ctor();
         this.displaying_actions = this.context.actions;
         this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
         this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
 
         this.canvas.paint_background();
-
-        // let random_unit = g.all_unit_types[Math.floor(Math.random() * g.all_unit_types.length)];
-        // let random_player = Math.floor(Math.random() * 2) + 1;
-        // this.displaying_board.put(new Coordinate(4,4), this.create_perfect(random_player, random_unit));
 
         this._displaying_board = this.context.present.board;
         this.displaying_board = this.context.present.board;
@@ -74,33 +68,26 @@ class RenderableGame implements IRenderableGame
         this.refresh();
     }
 
-    test_run()
-    {
-        this.canvas.paint_background();
+    // test_run()
+    // {
+    //     this.canvas.paint_background();
 
-        this.context.present.board.put(new Coordinate(4,4), this.create_perfect(Player.P1, Lancer));
-        this.context.present.board.put(new Coordinate(5,5), this.create_perfect(Player.P1, Knight));
-        this.context.present.board.put(new Coordinate(3,5), this.create_perfect(Player.P1, Knight));
-        this.context.present.board.put(new Coordinate(5,7), this.create_perfect(Player.P2, Warrior));
-        this.context.present.board.put(new Coordinate(6,7), this.create_perfect(Player.P1, Spearman));
-        this.context.present.board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
-        this.context.present.board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
-        this.context.present.board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
-        this.context.present.board.put(new Coordinate(1,1), this.create_perfect(Player.P2, Soldier));
-        this.context.present.board.put(new Coordinate(4,8), new Swordsman(Player.P1));
+    //     this.context.present.board.put(new Coordinate(4,4), this.create_perfect(Player.P1, Lancer));
+    //     this.context.present.board.put(new Coordinate(5,5), this.create_perfect(Player.P1, Knight));
+    //     this.context.present.board.put(new Coordinate(3,5), this.create_perfect(Player.P1, Knight));
+    //     this.context.present.board.put(new Coordinate(5,7), this.create_perfect(Player.P2, Warrior));
+    //     this.context.present.board.put(new Coordinate(6,7), this.create_perfect(Player.P1, Spearman));
+    //     this.context.present.board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
+    //     this.context.present.board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
+    //     this.context.present.board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
+    //     this.context.present.board.put(new Coordinate(1,1), this.create_perfect(Player.P2, Soldier));
+    //     this.context.present.board.put(new Coordinate(4,8), new Swordsman(Player.P1));
 
-        this.context.present.board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
-        this.context.present.board.put(new Coordinate(3,3), this.create_perfect(Player.P1, Wagon));
-       
-        this.run();
-    }
+    //     this.context.present.board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
+    //     this.context.present.board.put(new Coordinate(3,3), this.create_perfect(Player.P1, Wagon));
 
-    create_perfect(player: Player, ctor: UnitConstructor): Unit
-    {
-        let unit = new ctor(player, null);
-        unit.perfect.as_list().forEach(s => {unit.endow(s);});
-        return unit;
-    }
+    //     this.run();
+    // }
 
     highlight(coord: Coordinate)
     {
@@ -174,7 +161,7 @@ class RenderableGame implements IRenderableGame
         {
             this.canvas.paint_grid_indicator(option, g.const.STYLE_GOLD, 3);
         }
-        
+
         if (this.current)
         {
             this.canvas.paint_grid_indicator(this.current);
@@ -218,13 +205,15 @@ class RenderableGame implements IRenderableGame
         this.canvas.clear_canvas(this.canvas.am_ctx);
         this.canvas.clear_canvas(this.canvas.am_ctx_t);
     }
-    
+
     render_heat(): void
     {
-        this.displaying_heat_board.iterate_units((heat, coord) => {
+        this.displaying_heat_board.iterate_units((heat, coord) =>
+        {
             this.canvas.paint_heat(coord, heat);
         });
-        this.displaying_buff_board.iterate_units((buff, coord) => {
+        this.displaying_buff_board.iterate_units((buff, coord) =>
+        {
             this.canvas.paint_buff(coord, buff);
         });
     }
@@ -254,7 +243,7 @@ class RenderableGame implements IRenderableGame
     {
         let touches = event.changedTouches;
         let first = touches[0];
-        let type = ""
+        let type = "";
 
         switch (event.type)
         {
@@ -303,7 +292,7 @@ class RenderableGame implements IRenderableGame
         this.update_options(coord);
         this.render_indicators();
     }
-    
+
     on_mouse_up(event: MouseEvent): void
     {
         this.current = this.get_coordinate(event);
@@ -337,7 +326,7 @@ class RenderableGame implements IRenderableGame
             if (unit)
             {
                 this.options_capable = Rule.reachable_by(this.displaying_board, coord);
-                this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);    
+                this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);
                 this.options_recall = [];
             }
             else
@@ -362,8 +351,9 @@ class RenderableGame implements IRenderableGame
     render_board()
     {
         this.canvas.clear_canvas(this.canvas.st_ctx);
-        this.displaying_board.iterate_units((unit, coord) => {
-            this.canvas.paint_unit(CanvasUnitFactory(unit), coord)
+        this.displaying_board.iterate_units((unit, coord) =>
+        {
+            this.canvas.paint_unit(CanvasUnitFactory(unit), coord);
         });
     }
 }
@@ -399,7 +389,7 @@ class DisplayPlayerAction
         let first_arriver = new HashMap<Coordinate, true>();
         this.actions = player_action.actions.map((a: Action) =>
         {
-            let type = <DisplayActionType><unknown>a.type;
+            let type = <DisplayActionType> <unknown> a.type;
             if (a.type == ActionType.Attack || a.type == ActionType.Move)
             {
                 let arriver = first_arriver.get(a.move.to);

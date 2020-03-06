@@ -4,8 +4,6 @@ interface IActionPanel extends IComponent
 
 class ActionPanel implements IActionPanel 
 {
-    dom_element: HTMLDivElement;
-    game: IRenderableGame;
     dragging: null | {
         action: DisplayAction,
         offsetX: number,
@@ -23,9 +21,11 @@ class ActionPanel implements IActionPanel
         (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame, public context: IGameContext) {
-        this.dom_element = dom_element;
-        this.game = game;
+    constructor(
+        public dom_element: HTMLDivElement, 
+        public render_ctrl: IRenderController, 
+        public context: IGameContext) 
+    {
         this.dragging = null;
 
         DomHelper.applyStyle(this.dom_element, {
@@ -109,7 +109,7 @@ class ActionPanel implements IActionPanel
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
             this.context.delete_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
-            this.game.refresh();
+            this.render_ctrl.refresh();
             e.cancelBubble = true;
         });
 
@@ -202,7 +202,7 @@ class ActionPanel implements IActionPanel
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
-            this.game.highlight(action.action.move.from);
+            this.render_ctrl.highlight(action.action.move.from);
         });
 
         div.addEventListener("mouseleave", () => {
@@ -210,7 +210,7 @@ class ActionPanel implements IActionPanel
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
-            this.game.refresh();
+            this.render_ctrl.refresh();
         });
 
         return div;

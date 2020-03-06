@@ -1,6 +1,6 @@
 class Module
 {
-    game: IRenderableGame | null = null;
+    game: IRenderController | null = null;
 
     readonly cvs_size: number = 720;
     readonly board_size_x: number = 9;

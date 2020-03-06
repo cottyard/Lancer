@@ -5,11 +5,15 @@ interface IStatusBar
 
 class StatusBar implements IStatusBar
 {
-    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public online_game: IOnlineGame) {
+    constructor(
+        public dom_element: HTMLDivElement, 
+        public render_ctrl: IRenderController, 
+        public online_ctrl: IOnlineController, 
+        public context: IOnlineGameContext) {
     }
 
     render() {
-        let cost = this.game.context.action_cost(this.online_game.player);
+        let cost = this.context.action_cost(this.context.player);
         this.dom_element.innerHTML = "";
 
         DomHelper.applyStyle(this.dom_element, {
@@ -19,23 +23,23 @@ class StatusBar implements IStatusBar
             height: "40px"
         });
 
-        if (this.online_game.is_playing() || this.online_game.is_finished())
+        if (this.online_ctrl.is_playing() || this.online_ctrl.is_finished())
         {
             for (let player of Player.both())
             {
                 this.dom_element.appendChild(this.player_status(
                     player,
-                    this.game.context.player_name(player) || "",
-                    this.game.context.present.supply(player) || 0,
-                    this.game.context.present.supply_income(player),
+                    this.context.player_name(player) || "",
+                    this.context.present.supply(player) || 0,
+                    this.context.present.supply_income(player),
                     cost,
-                    player === this.online_game.player
+                    player === this.context.player
                 ));
                 
                 if (player == Player.P1)
                 {
                     this.dom_element.appendChild(DomHelper.createText(
-                        `Round ${this.game.context.present.round_count}`,
+                        `Round ${this.context.present.round_count}`,
                         {
                             'text-align': 'center',
                             fontWeight: "bold",
@@ -90,7 +94,7 @@ class StatusBar implements IStatusBar
 
         div.appendChild(DomHelper.createText(`(+${income})`));
 
-        let moved = this.online_game.has_moved(player);
+        let moved = this.context.moved(player);
         let text = null;
         if (moved)
         {
@@ -107,7 +111,7 @@ class StatusBar implements IStatusBar
             }));
         }
 
-        let consumed = this.online_game.consumed_milliseconds(player);
+        let consumed = this.context.consumed_milliseconds(player);
         if (consumed != undefined)
         {
             div.appendChild(DomHelper.createText(
@@ -124,12 +128,7 @@ class StatusBar implements IStatusBar
 
 class SolitudeStatusBar implements IStatusBar
 {
-    dom_element: HTMLDivElement;
-    game: IRenderableGame;
- 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame) {
-        this.dom_element = dom_element;
-        this.game = game;
+    constructor(public dom_element: HTMLDivElement, public game: IRenderController, public context: IGameContext) {
     }
 
     render() {
@@ -146,16 +145,16 @@ class SolitudeStatusBar implements IStatusBar
         {
             this.dom_element.appendChild(this.player_status(
                 player,
-                this.game.context.player_name(player) || "",
-                this.game.context.present.supply(player) || 0,
-                this.game.context.present.supply_income(player),
-                this.game.context.action_cost(player)
+                this.context.player_name(player) || "",
+                this.context.present.supply(player) || 0,
+                this.context.present.supply_income(player),
+                this.context.action_cost(player)
             ));
             
             if (player == Player.P1)
             {
                 this.dom_element.appendChild(DomHelper.createText(
-                    `Round ${this.game.context.present.round_count}`,
+                    `Round ${this.context.present.round_count}`,
                     {
                         'text-align': 'center',
                         fontWeight: "bold",

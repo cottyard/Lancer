@@ -19,7 +19,7 @@ function ui_solitude()
         button_bar: new class _ implements IButtonBar { render() {} }
     }
 
-    g.game = new RenderableGame(context, components);
+    g.game = new RenderController(context, components);
 
     components.action_panel = new ActionPanel(<HTMLDivElement>document.getElementById('action-panel'), g.game, context);
     components.status_bar = new SolitudeStatusBar(<HTMLDivElement>document.getElementById('status-bar'), g.game, context);

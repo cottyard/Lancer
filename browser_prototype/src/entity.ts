@@ -1,4 +1,4 @@
-class InvalidParameter extends Error {}
+class InvalidParameter extends Error { }
 
 class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 {
@@ -9,7 +9,7 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
             throw new InvalidParameter("Coordinate");
         }
     }
-    
+
     equals(other: Coordinate): boolean
     {
         return this.x == other.x && this.y == other.y;
@@ -21,7 +21,7 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
         {
             return new Coordinate(this.x + dx, this.y + dy);
         }
-        catch 
+        catch
         {
             return null;
         }
@@ -34,12 +34,12 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 
     hash(): string
     {
-        return `Coordinate(${this.x},${this.y})`;
+        return `Coordinate(${ this.x },${ this.y })`;
     }
 
     serialize(): string
     {
-        return `${this.x}${this.y}`;
+        return `${ this.x }${ this.y }`;
     }
 
     static deserialize(payload: string): Coordinate
@@ -51,9 +51,9 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 class Skill implements IHashable
 {
     constructor(public x: number, public y: number)
-    { 
-        if (! (-g.skill_range <= x && x <= g.skill_range && 
-               -g.skill_range <= y && y <= g.skill_range))
+    {
+        if (!(-g.skill_range <= x && x <= g.skill_range &&
+            -g.skill_range <= y && y <= g.skill_range))
         {
             throw new InvalidParameter("Skill");
         }
@@ -61,7 +61,7 @@ class Skill implements IHashable
 
     hash(): string 
     {
-        return `Skill(${this.x},${this.y})`;
+        return `Skill(${ this.x },${ this.y })`;
     }
 
     equals(other: Skill): boolean
@@ -79,12 +79,15 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
 {
     private map: boolean[][];
 
-    constructor(skills: Skill[] = []) {
+    constructor(skills: Skill[] = [])
+    {
         this.map = [];
 
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
             this.map[i] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            {
                 this.map[i][j] = false;
             }
         }
@@ -108,10 +111,12 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     serialize(): string
     {
         let map: number[][] = [];
-        
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
             map[i + g.skill_range] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            {
                 map[i + g.skill_range][j + g.skill_range] = this.map[i][j] ? 1 : 0;
             }
         }
@@ -123,8 +128,10 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     {
         let map = JSON.parse(payload);
         let sks = new SkillSet();
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
-            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
+            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            {
                 sks.map[i][j] = map[i + g.skill_range][j + g.skill_range] == 1;
             }
         }
@@ -153,8 +160,10 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     as_list(): Skill[]
     {
         let skills: Skill[] = [];
-        for (let dy = -g.skill_range; dy <= g.skill_range; dy++) {
-            for (let dx = -g.skill_range; dx <= g.skill_range; dx++) {
+        for (let dy = -g.skill_range; dy <= g.skill_range; dy++)
+        {
+            for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
+            {
                 if (this.map[dx][dy])
                 {
                     skills.push(new Skill(dx, dy));
@@ -176,10 +185,12 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     apply(operator: (a: boolean, b: boolean) => boolean, other: SkillSet): SkillSet
     {
         let result = new SkillSet();
-        
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
+
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
             result.map[i] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            {
                 result.map[i][j] = operator(this.map[i][j], other.map[i][j]);
             }
         }
@@ -191,7 +202,7 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     {
         return this.apply(SkillSet.op_union, other);
     }
-    
+
     subtract(other: SkillSet): SkillSet
     {
         return this.apply(SkillSet.op_subtract, other);
@@ -199,8 +210,10 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
 
     equals(other: SkillSet): boolean
     {
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
-            for (let j = -g.skill_range; j <= g.skill_range; j++) {
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
+            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            {
                 if (this.map[i][j] != other.map[i][j])
                 {
                     return false;
@@ -213,9 +226,11 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     flip(): SkillSet
     {
         let flipped = this.copy();
-        
-        for (let i = -g.skill_range; i <= g.skill_range; i++) {
-            for (let j = -g.skill_range; j < 0; j++) {
+
+        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        {
+            for (let j = -g.skill_range; j < 0; j++)
+            {
                 let c = flipped.map[i];
                 [c[j], c[-j]] = [c[-j], c[j]];
             }
@@ -223,7 +238,7 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
         return flipped;
     }
 }
-        
+
 enum Player
 {
     P1 = 1,
@@ -246,10 +261,10 @@ module Player
 }
 
 type Players<T> =
-{
-    [Player.P1]: T,
-    [Player.P2]: T,
-};
+    {
+        [Player.P1]: T,
+        [Player.P2]: T,
+    };
 
 function opponent(player: Player)
 {
@@ -258,7 +273,7 @@ function opponent(player: Player)
 
 function deserialize_player(payload: string): Player
 {
-    return <Player>Player[<keyof typeof Player>('P' + payload)];
+    return <Player> Player[<keyof typeof Player>('P' + payload)];
 }
 
 function serialize_player(player: Player)
@@ -359,7 +374,7 @@ class Action implements ICopyable<Action>
 
     standard_cost(): number
     {
-        switch(this.type)
+        switch (this.type)
         {
             case ActionType.Defend:
                 return 2;
@@ -391,7 +406,7 @@ class Action implements ICopyable<Action>
                     return 4;
                 }
             case ActionType.Recruit:
-                switch(this.unit_type)
+                switch (this.unit_type)
                 {
                     case Barbarian:
                     case Archer:
@@ -436,7 +451,8 @@ class PlayerAction
 
     cost(buff: FullBoard<Buff>): number
     {
-        return this.actions.map((a) => {
+        return this.actions.map((a) =>
+        {
             return a.cost(buff);
         }).reduce((a, b) => a + b, 0);
     }
@@ -484,12 +500,12 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
 
     copy(): Unit
     {
-        let ctor = <UnitConstructor>this.constructor;
+        let ctor = <UnitConstructor> this.constructor;
         let u = new ctor(this.owner);
         u.current = this.current.copy();
-        return u;        
+        return u;
     }
-    
+
     endow_inborn(): void
     {
         let inborn = g.inborn_skills.get(this.type());
@@ -502,7 +518,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
 
     type(): UnitConstructor
     {
-        return <UnitConstructor>this.constructor;
+        return <UnitConstructor> this.constructor;
     }
 
     endow(skill: Skill): boolean
@@ -574,9 +590,16 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
             return null;
         }
 
-        let promoted = new (<AdvancedUnitConstructor>ctor)(this.owner, this);
+        let promoted = new (<AdvancedUnitConstructor> ctor)(this.owner, this);
         promoted.endow(skill);
         return promoted;
+    }
+
+    static spawn_perfect(player: Player, ctor: UnitConstructor): Unit
+    {
+        let unit = new ctor(player, null);
+        unit.perfect.as_list().forEach(s => { unit.endow(s); });
+        return unit;
     }
 
     static spawn_from_skill(player: Player, skill: Skill): Unit | null
@@ -622,7 +645,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
 
 interface UnitConstructor extends IDeserializable<Unit>
 {
-    new (owner: Player): Unit;
+    new(owner: Player): Unit;
     deserialize(payload: string): Unit;
 }
 
@@ -631,8 +654,8 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
     static deserialize(payload: string): Unit
     {
         let display: string, owner: string, current: string;
-        [display, owner, current] = <[string, string, string]>JSON.parse(payload);
-        
+        [display, owner, current] = <[string, string, string]> JSON.parse(payload);
+
         let type = g.unit_type_by_name.get(display);
         if (!type)
         {
@@ -642,17 +665,17 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
         unit.current = SkillSet.deserialize(current);
         return unit;
     }
-}
+};
 
 interface BasicUnitConstructor extends UnitConstructor
 {
-    new (owner: Player): BasicUnit;
+    new(owner: Player): BasicUnit;
     discriminator: 'BasicUnitConstructor';
 }
 
 interface AdvancedUnitConstructor extends UnitConstructor
 {
-    new (owner: Player, was: BasicUnit | null): AdvancedUnit;
+    new(owner: Player, was: BasicUnit | null): AdvancedUnit;
     discriminator: 'AdvancedUnitConstructor';
 }
 
@@ -686,7 +709,7 @@ abstract class BasicUnit extends UnitConstructor
             for (let future_type of this.promotion_options)
             {
                 potentials = potentials.union(g.perfect_skills.get(
-                    <UnitConstructor>future_type)!);
+                    <UnitConstructor> future_type)!);
             }
         }
 
@@ -714,12 +737,12 @@ abstract class AdvancedUnit extends UnitConstructor
 const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends AdvancedUnit
 {
     static discriminator: 'AdvancedUnitConstructor' = 'AdvancedUnitConstructor';
-}
+};
 
 const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
 {
     static discriminator: 'BasicUnitConstructor' = 'BasicUnitConstructor';
-}
+};
 
 class Rider extends BasicUnitConstructor
 {

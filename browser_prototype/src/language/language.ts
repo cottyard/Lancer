@@ -1,18 +1,20 @@
-interface IDisposable 
+interface IDisposable
 {
     dispose(): void;
 }
 
-function using<T extends IDisposable>(resource: T, func: (resource: T) => void) 
+function using<T extends IDisposable>(resource: T, func: (resource: T) => void)
 {
-    try {
+    try
+    {
         func(resource);
-    } finally {
+    } finally
+    {
         resource.dispose();
     }
 }
 
-interface IHashable 
+interface IHashable
 {
     hash(): string;
 }
@@ -42,11 +44,11 @@ class HashMap<K extends IHashable, V>
 
 interface IDeserializable<T>
 {
-    new (...args: any[]): T;
+    new(...args: any[]): T;
     deserialize(payload: string): T;
 }
 
-interface ISerializable 
+interface ISerializable
 {
     serialize(): string;
 }
