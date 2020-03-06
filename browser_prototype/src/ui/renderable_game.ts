@@ -1,6 +1,5 @@
 interface IRenderableGame
 {
-    context: GameContext;
     displaying_board: Board<Unit>;
     refresh(): void;
     highlight(coord: Coordinate): void;
@@ -31,7 +30,7 @@ class RenderableGame implements IRenderableGame
     displaying_actions: Players<PlayerAction>;
 
     constructor(
-        public context: GameContext,
+        public context: IGameContext,
         public components: {
             action_panel: IActionPanel,
             status_bar: IStatusBar, 
@@ -55,7 +54,7 @@ class RenderableGame implements IRenderableGame
 
         //let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         //this._displaying_board = new board_ctor();
-        this.displaying_actions = this.context.player_actions;
+        this.displaying_actions = this.context.actions;
         this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
         this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
 
@@ -131,16 +130,16 @@ class RenderableGame implements IRenderableGame
 
     set show_last_round(value: boolean)
     {
-        if (value && this.context.last())
+        if (value && this.context.last)
         {
             this._show_last_round = true;
             this.displaying_actions = this.context.present.last_actions!;
-            this.displaying_board = this.context.last()!.board;
+            this.displaying_board = this.context.last!.board;
         }
         else if (!value)
         {
             this._show_last_round = false;
-            this.displaying_actions = this.context.player_actions;
+            this.displaying_actions = this.context.actions;
             this.displaying_board = this.context.present.board;
         }
     }
@@ -314,7 +313,7 @@ class RenderableGame implements IRenderableGame
 
             for (let player of Player.both())
             {
-                this.context.move(player).extract((move: Move): move is Move => move.from.equals(selected));
+                this.context.filter_moves(player, (move: Move): move is Move => move.from.equals(selected));
                 this.context.prepare_move(player, new Move(this.selected, this.current));
             }
         }

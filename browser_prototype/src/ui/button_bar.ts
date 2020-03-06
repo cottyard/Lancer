@@ -12,7 +12,7 @@ class ButtonBar implements IButtonBar
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public online_game: IOnlineGame) {
+    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public online_game: IOnlineGame, public context: IGameContext) {
     }
 
     set view_last_round(value: boolean)
@@ -77,7 +77,7 @@ class ButtonBar implements IButtonBar
     }
 
     render() {
-        let cost = this.game.context.action_cost(this.online_game.player);
+        let cost = this.context.action_cost(this.online_game.player);
         
         this.dom_element.innerHTML = "";
 
@@ -104,7 +104,7 @@ class ButtonBar implements IButtonBar
             }
 
             let player_name = DomHelper.createTextArea();
-            player_name.textContent = this.game.context.player_name(this.online_game.player);
+            player_name.textContent = this.context.player_name(this.online_game.player);
             player_name.onfocus = () => { player_name.select() };
             player_name.onkeyup = () => {
                 if (player_name.value) { 
@@ -129,7 +129,7 @@ class ButtonBar implements IButtonBar
         
             if (this.online_game.status == OnlineGameStatus.WaitForPlayer)
             {
-                let supply = this.game.context.present.supply(this.online_game.player);
+                let supply = this.context.present.supply(this.online_game.player);
                 if (supply == undefined)
                 {
                     throw new Error("cannot get game supply");
@@ -218,7 +218,7 @@ class ButtonBar implements IButtonBar
                 }
             };
 
-            if (!this.game.context.last())
+            if (!this.context.last)
             {
                 this.last_round.disabled = true;
             }
@@ -258,8 +258,8 @@ class SolitudeButtonBar implements IButtonBar
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame) {
-        game.context.on_next(this.render.bind(this));
+    constructor(public dom_element: HTMLDivElement, public game: IRenderableGame, public context: IGameContext) {
+        context.on_new(this.render.bind(this));
     }
 
     set view_last_round(value: boolean)
@@ -338,8 +338,8 @@ class SolitudeButtonBar implements IButtonBar
         let insufficient = false;
         for (let player of Player.both())
         {
-            let supply = this.game.context.present.supply(player)!;
-            let cost = this.game.context.action_cost(player);
+            let supply = this.context.present.supply(player)!;
+            let cost = this.context.action_cost(player);
             if (cost > supply)
             {
                 insufficient = true;
@@ -357,7 +357,7 @@ class SolitudeButtonBar implements IButtonBar
             apply_button.onclick = () => { 
                 for (let player of Player.both())
                 {
-                    this.game.context.make_move(player);
+                    this.context.make_move(player);
                 }
                 this.game.show_present();
             };
@@ -366,7 +366,7 @@ class SolitudeButtonBar implements IButtonBar
         this.dom_element.appendChild(apply_button);
         this.apply = apply_button;
         
-        let game_status = this.game.context.present.status();
+        let game_status = this.context.present.status();
         if (game_status != GameStatus.Ongoing)
         {
             let text: string;
@@ -425,7 +425,7 @@ class SolitudeButtonBar implements IButtonBar
             }
         };
 
-        if (!this.game.context.last())
+        if (!this.context.last)
         {
             this.last_round.disabled = true;
         }

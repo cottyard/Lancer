@@ -139,9 +139,10 @@ class Game
 
 interface IGameContext
 {
-    last(): Game | null;
-    buff(): FullBoard<Buff>;
-    moved(player: Player): boolean;
+    last: Game | null;
+    buff: FullBoard<Buff>;
+    present: Game;
+    actions: Players<PlayerAction>;
     move(player: Player): PlayerMove;
     action(player: Player): PlayerAction;
     action_cost(player: Player): number;
@@ -150,7 +151,23 @@ interface IGameContext
     filter_moves(player: Player, filter: (move: Move) => move is Move): Move[];
     make_move(player: Player): void;
     player_name(player: Player): string;
-    on_next(listener: Function): void;
+    on_new(listener: Function): void;
+}
+
+interface IOnlineGameContext
+{
+    last(): Game | null;
+    buff(): FullBoard<Buff>;
+    moved(player: Player): boolean;
+    move(): PlayerMove;
+    action(): PlayerAction;
+    action_cost(): number;
+    prepare_move(move: Move): boolean;
+    prepare_moves(moves: Move[]): boolean;
+    filter_moves(filter: (move: Move) => move is Move): Move[];
+    make_move(): void;
+    player_name(player: Player): string;
+    on_new(listener: Function): void;
 }
 
 class GameContext implements IGameContext
@@ -174,12 +191,12 @@ class GameContext implements IGameContext
         [Player.P2]: new PlayerAction(Player.P2),
     }
 
-    constructor(public player_names: Players<string>, public present: Game)
+    constructor(public player_names: Players<string>, private _present: Game)
     {
-        this._buff = Rule.get_buff(present.board);
+        this._buff = Rule.get_buff(_present.board);
     }
 
-    last(): Game | null
+    get last(): Game | null
     {
         if (this.history.length > 0)
         {
@@ -188,12 +205,22 @@ class GameContext implements IGameContext
         return null;
     }
 
-    buff(): FullBoard<Buff>
+    get present(): Game
+    {
+        return this._present;
+    }
+
+    get buff(): FullBoard<Buff>
     {
         return this._buff;
     }
 
-    on_next(listener: Function)
+    get actions(): Players<PlayerAction>
+    {
+        return this.player_actions;
+    }
+
+    on_new(listener: Function)
     {
         this.listeners.push(listener);
     }
@@ -227,7 +254,7 @@ class GameContext implements IGameContext
 
     update_action(player: Player)
     {
-        this.player_actions[player] = Rule.validate_player_move(this.present.board, this.player_moves[player]);
+        this.player_actions[player] = Rule.validate_player_move(this._present.board, this.player_moves[player]);
         this.player_actions[player].actions.sort((a1, a2) => a2.type - a1.type);
     }
 
@@ -277,15 +304,15 @@ class GameContext implements IGameContext
         let next_game;
         try
         {
-            next_game = this.present.make_move(this.player_moves);
+            next_game = this._present.make_move(this.player_moves);
         }
         catch
         {
             return false;
         }
-        this.history.push(this.present);
-        this.present = next_game;
-        this._buff = Rule.get_buff(this.present.board);
+        this.history.push(this._present);
+        this._present = next_game;
+        this._buff = Rule.get_buff(this._present.board);
 
         for (let player of Player.both())
         {
@@ -307,6 +334,9 @@ class GameContext implements IGameContext
     }
 }
 
+
+
 // class OnlineGameContext implements IGameContext
 // {
+
 // }

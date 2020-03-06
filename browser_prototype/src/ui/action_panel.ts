@@ -23,7 +23,7 @@ class ActionPanel implements IActionPanel
         (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
-    constructor(dom_element: HTMLDivElement, game: IRenderableGame) {
+    constructor(dom_element: HTMLDivElement, game: IRenderableGame, public context: IGameContext) {
         this.dom_element = dom_element;
         this.game = game;
         this.dragging = null;
@@ -41,7 +41,7 @@ class ActionPanel implements IActionPanel
         
         for (let player of Player.both())
         {
-            new DisplayPlayerAction(this.game.context.action(player)).actions.forEach((action, index) => {
+            new DisplayPlayerAction(this.context.action(player)).actions.forEach((action, index) => {
                 this.dom_element.appendChild(this.renderAction(action, index));
             });
         }
@@ -87,7 +87,7 @@ class ActionPanel implements IActionPanel
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.game.context.buff()).toString(),
+            "🍞" + action.action.cost(this.context.buff).toString(),
             {'font-weight': 'bold'}
         ));
 
@@ -108,7 +108,7 @@ class ActionPanel implements IActionPanel
             });
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
-            this.game.context.move(action.player).extract((m): m is Move => m.equals(action.action.move));
+            this.context.filter_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
             e.cancelBubble = true;
         });
 
@@ -157,7 +157,7 @@ class ActionPanel implements IActionPanel
             const dragging_move = this.dragging.action.action.move;
 
             let player = this.dragging.action.player;
-            const ordered_moves = this.game.context.move(player).moves
+            const ordered_moves = this.context.move(player).moves
                 .map((move, index) => {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
                     return {move, order};
@@ -165,7 +165,7 @@ class ActionPanel implements IActionPanel
                 .sort((a, b) => a.order - b.order)
                 .map(({move}) => move);
         
-            this.game.context.prepare_moves(player, ordered_moves);
+            this.context.prepare_moves(player, ordered_moves);
 
             this.dragging.placeholder.remove();
             this.dragging = null;
@@ -223,18 +223,18 @@ class ActionPanel implements IActionPanel
         }
         else if (action.type === DisplayActionType.Recall)
         {
-            return this.game.context.present.board.at(action.action.move.to)!;
+            return this.context.present.board.at(action.action.move.to)!;
         }
         else
         {
-            return this.game.context.present.board.at(action.action.move.from)!;
+            return this.context.present.board.at(action.action.move.from)!;
         }
     }
 
     getTargetUnit(action: DisplayAction): Unit | null {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.game.context.present.board.at(action.action.move.to);
+            return this.context.present.board.at(action.action.move.to);
         }
         return null;
     }

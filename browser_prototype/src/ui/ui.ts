@@ -21,9 +21,9 @@ function ui_solitude()
 
     g.game = new RenderableGame(context, components);
 
-    components.action_panel = new ActionPanel(<HTMLDivElement>document.getElementById('action-panel'), g.game);
-    components.status_bar = new SolitudeStatusBar(<HTMLDivElement>document.getElementById('status-bar'), g.game);
-    components.button_bar = new SolitudeButtonBar(<HTMLDivElement>document.getElementById('button-bar'), g.game);
+    components.action_panel = new ActionPanel(<HTMLDivElement>document.getElementById('action-panel'), g.game, context);
+    components.status_bar = new SolitudeStatusBar(<HTMLDivElement>document.getElementById('status-bar'), g.game, context);
+    components.button_bar = new SolitudeButtonBar(<HTMLDivElement>document.getElementById('button-bar'), g.game, context);
 
     g.game.run();
 }
