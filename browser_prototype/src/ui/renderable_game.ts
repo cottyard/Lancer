@@ -110,7 +110,6 @@ class RenderableGame implements IRenderableGame
     refresh()
     {
         this.render_indicators();
-        this.components.status_bar.render();
         this.components.button_bar.render();
     }
 
@@ -188,7 +187,7 @@ class RenderableGame implements IRenderableGame
         {
             this.render_heat();
         }
-        for (let player_action of Player.values(this.displaying_actions))
+        for (let player_action of Array.from(Player.values(this.displaying_actions)))
         {
             this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
         }
@@ -200,6 +199,7 @@ class RenderableGame implements IRenderableGame
             }
         }
         this.components.action_panel.render();
+        this.components.status_bar.render();
     }
 
     clear_grid_incicators(): void
@@ -309,18 +309,18 @@ class RenderableGame implements IRenderableGame
         this.current = this.get_coordinate(event);
         if (this.selected && !this.show_last_round)
         {
-            let selected = this.selected;
-
             for (let player of Player.both())
             {
-                this.context.filter_moves(player, (move: Move): move is Move => move.from.equals(selected));
-                this.context.prepare_move(player, new Move(this.selected, this.current));
+                if (this.context.prepare_move(player, new Move(this.selected, this.current)))
+                {
+                    break;
+                }
             }
         }
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);
-        this.render_indicators();
+        this.refresh();
     }
 
     update_options(coord: Coordinate)

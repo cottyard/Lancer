@@ -70,7 +70,7 @@ class OnlineGame implements IOnlineGame
         }
     }
 
-    status(): OnlineGameStatus
+    get status(): OnlineGameStatus
     {
         return this._status;
     }

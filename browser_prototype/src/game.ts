@@ -148,33 +148,22 @@ interface IGameContext
     action_cost(player: Player): number;
     prepare_move(player: Player, move: Move): boolean;
     prepare_moves(player: Player, moves: Move[]): boolean;
-    filter_moves(player: Player, filter: (move: Move) => move is Move): Move[];
+    delete_moves(player: Player, filter: (move: Move) => move is Move): Move[];
     make_move(player: Player): void;
     player_name(player: Player): string;
     on_new(listener: Function): void;
 }
 
-interface IOnlineGameContext
+interface IOnlineGameContext extends IGameContext
 {
-    last(): Game | null;
-    buff(): FullBoard<Buff>;
-    moved(player: Player): boolean;
-    move(): PlayerMove;
-    action(): PlayerAction;
-    action_cost(): number;
-    prepare_move(move: Move): boolean;
-    prepare_moves(moves: Move[]): boolean;
-    filter_moves(filter: (move: Move) => move is Move): Move[];
-    make_move(): void;
-    player_name(player: Player): string;
-    on_new(listener: Function): void;
+    player: Player;
 }
 
 class GameContext implements IGameContext
 {
-    private _buff: FullBoard<Buff>;
-    private history: Game[] = [];
-    private listeners: Function[] = [];
+    protected _buff: FullBoard<Buff>;
+    protected history: Game[] = [];
+    protected listeners: Function[] = [];
 
     readonly player_moved: Players<boolean> = {
         [Player.P1]: false,
@@ -182,7 +171,7 @@ class GameContext implements IGameContext
     };
     
     readonly player_moves: Players<PlayerMove> = {
-        [Player.P1]: new PlayerMove(Player.P1),
+        [Player.P1]: new PlayerMove(Player.P1),   
         [Player.P2]: new PlayerMove(Player.P2),
     };
 
@@ -191,7 +180,7 @@ class GameContext implements IGameContext
         [Player.P2]: new PlayerAction(Player.P2),
     }
 
-    constructor(public player_names: Players<string>, private _present: Game)
+    constructor(protected player_names: Players<string>, protected _present: Game)
     {
         this._buff = Rule.get_buff(_present.board);
     }
@@ -245,9 +234,9 @@ class GameContext implements IGameContext
         return this.player_actions[player].cost(this._buff);
     }
 
-    filter_moves(player: Player, keep: (move: Move) => move is Move)
+    delete_moves(player: Player, which: (move: Move) => move is Move)
     {
-        let removed = this.player_moves[player].extract(keep);
+        let removed = this.player_moves[player].extract(which);
         this.update_action(player);
         return removed;
     }
@@ -260,6 +249,7 @@ class GameContext implements IGameContext
 
     prepare_move(player: Player, move: Move): boolean
     {
+        this.delete_moves(player, (m: Move): m is Move => m.from.equals(move.from));
         this.player_moves[player].moves.push(move);
         try
         {
@@ -334,9 +324,15 @@ class GameContext implements IGameContext
     }
 }
 
+class OnlineGameContext extends GameContext implements IOnlineGameContext
+{
+    constructor(public player: Player, public player_names: Players<string>, public _present: Game)
+    {
+        super(player_names, _present);
+    }
 
+    make_move(): void
+    {
 
-// class OnlineGameContext implements IGameContext
-// {
-
-// }
+    }
+}

@@ -108,7 +108,8 @@ class ActionPanel implements IActionPanel
             });
         });
         cross.addEventListener("mousedown", (e: MouseEvent) => {
-            this.context.filter_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
+            this.context.delete_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
+            this.game.refresh();
             e.cancelBubble = true;
         });
 

@@ -333,7 +333,7 @@ class SolitudeButtonBar implements IButtonBar
             height: "40px"
         });
 
-        let apply_button = DomHelper.createButton();
+        let next_round_button = DomHelper.createButton();
     
         let insufficient = false;
         for (let player of Player.both())
@@ -348,13 +348,13 @@ class SolitudeButtonBar implements IButtonBar
 
         if (insufficient)
         {
-            apply_button.disabled = true;
-            apply_button.innerText = "Insufficient supply";
+            next_round_button.disabled = true;
+            next_round_button.innerText = "Insufficient supply";
         }
         else
         {
-            apply_button.innerText = "Next Round";
-            apply_button.onclick = () => { 
+            next_round_button.innerText = "Next Round";
+            next_round_button.onclick = () => { 
                 for (let player of Player.both())
                 {
                     this.context.make_move(player);
@@ -363,8 +363,8 @@ class SolitudeButtonBar implements IButtonBar
             };
         }
     
-        this.dom_element.appendChild(apply_button);
-        this.apply = apply_button;
+        this.dom_element.appendChild(next_round_button);
+        this.apply = next_round_button;
         
         let game_status = this.context.present.status();
         if (game_status != GameStatus.Ongoing)
