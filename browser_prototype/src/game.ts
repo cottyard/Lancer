@@ -216,7 +216,12 @@ interface IOnlineGameContext extends IGameContext
     player: Player;
     moved(player: Player): boolean;
     consumed_milliseconds(player: Player): number;
+    new_session(player_name: string): void;
     on_new_status(listener: Function): void;
+    on_new_session(listener: Function): void;
+    on_loading(listener: Function): void;
+    on_move(listener: Function): void;
+    load_session(session: string, player_name: string): void;
 }
 
 class GameContext implements IGameContext
@@ -381,31 +386,56 @@ class GameContext implements IGameContext
 
 class OnlineGameContext extends GameContext implements IOnlineGameContext
 {
+    player: Player = Player.P1;
+    current_player_name: string = '';
     round_begin_time: Date = new Date();
+    session_id: string | null = null;
     latest_game_id: string | null = null;
     current_game_id: string | null = null;
     query_handle: number;
     _status: GameStatus = GameStatus.Ongoing;
     status_listeners: Function[] = [];
+    loading_listeners: Function[] = [];
+    session_listeners: ((session_id: string) => void)[] = [];
+    move_listeners: (() => void)[] = [];
 
-    _consumed_milliseconds: Players<number> = {
-        [Player.P1]: 0,
-        [Player.P2]: 0,
-    };
+    _consumed_milliseconds: Players<number> = Players.empty(() => 0);
 
-    constructor(
-        public player: Player,
-        public session_id: string,
-        public player_names: Players<string>
-    )
+    constructor()
     {
-        super(player_names, Game.new_showcase());
-        this.query_handle = setInterval(() => query_match(this.session_id, this.query_session), 2000);
+        super(Players.empty(() => ''), Game.new_showcase());
+        this.query_handle = setInterval(() =>
+        {
+            if (this.session_id)
+            {
+                query_match(this.session_id, this.query_session.bind(this));
+            }
+        }, 2000);
     }
 
     get status(): GameStatus
     {
         return this._status;
+    }
+
+    new_session(player_name: string)
+    {
+        new_game(player_name, (session: string) =>
+        {
+            this.load_session(session, player_name);
+            for (let listener of this.session_listeners)
+            {
+                listener(session);
+            }
+        });
+    }
+
+    load_session(session: string, player_name: string)
+    {
+        this.session_id = session;
+        this.current_player_name = player_name;
+        this.latest_game_id = null;
+        this.current_game_id = null;
     }
 
     consumed_milliseconds(player: Player): number
@@ -418,14 +448,34 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         this.status_listeners.push(listener);
     }
 
-    //this.set_status(OnlineGameStatus.WaitForOpponent);
+    on_new_session(listener: (session_id: string) => void)
+    {
+        this.session_listeners.push(listener);
+    }
+
+    on_loading(listener: Function)
+    {
+        this.loading_listeners.push(listener);
+    }
+
+    on_move(listener: () => void)
+    {
+        this.move_listeners.push(listener);
+    }
+
     make_move(): void
     {
         let move = this.move(this.player);
         if (this.current_game_id && move)
         {
             let milliseconds_consumed: number = new Date().getTime() - this.round_begin_time.getTime();
-            submit_move(this.current_game_id, move, milliseconds_consumed, (_: string) => { });
+            submit_move(this.current_game_id, move, milliseconds_consumed, (_: string) =>
+            {
+                for (let listener of this.move_listeners)
+                {
+                    listener();
+                }
+            });
         }
     }
 
@@ -441,15 +491,13 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
             return;
         }
 
-        //this.set_status(OnlineGameStatus.Loading);
+        for (let listener of this.loading_listeners)
+        {
+            listener();
+        }
+
         fetch_game(this.latest_game_id, (serialized_game) =>
         {
-            // let game_payload: string;
-            // let game_id: string;
-            // let game_status: number;
-            // let player_name_map: any;
-            // let player_time_map: any;
-
             let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
             console.log('loading game', game_id);
 
@@ -460,11 +508,23 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
 
             this.current_game_id = game_id;
 
+            let name_valid = false;
             for (let p in player_name_map)
             {
                 let player = deserialize_player(p);
                 let name = player_name_map[p];
                 this.player_names[player] = name;
+
+                if (this.current_player_name == name)
+                {
+                    this.player = player;
+                    name_valid = true;
+                }
+            }
+
+            if (!name_valid)
+            {
+                throw new Error("player name not found in game");
             }
 
             for (let p in player_time_map)
@@ -486,7 +546,6 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         super.next(game);
     }
 
-    //this._status = OnlineGameStatus.NotStarted;
     query_session(session_status: string)
     {
         let status = JSON.parse(session_status);
@@ -495,7 +554,6 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
 
         if (!this.latest_game_id)
         {
-            //this._status = OnlineGameStatus.InQueue;
             return;
         }
 

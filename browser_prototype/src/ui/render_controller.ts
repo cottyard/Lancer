@@ -7,7 +7,7 @@ interface IRenderController
     show_present(): void;
     show_heat(): void;
     hide_heat(): void;
-    run(): void;
+    refresh_all(): void;
 }
 
 class RenderController implements IRenderController
@@ -32,9 +32,9 @@ class RenderController implements IRenderController
     constructor(
         public context: IGameContext,
         public components: {
-            action_panel: IActionPanel,
-            status_bar: IStatusBar,
-            button_bar: IButtonBar;
+            action_panel: IComponent,
+            status_bar: IComponent,
+            button_bar: IComponent;
         })
     {
         this.canvas = new GameCanvas(
@@ -52,7 +52,7 @@ class RenderController implements IRenderController
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        this.displaying_actions = this.context.actions;
+        this.displaying_actions = Players.empty((p) => new PlayerAction(p));
         this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
         this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
 
@@ -62,7 +62,7 @@ class RenderController implements IRenderController
         this.displaying_board = this.context.present.board;
     }
 
-    run()
+    refresh_all()
     {
         this.render_board();
         this.refresh();

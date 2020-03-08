@@ -1,18 +1,13 @@
-interface IStatusBar
-{
-    render(): void;
-}
-
-class StatusBar implements IStatusBar
+class StatusBar implements IComponent
 {
     constructor(
-        public dom_element: HTMLDivElement, 
-        public render_ctrl: IRenderController, 
-        public online_ctrl: IOnlineController, 
-        public context: IOnlineGameContext) {
+        public dom_element: HTMLDivElement,
+        public context: IOnlineGameContext)
+    {
     }
 
-    render() {
+    render()
+    {
         let cost = this.context.action_cost(this.context.player);
         this.dom_element.innerHTML = "";
 
@@ -23,34 +18,32 @@ class StatusBar implements IStatusBar
             height: "40px"
         });
 
-        if (this.online_ctrl.is_playing() || this.online_ctrl.is_finished())
+        for (let player of Player.both())
         {
-            for (let player of Player.both())
+            this.dom_element.appendChild(this.player_status(
+                player,
+                this.context.player_name(player) || "",
+                this.context.present.supply(player) || 0,
+                this.context.present.supply_income(player),
+                cost,
+                player === this.context.player
+            ));
+
+            if (player == Player.P1)
             {
-                this.dom_element.appendChild(this.player_status(
-                    player,
-                    this.context.player_name(player) || "",
-                    this.context.present.supply(player) || 0,
-                    this.context.present.supply_income(player),
-                    cost,
-                    player === this.context.player
-                ));
-                
-                if (player == Player.P1)
-                {
-                    this.dom_element.appendChild(DomHelper.createText(
-                        `Round ${this.context.present.round_count}`,
-                        {
-                            'text-align': 'center',
-                            fontWeight: "bold",
-                            flexGrow: 1,
-                        }));
-                }
+                this.dom_element.appendChild(DomHelper.createText(
+                    `Round ${ this.context.present.round_count }`,
+                    {
+                        'text-align': 'center',
+                        fontWeight: "bold",
+                        flexGrow: 1,
+                    }));
             }
         }
     }
-    
-    timestamp(consumed: number) {
+
+    timestamp(consumed: number)
+    {
         function display(v: number): string
         {
             let display = v.toString();
@@ -61,7 +54,7 @@ class StatusBar implements IStatusBar
         let _minutes = (_seconds - seconds) / 60;
         let minutes = _minutes % 60;
         let _hours = (_minutes - minutes) / 60;
-        return `${display(_hours)}:${display(minutes)}:${display(seconds)}`;
+        return `${ display(_hours) }:${ display(minutes) }:${ display(seconds) }`;
     }
 
     player_status(
@@ -71,7 +64,8 @@ class StatusBar implements IStatusBar
         income: number,
         cost: number,
         is_me: boolean
-    ): HTMLElement {
+    ): HTMLElement
+    {
         const div = DomHelper.createDiv({
             display: "flex",
             flexDirection: "row",
@@ -92,7 +86,7 @@ class StatusBar implements IStatusBar
             marginRight: "5px"
         }));
 
-        div.appendChild(DomHelper.createText(`(+${income})`));
+        div.appendChild(DomHelper.createText(`(+${ income })`));
 
         let moved = this.context.moved(player);
         let text = null;
@@ -126,12 +120,14 @@ class StatusBar implements IStatusBar
     }
 }
 
-class SolitudeStatusBar implements IStatusBar
+class SolitudeStatusBar implements IComponent
 {
-    constructor(public dom_element: HTMLDivElement, public game: IRenderController, public context: IGameContext) {
+    constructor(public dom_element: HTMLDivElement, public context: IGameContext)
+    {
     }
 
-    render() {
+    render()
+    {
         this.dom_element.innerHTML = "";
 
         DomHelper.applyStyle(this.dom_element, {
@@ -150,11 +146,11 @@ class SolitudeStatusBar implements IStatusBar
                 this.context.present.supply_income(player),
                 this.context.action_cost(player)
             ));
-            
+
             if (player == Player.P1)
             {
                 this.dom_element.appendChild(DomHelper.createText(
-                    `Round ${this.context.present.round_count}`,
+                    `Round ${ this.context.present.round_count }`,
                     {
                         'text-align': 'center',
                         fontWeight: "bold",
@@ -163,14 +159,15 @@ class SolitudeStatusBar implements IStatusBar
             }
         }
     }
-    
+
     player_status(
         player: Player,
         name: string,
         supply: number,
         income: number,
         cost: number
-    ): HTMLElement {
+    ): HTMLElement
+    {
         const div = DomHelper.createDiv({
             display: "flex",
             flexDirection: "row",
@@ -191,7 +188,7 @@ class SolitudeStatusBar implements IStatusBar
             marginRight: "5px"
         }));
 
-        div.appendChild(DomHelper.createText(`(+${income})`));
+        div.appendChild(DomHelper.createText(`(+${ income })`));
         return div;
     }
 }

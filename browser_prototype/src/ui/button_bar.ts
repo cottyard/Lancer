@@ -1,9 +1,4 @@
-interface IButtonBar
-{
-    render(): void;
-}
-
-class ButtonBar implements IButtonBar
+class ButtonBar implements IComponent
 {
     submit: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
@@ -15,8 +10,7 @@ class ButtonBar implements IButtonBar
     constructor(
         public dom_element: HTMLDivElement,
         public render_ctrl: IRenderController,
-        public online_ctrl: IOnlineController,
-        public context: IOnlineGameContext)
+        public online_ctrl: IOnlineController)
     {
     }
 
@@ -83,8 +77,6 @@ class ButtonBar implements IButtonBar
 
     render()
     {
-        let cost = this.context.action_cost(this.context.player);
-
         this.dom_element.innerHTML = "";
 
         DomHelper.applyStyle(this.dom_element, {
@@ -110,7 +102,7 @@ class ButtonBar implements IButtonBar
             }
 
             let player_name = DomHelper.createTextArea();
-            player_name.textContent = this.context.player_name(this.context.player);
+            player_name.textContent = this.online_ctrl.get_name();
             player_name.onfocus = () => { player_name.select(); };
             player_name.onkeyup = () =>
             {
@@ -137,13 +129,7 @@ class ButtonBar implements IButtonBar
 
             if (this.online_ctrl.status == OnlineGameStatus.WaitForPlayer)
             {
-                let supply = this.context.present.supply(this.context.player);
-                if (supply == undefined)
-                {
-                    throw new Error("cannot get game supply");
-                }
-
-                if (cost > supply)
+                if (!this.online_ctrl.adequate_supply())
                 {
                     submit_button.disabled = true;
                     submit_button.innerText = "Insufficient supply";
@@ -151,7 +137,7 @@ class ButtonBar implements IButtonBar
                 else
                 {
                     submit_button.innerText = "Submit Move";
-                    submit_button.onclick = () => { this.context.make_move(this.context.player); };
+                    submit_button.onclick = () => { this.online_ctrl.submit_move(); };
                 }
             }
             else if (this.online_ctrl.status == OnlineGameStatus.WaitForOpponent)
@@ -173,18 +159,17 @@ class ButtonBar implements IButtonBar
         {
             let text: string;
 
-            if (this.online_ctrl.status == OnlineGameStatus.Tied)
+            if (this.online_ctrl.status == OnlineGameStatus.Defeated)
             {
-                text = 'Game is tied.';
+                text = 'You are defeated.';
             }
-            else if ((this.online_ctrl.status == OnlineGameStatus.WonByPlayer1 && this.context.player == Player.P1) ||
-                (this.online_ctrl.status == OnlineGameStatus.WonByPlayer2 && this.context.player == Player.P2))
+            else if (this.online_ctrl.status == OnlineGameStatus.Victorious)
             {
                 text = 'You are victorious!';
             }
             else
             {
-                text = 'You are defeated.';
+                text = 'Game is tied.';
             }
 
             let status = DomHelper.createText(text, {
@@ -230,10 +215,11 @@ class ButtonBar implements IButtonBar
                 }
             };
 
-            if (!this.context.last)
+            if (this.online_ctrl.is_first_round())
             {
                 this.last_round.disabled = true;
             }
+
             this.dom_element.appendChild(this.last_round);
 
             this.heat = DomHelper.createButton();
@@ -264,7 +250,7 @@ class ButtonBar implements IButtonBar
     }
 }
 
-class SolitudeButtonBar implements IButtonBar
+class SolitudeButtonBar implements IComponent
 {
     apply: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;

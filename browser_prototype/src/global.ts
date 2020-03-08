@@ -1,6 +1,6 @@
 class Module
 {
-    game: IRenderController | null = null;
+    game: IOnlineController | null = null;
 
     readonly cvs_size: number = 720;
     readonly board_size_x: number = 9;
@@ -43,115 +43,115 @@ class Module
     display_action_style = new Map<DisplayActionType, string>();
     action_style = new Map<ActionType, string>();
 
-    readonly perfect_skills_literal: { [unit_name: string]: string | undefined } =
-    {
-        'King':
-            `-----
+    readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
+        {
+            'King':
+                `-----
             --x--
             -x-x-
             --x--
             -----`,
-        'Rider':
-            `-x-x-
+            'Rider':
+                `-x-x-
             x---x
             -----
             x---x
             -x-x-`,
-        'Lancer':
-            `-xxx-
+            'Lancer':
+                `-xxx-
             x---x
             x---x
             x---x
             -xxx-`,
-        'Knight':
-            `-x-x-
+            'Knight':
+                `-x-x-
             xx-xx
             -----
             xx-xx
             -x-x-`,
-        'Soldier':
-            `-----
+            'Soldier':
+                `-----
             --x--
             -x-x-
             --x--
             -----`,
-        'Swordsman':
-            `-----
+            'Swordsman':
+                `-----
             -xxx-
             -x-x-
             -xxx-
             -----`,
-        'Spearman':
-            `--x--
+            'Spearman':
+                `--x--
             --x--
             xx-xx
             --x--
             --x--`,
-        'Archer':
-            `--x--
+            'Archer':
+                `--x--
             -----
             x---x
             -----
             --x--`,
-        'Barbarian':
-            `-----
+            'Barbarian':
+                `-----
             -x-x-
             -----
             -x-x-
             -----`,
-        'Warrior':
-            `--x--
+            'Warrior':
+                `--x--
             -x-x-
             x---x
             -x-x-
             --x--`,
-        'Wagon':
-            `-----
+            'Wagon':
+                `-----
             --x--
             -x-x-
             --x--
             -----`
-    };
+        };
 
-    readonly inborn_skills_literal: { [unit_name: string]: string | undefined } =
-    {
-        'King':
-            `-----
+    readonly inborn_skills_literal: { [unit_name: string]: string | undefined; } =
+        {
+            'King':
+                `-----
             --x--
             -x-x-
             --x--
             -----`,
-        'Rider':
-            `-x-x-
+            'Rider':
+                `-x-x-
             -----
             -----
             -----
             -----`,
-        'Soldier':
-            `-----
+            'Soldier':
+                `-----
             --x--
             -----
             --x--
             -----`,
-        'Archer':
-            `--x--
+            'Archer':
+                `--x--
             -----
             -----
             -----
             --x--`,
-        'Barbarian':
-            `-----
+            'Barbarian':
+                `-----
             -x-x-
             -----
             -----
             -----`,
-        'Wagon':
-            `-----
+            'Wagon':
+                `-----
             -----
             -----
             -----
             -----`
-    };
+        };
 
     readonly spawning_skills_literal: string =
         `-xxx-
@@ -172,19 +172,19 @@ class Module
             let literal = this.perfect_skills_literal[type.name];
             if (!literal)
             {
-                throw new Error(`${type.name} not found`);
+                throw new Error(`${ type.name } not found`);
             }
             this.perfect_skills.set(
-                type, 
+                type,
                 SkillSet.from_literal(literal)
             );
-        
+
             let inborn = this.inborn_skills_literal[type.name];
-        
+
             if (inborn)
             {
                 this.inborn_skills.set(
-                    type, 
+                    type,
                     SkillSet.from_literal(inborn)
                 );
             }

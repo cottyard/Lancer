@@ -1,8 +1,4 @@
-interface IActionPanel extends IComponent
-{
-}
-
-class ActionPanel implements IActionPanel 
+class ActionPanel implements IComponent
 {
     dragging: null | {
         action: DisplayAction,
@@ -22,8 +18,8 @@ class ActionPanel implements IActionPanel
     );
 
     constructor(
-        public dom_element: HTMLDivElement, 
-        public render_ctrl: IRenderController, 
+        public dom_element: HTMLDivElement,
+        public render_ctrl: IRenderController,
         public context: IGameContext) 
     {
         this.dragging = null;
@@ -36,18 +32,21 @@ class ActionPanel implements IActionPanel
         });
     }
 
-    render() {
+    render()
+    {
         this.dom_element.innerHTML = "";
-        
+
         for (let player of Player.both())
         {
-            new DisplayPlayerAction(this.context.action(player)).actions.forEach((action, index) => {
+            new DisplayPlayerAction(this.context.action(player)).actions.forEach((action, index) =>
+            {
                 this.dom_element.appendChild(this.renderAction(action, index));
             });
         }
     }
 
-    renderAction(action: DisplayAction, index: number): HTMLElement {
+    renderAction(action: DisplayAction, index: number): HTMLElement
+    {
         const div = DomHelper.createDiv({
             display: "flex",
             flexDirection: "row",
@@ -76,7 +75,8 @@ class ActionPanel implements IActionPanel
 
         // Action target.
         const target_unit = this.getTargetUnit(action);
-        if (target_unit != null) {
+        if (target_unit != null)
+        {
             div.appendChild(this.renderUnit(target_unit));
         }
 
@@ -88,33 +88,37 @@ class ActionPanel implements IActionPanel
         // cost.
         div.appendChild(DomHelper.createText(
             "🍞" + action.action.cost(this.context.buff).toString(),
-            {'font-weight': 'bold'}
+            { 'font-weight': 'bold' }
         ));
 
         // Cross & callback.
         const cross = div.appendChild(DomHelper.createText("✘", {
             fontSize: "20px",
-            padding: "20px", 
+            padding: "20px",
             margin: "-10px"
         }));
-        cross.addEventListener("mouseenter", () => {
+        cross.addEventListener("mouseenter", () =>
+        {
             DomHelper.applyStyle(cross, {
                 color: "red",
             });
         });
-        cross.addEventListener("mouseleave", () => {
+        cross.addEventListener("mouseleave", () =>
+        {
             DomHelper.applyStyle(cross, {
                 color: "black",
             });
         });
-        cross.addEventListener("mousedown", (e: MouseEvent) => {
+        cross.addEventListener("mousedown", (e: MouseEvent) =>
+        {
             this.context.delete_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
             this.render_ctrl.refresh();
             e.cancelBubble = true;
         });
 
         // Drag support.
-        div.addEventListener("mousedown", (e: MouseEvent) => {
+        div.addEventListener("mousedown", (e: MouseEvent) =>
+        {
             this.dragging = {
                 action,
                 offsetX: e.clientX - div.getBoundingClientRect().left + ActionPanel.margin,
@@ -129,7 +133,7 @@ class ActionPanel implements IActionPanel
                     div,
                 ),
             };
-            
+
             // Draw an empty placeholder.
             DomHelper.applyStyle(div, {
                 position: "fixed",
@@ -140,32 +144,37 @@ class ActionPanel implements IActionPanel
             });
         });
 
-        const get_dragging_order = (): number => {
-            if (this.dragging == null) {
+        const get_dragging_order = (): number =>
+        {
+            if (this.dragging == null)
+            {
                 throw new Error("not dragging");
             }
             return (
                 (index + this.dragging.pos_offset) * 2
                 + Math.sign(this.dragging.pos_offset)
             );
-        }
+        };
 
-        const mouseup = () => {
-            if (this.dragging == null) {
+        const mouseup = () =>
+        {
+            if (this.dragging == null)
+            {
                 return;
             }
-            
+
             const dragging_move = this.dragging.action.action.move;
 
             let player = this.dragging.action.player;
             const ordered_moves = this.context.move(player).moves
-                .map((move, index) => {
+                .map((move, index) =>
+                {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
-                    return {move, order};
+                    return { move, order };
                 })
                 .sort((a, b) => a.order - b.order)
-                .map(({move}) => move);
-        
+                .map(({ move }) => move);
+
             this.context.prepare_moves(player, ordered_moves);
 
             this.dragging.placeholder.remove();
@@ -175,12 +184,14 @@ class ActionPanel implements IActionPanel
                 width: "auto",
                 zIndex: 0,
             });
-        }
+        };
 
         div.addEventListener("mouseup", mouseup);
 
-        div.addEventListener("mousemove", (e: MouseEvent) => {
-            if (this.dragging == null) {
+        div.addEventListener("mousemove", (e: MouseEvent) =>
+        {
+            if (this.dragging == null)
+            {
                 return;
             }
 
@@ -198,14 +209,16 @@ class ActionPanel implements IActionPanel
         });
 
         // Hover effect.
-        div.addEventListener("mouseenter", () => {
+        div.addEventListener("mouseenter", () =>
+        {
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
             this.render_ctrl.highlight(action.action.move.from);
         });
 
-        div.addEventListener("mouseleave", () => {
+        div.addEventListener("mouseleave", () =>
+        {
             DomHelper.applyStyle(div, {
                 backgroundColor: g.const.STYLE_GREY,
             });
@@ -232,7 +245,8 @@ class ActionPanel implements IActionPanel
         }
     }
 
-    getTargetUnit(action: DisplayAction): Unit | null {
+    getTargetUnit(action: DisplayAction): Unit | null
+    {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
             return this.context.present.board.at(action.action.move.to);
@@ -240,14 +254,16 @@ class ActionPanel implements IActionPanel
         return null;
     }
 
-    renderUnit(unit: Unit): HTMLElement {
+    renderUnit(unit: Unit): HTMLElement
+    {
         const canvas = DomHelper.createCanvas({
             zoom: "0.7",
         });
         canvas.width = g.settings.grid_size + 10;
         canvas.height = g.settings.grid_size + 10;
         const context = canvas.getContext("2d");
-        if (context == null) {
+        if (context == null)
+        {
             throw new Error("Your browser is outdated.");
         }
         const canvas_unit = CanvasUnitFactory(unit);
@@ -257,12 +273,14 @@ class ActionPanel implements IActionPanel
             renderer.translate(new Position(g.settings.grid_size / 2 + 5, g.settings.grid_size / 2 + 5));
             canvas_unit.paint(renderer);
         });
-        
+
         return canvas;
     }
 
-    getActionTypeText(type: DisplayActionType): string {
-        switch (type) {
+    getActionTypeText(type: DisplayActionType): string
+    {
+        switch (type)
+        {
             case DisplayActionType.Upgrade:
                 return "upgrading";
             case DisplayActionType.Defend:

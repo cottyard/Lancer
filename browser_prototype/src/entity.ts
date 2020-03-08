@@ -266,6 +266,17 @@ type Players<T> =
         [Player.P2]: T,
     };
 
+module Players
+{
+    export function empty<T>(ctor: (p: Player) => T): Players<T>
+    {
+        return {
+            [Player.P1]: ctor(Player.P1),
+            [Player.P2]: ctor(Player.P2)
+        };
+    }
+}
+
 function opponent(player: Player)
 {
     return player == Player.P1 ? Player.P2 : Player.P1;
