@@ -384,7 +384,7 @@ class Rule
                 }
                 else
                 {
-                    if (c.y == this.spawn_row[player])
+                    if (c.y == this.spawn_row[player] && this.count_unit(board, player) < g.max_unit_count)
                     {
                         for (let dest of this.spawnable_by(board, c))
                         {

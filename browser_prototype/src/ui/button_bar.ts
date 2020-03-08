@@ -396,7 +396,8 @@ class SolitudeButtonBar implements IComponent
                     let res = this.context.prepare_move(player, random_move);
                     if (res == "invalid")
                     {
-                        throw new Error("Bug: Rule.valid_moves returned invalid move");
+                        // should be unit limit exceeded
+                        break;
                     }
                     else if (res == "overridden")
                     {
