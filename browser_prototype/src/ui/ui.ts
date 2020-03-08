@@ -22,12 +22,15 @@ function ui_solitude()
     components.button_bar = new SolitudeButtonBar(<HTMLDivElement> document.getElementById('button-bar'), ctrl, context);
 
     ctrl.refresh_all();
+
+    g.render_control = ctrl;
 }
 
 function ui_online()
 {
     g.initialize();
-    g.game = new OnlineController();
+    g.online_control = new OnlineController();
+    g.render_control = (<OnlineController> g.online_control).render_ctrl;
 }
 
 interface IComponent

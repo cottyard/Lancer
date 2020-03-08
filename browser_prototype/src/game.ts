@@ -203,9 +203,10 @@ interface IGameContext
     move(player: Player): PlayerMove;
     action(player: Player): PlayerAction;
     action_cost(player: Player): number;
-    prepare_move(player: Player, move: Move): boolean;
+    prepare_move(player: Player, move: Move): "accepted" | "overridden" | "invalid";
     prepare_moves(player: Player, moves: Move[]): boolean;
     delete_moves(player: Player, filter: (move: Move) => move is Move): Move[];
+    pop_move(player: Player): Move | null;
     make_move(player: Player): void;
     player_name(player: Player): string;
     on_new_game(listener: Function): void;
@@ -304,11 +305,24 @@ class GameContext implements IGameContext
         return this.player_actions[player].cost(this._buff);
     }
 
-    delete_moves(player: Player, which: (move: Move) => move is Move)
+    delete_moves(player: Player, which: (move: Move) => move is Move): Move[]
     {
         let removed = this.player_moves[player].extract(which);
-        this.update_action(player);
+        if (removed)
+        {
+            this.update_action(player);
+        }
         return removed;
+    }
+
+    pop_move(player: Player): Move | null
+    {
+        let removed = this.player_moves[player].moves.pop();
+        if (removed)
+        {
+            this.update_action(player);
+        }
+        return removed || null;
     }
 
     update_action(player: Player)
@@ -317,9 +331,9 @@ class GameContext implements IGameContext
         this.player_actions[player].actions.sort((a1, a2) => a2.type - a1.type);
     }
 
-    prepare_move(player: Player, move: Move): boolean
+    prepare_move(player: Player, move: Move): "accepted" | "overridden" | "invalid"
     {
-        this.delete_moves(player, (m: Move): m is Move => m.from.equals(move.from));
+        let overrided = this.delete_moves(player, (m: Move): m is Move => m.from.equals(move.from));
         this.player_moves[player].moves.push(move);
         try
         {
@@ -328,9 +342,9 @@ class GameContext implements IGameContext
         catch
         {
             this.player_moves[player].moves.pop();
-            return false;
+            return "invalid";
         }
-        return true;
+        return overrided.length > 0 ? "overridden" : "accepted";
     }
 
     prepare_moves(player: Player, moves: Move[]): boolean
@@ -463,13 +477,13 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         this.move_listeners.push(listener);
     }
 
-    prepare_move(player: Player, move: Move): boolean
+    prepare_move(player: Player, move: Move): "accepted" | "overridden" | "invalid"
     {
         if (this.player == player)
         {
             return super.prepare_move(player, move);
         }
-        return false;
+        return "invalid";
     }
 
     make_move(): void

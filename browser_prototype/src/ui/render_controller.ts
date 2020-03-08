@@ -64,7 +64,7 @@ class RenderController implements IRenderController
         this.canvas.paint_background();
 
         this._displaying_board = this.context.present.board;
-        this.displaying_board = this.context.present.board;
+        this.show_present();
     }
 
     refresh_all()
@@ -305,7 +305,7 @@ class RenderController implements IRenderController
         {
             for (let player of Player.both())
             {
-                if (this.context.prepare_move(player, new Move(this.selected, this.current)))
+                if (this.context.prepare_move(player, new Move(this.selected, this.current)) != "invalid")
                 {
                     break;
                 }
@@ -321,7 +321,7 @@ class RenderController implements IRenderController
     {
         if (this.show_threats)
         {
-            this.options_capable = Rule.able_to_reach(this.displaying_board, coord);
+            this.options_capable = Rule.which_can_reach(this.displaying_board, coord);
             this.options_upgrade = [];
             this.options_recall = [];
         }

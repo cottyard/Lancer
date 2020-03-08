@@ -1,11 +1,11 @@
-class InvalidMove extends Error {}
+class InvalidMove extends Error { }
 
 class Rule
 {
     static spawn_row: Players<number> = {
         [Player.P1]: g.board_size_y - 1,
         [Player.P2]: 0
-    }
+    };
 
     static validate_player_move(board: Board<Unit>, player_move: PlayerMove): PlayerAction
     {
@@ -15,14 +15,15 @@ class Rule
         {
             if (move_set.has(move.from.hash()))
             {
-                throw new InvalidMove("unit moved more than once")
+                throw new InvalidMove("unit moved more than once");
             }
             move_set.add(move.from.hash());
         }
 
         return new PlayerAction(
             player_move.player,
-            moves.map((move: Move) => {
+            moves.map((move: Move) =>
+            {
                 return Rule.validate_move(board, move, player_move.player);
             }));
     }
@@ -109,7 +110,7 @@ class Rule
             {
                 return new Action(move, ActionType.Move, unit.type());
             }
-            
+
             if (unit.owner == target.owner)
             {
                 return new Action(move, ActionType.Defend, unit.type());
@@ -127,7 +128,7 @@ class Rule
             }
             else
             {
-                throw new InvalidMove(`skill not available ${skill.hash()}`);
+                throw new InvalidMove(`skill not available ${ skill.hash() }`);
             }
         }
     }
@@ -147,7 +148,8 @@ class Rule
     static get_heat(board: Board<Unit>): FullBoard<Heat>
     {
         let heat = new FullBoard<Heat>(() => new Heat());
-        board.iterate_units((unit, coord) => {
+        board.iterate_units((unit, coord) =>
+        {
             for (let c of Rule.reachable_by(board, coord))
             {
                 heat.at(c).heatup(unit.owner);
@@ -160,7 +162,8 @@ class Rule
     {
         let heat = this.get_heat(board);
         let buff = new FullBoard<Buff>(() => new Buff());
-        board.iterate_units((unit, coord) => {
+        board.iterate_units((unit, coord) =>
+        {
             if (unit instanceof Lancer)
             {
                 for (let c of this.reachable_by(board, coord))
@@ -213,14 +216,15 @@ class Rule
                 let b = buff.at(coord);
                 b.add(ActionType.Attack, -1);
             }
-        })
+        });
         return buff;
     }
 
     static count_unit(board: Board<Unit>, player: Player, unit_type: UnitConstructor | null = null): number
     {
         let count = 0;
-        board.iterate_units((unit: Unit, _) => {
+        board.iterate_units((unit: Unit, _) =>
+        {
             if (unit.owner == player)
             {
                 if (unit_type == null || unit.constructor == unit_type)
@@ -228,19 +232,20 @@ class Rule
                     count++;
                 }
             }
-        })
+        });
         return count;
     }
 
     static where(board: Board<Unit>, player: Player, unit_type: UnitConstructor): Coordinate[]
     {
         let found: Coordinate[] = [];
-        board.iterate_units((unit, coord) => {
+        board.iterate_units((unit, coord) =>
+        {
             if (unit.owner == player && unit.constructor == unit_type)
             {
                 found.push(coord);
             }
-        })
+        });
         return found;
     }
 
@@ -258,11 +263,12 @@ class Rule
 
         return coordinates;
     }
-    
-    static able_to_reach(board: Board<Unit>, coord: Coordinate): Coordinate[]
+
+    static which_can_reach(board: Board<Unit>, coord: Coordinate): Coordinate[]
     {
         let able: Coordinate[] = [];
-        board.iterate_units((unit, c) => {
+        board.iterate_units((unit, c) =>
+        {
             let skill;
             try
             {
@@ -276,9 +282,9 @@ class Rule
             {
                 able.push(c);
             }
-        })
+        });
         return able;
-    } 
+    }
 
     static reachable_by(board: Board<Unit>, coord: Coordinate): Coordinate[]
     {
@@ -338,13 +344,56 @@ class Rule
         }
 
         let all: Coordinate[] = [];
-        board.iterate_units((u, c) => {
+        board.iterate_units((u, c) =>
+        {
             if (u.owner == player && heat.at(c).hostile(player) == 0)
             {
                 all.push(c);
             }
         });
 
+        return all;
+    }
+
+    static valid_moves(board: Board<Unit>, player: Player): Move[]
+    {
+        let all: Move[] = [];
+        board.iterate_everything((unit, c) =>
+        {
+            if (unit)
+            {
+                if (unit.owner == player)
+                {
+                    let reachable = this.reachable_by(board, c);
+                    let upgradable = this.upgradable_by(board, c);
+
+                    for (let dest of reachable.concat(upgradable))
+                    {
+                        all.push(new Move(c, dest));
+                    }
+                }
+            }
+            else
+            {
+                if (this.is_king_side(board, player, c))
+                {
+                    for (let dest of this.recallable_by(board, player, c))
+                    {
+                        all.push(new Move(c, dest));
+                    }
+                }
+                else
+                {
+                    if (c.y == this.spawn_row[player])
+                    {
+                        for (let dest of this.spawnable_by(board, c))
+                        {
+                            all.push(new Move(c, dest));
+                        }
+                    }
+                }
+            }
+        });
         return all;
     }
 
@@ -418,7 +467,7 @@ class Rule
             [k in Player]: Action
         };
         let clashes: ClashPair[] = [];
- 
+
         for (let player_action of Player.values(player_actions))
         {
             for (let action of player_action.actions)
@@ -431,7 +480,7 @@ class Rule
                 let other = clash_board.at(action.move.to);
                 if (other != null && other.move.to.equals(action.move.from))
                 {
-                    clashes.push(<ClashPair>{
+                    clashes.push(<ClashPair> {
                         [player_action.player]: action,
                         [opponent(player_action.player)]: other
                     });
@@ -446,7 +495,7 @@ class Rule
             let a2 = clash[Player.P2];
             let u1 = board.at(a1.move.from)!;
             let u2 = board.at(a2.move.from)!;
-            
+
             let surviver = u1.duel(u2);
 
             let ceased = [];
@@ -507,7 +556,7 @@ class Rule
 
             let r1 = force.reinforcers[Player.P1].length;
             let r2 = force.reinforcers[Player.P2].length;
-            
+
             let conqueror: Unit | null;
 
             if (q1 && q2)
@@ -619,7 +668,7 @@ class Rule
 class Buff
 {
     map = new Map<ActionType, number>([
-        [ActionType.Attack, 0], 
+        [ActionType.Attack, 0],
         [ActionType.Defend, 0],
         [ActionType.Move, 0],
         [ActionType.Upgrade, 0]

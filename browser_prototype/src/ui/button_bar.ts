@@ -257,14 +257,15 @@ class ButtonBar implements IComponent
 
 class SolitudeButtonBar implements IComponent
 {
-    apply: HTMLButtonElement | null = null;
+    next_round: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
+    random_move: HTMLButtonElement | null = null;
     heat: HTMLButtonElement | null = null;
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
 
-    constructor(public dom_element: HTMLDivElement, public game: IRenderController, public context: IGameContext)
+    constructor(public dom_element: HTMLDivElement, public render_ctrl: IRenderController, public context: IGameContext)
     {
         context.on_new_game(this.render.bind(this));
     }
@@ -274,11 +275,11 @@ class SolitudeButtonBar implements IComponent
         this._view_last_round = value;
         if (value)
         {
-            this.game.show_last();
+            this.render_ctrl.show_last();
         }
         else
         {
-            this.game.show_present();
+            this.render_ctrl.show_present();
         }
 
         this.update_last_round_name();
@@ -294,11 +295,11 @@ class SolitudeButtonBar implements IComponent
         this._show_heat = value;
         if (value)
         {
-            this.game.show_heat();
+            this.render_ctrl.show_heat();
         }
         else
         {
-            this.game.hide_heat();
+            this.render_ctrl.hide_heat();
         }
         this.update_heat_name();
     }
@@ -346,7 +347,7 @@ class SolitudeButtonBar implements IComponent
         let insufficient = false;
         for (let player of Player.both())
         {
-            let supply = this.context.present.supply(player)!;
+            let supply = this.context.present.supply(player);
             let cost = this.context.action_cost(player);
             if (cost > supply)
             {
@@ -368,12 +369,53 @@ class SolitudeButtonBar implements IComponent
                 {
                     this.context.make_move(player);
                 }
-                this.game.show_present();
+                this.render_ctrl.show_present();
             };
         }
 
         this.dom_element.appendChild(next_round_button);
-        this.apply = next_round_button;
+        this.next_round = next_round_button;
+
+        let random_move_button = DomHelper.createButton();
+        random_move_button.innerText = "Random Move";
+        random_move_button.onclick = () =>
+        {
+            for (let player of Player.both())
+            {
+                let supply = this.context.present.supply(player);
+                let cost = this.context.action_cost(player);
+
+                while (cost < supply)
+                {
+                    let all = Rule.valid_moves(this.context.present.board, player);
+                    if (!all)
+                    {
+                        break;
+                    }
+                    let random_move = all[Math.floor(Math.random() * all.length)];
+                    let res = this.context.prepare_move(player, random_move);
+                    if (res == "invalid")
+                    {
+                        throw new Error("Bug: Rule.valid_moves returned invalid move");
+                    }
+                    else if (res == "overridden")
+                    {
+                        break;
+                    }
+                    cost = this.context.action_cost(player);
+                }
+
+                while (cost > supply)
+                {
+                    this.context.pop_move(player);
+                    cost = this.context.action_cost(player);
+                }
+            }
+            this.render_ctrl.refresh();
+        };
+
+        this.dom_element.appendChild(random_move_button);
+        this.random_move = random_move_button;
 
         let game_status = this.context.status;
         if (game_status != GameStatus.Ongoing)
@@ -422,7 +464,7 @@ class SolitudeButtonBar implements IComponent
             }
             this.view_last_round_handle = setTimeout(() =>
             {
-                this.game.show_last();
+                this.render_ctrl.show_last();
             }, 200);
         };
         this.last_round.onmouseleave = () =>
@@ -434,7 +476,7 @@ class SolitudeButtonBar implements IComponent
             }
             if (!this.view_last_round)
             {
-                this.game.show_present();
+                this.render_ctrl.show_present();
             }
         };
 
@@ -450,14 +492,14 @@ class SolitudeButtonBar implements IComponent
         {
             if (!this.show_heat)
             {
-                this.game.show_heat();
+                this.render_ctrl.show_heat();
             }
         };
         this.heat.onmouseleave = () =>
         {
             if (!this.show_heat)
             {
-                this.game.hide_heat();
+                this.render_ctrl.hide_heat();
             }
         };
 

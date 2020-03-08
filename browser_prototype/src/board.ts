@@ -6,9 +6,11 @@ class FullBoard<T>
     {
         this.board = [];
 
-        for (let i = 0; i < g.board_size_x; i++) {
+        for (let i = 0; i < g.board_size_x; i++)
+        {
             this.board[i] = [];
-            for (let j = 0; j < g.board_size_y; j++) {
+            for (let j = 0; j < g.board_size_y; j++)
+            {
                 this.board[i][j] = initializer();
             }
         }
@@ -26,8 +28,10 @@ class FullBoard<T>
 
     iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
     {
-        for (let i = 0; i < g.board_size_x; i++) {
-            for (let j = 0; j < g.board_size_y; j++) {
+        for (let i = 0; i < g.board_size_x; i++)
+        {
+            for (let j = 0; j < g.board_size_y; j++)
+            {
                 foreach(this.board[i][j], new Coordinate(i, j));
             }
         }
@@ -60,12 +64,18 @@ class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopy
 
     iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
     {
-        super.iterate_units((unit, coord) => {
+        super.iterate_units((unit, coord) =>
+        {
             if (unit != null)
             {
                 foreach(unit, coord);
             }
         });
+    }
+
+    iterate_everything(foreach: (unit: T | null, coord: Coordinate) => void): void
+    {
+        super.iterate_units(foreach);
     }
 
     copy(): Board<T>
@@ -88,8 +98,10 @@ class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T>
     serialize(): string
     {
         let s: (string | number)[] = [];
-        for (let i = 0; i < g.board_size_x; i++) {
-            for (let j = 0; j < g.board_size_y; j++) {
+        for (let i = 0; i < g.board_size_x; i++)
+        {
+            for (let j = 0; j < g.board_size_y; j++)
+            {
                 let unit = this.board[i][j];
                 if (unit)
                 {
@@ -124,8 +136,10 @@ function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
         {
             let board = new SerializableBoard<T>();
             let s: (string | number)[] = JSON.parse(payload);
-            for (let i = 0; i < g.board_size_x; i++) {
-                for (let j = 0; j < g.board_size_y; j++) {
+            for (let i = 0; i < g.board_size_x; i++)
+            {
+                for (let j = 0; j < g.board_size_y; j++)
+                {
                     let unit_payload = s.shift();
                     if (unit_payload)
                     {
