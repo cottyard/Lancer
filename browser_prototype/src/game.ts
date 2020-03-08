@@ -463,6 +463,15 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         this.move_listeners.push(listener);
     }
 
+    prepare_move(player: Player, move: Move): boolean
+    {
+        if (this.player == player)
+        {
+            return super.prepare_move(player, move);
+        }
+        return false;
+    }
+
     make_move(): void
     {
         let move = this.move(this.player);

@@ -19,11 +19,11 @@ class ButtonBar implements IComponent
         this._view_last_round = value;
         if (value)
         {
-            this.render_ctrl.show_present();
+            this.render_ctrl.show_last();
         }
         else
         {
-            this.render_ctrl.show_last();
+            this.render_ctrl.show_present();
         }
 
         this.update_last_round_name();
@@ -39,7 +39,7 @@ class ButtonBar implements IComponent
         this._show_heat = value;
         if (value)
         {
-            this.render_ctrl.show_last();
+            this.render_ctrl.show_heat();
         }
         else
         {
@@ -269,11 +269,11 @@ class SolitudeButtonBar implements IComponent
         this._view_last_round = value;
         if (value)
         {
-            this.game.show_present();
+            this.game.show_last();
         }
         else
         {
-            this.game.show_last();
+            this.game.show_present();
         }
 
         this.update_last_round_name();

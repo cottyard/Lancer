@@ -94,18 +94,19 @@ class OnlineController implements IOnlineController
 
     set status(value: OnlineGameStatus)
     {
+        if ([
+            OnlineGameStatus.WaitForPlayer,
+            OnlineGameStatus.Victorious,
+            OnlineGameStatus.Defeated,
+            OnlineGameStatus.Tied].indexOf(value) > -1)
+        {
+            this.render_ctrl.show_present();
+        }
+
         if (this._status != value)
         {
             this._status = value;
             this.render_ctrl.refresh();
-        }
-
-        if ([OnlineGameStatus.WaitForPlayer,
-        OnlineGameStatus.Victorious,
-        OnlineGameStatus.Defeated,
-        OnlineGameStatus.Tied].indexOf(value) > -1)
-        {
-            this.render_ctrl.show_present();
         }
     }
 
