@@ -1,6 +1,11 @@
 interface IRenderController
 {
     displaying_board: Board<Unit>;
+    components: {
+        action_panel: IComponent,
+        status_bar: IComponent,
+        button_bar: IButtonBar;
+    };
     refresh(): void;
     highlight(coord: Coordinate): void;
     show_last(): void;
@@ -34,7 +39,7 @@ class RenderController implements IRenderController
         public components: {
             action_panel: IComponent,
             status_bar: IComponent,
-            button_bar: IComponent;
+            button_bar: IButtonBar;
         })
     {
         this.canvas = new GameCanvas(

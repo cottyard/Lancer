@@ -30,9 +30,6 @@ class OnlineController implements IOnlineController
     player_name: string = `player${ Math.floor(10000 * Math.random()) }`;
     private _status: OnlineGameStatus = OnlineGameStatus.NotStarted;
     context: IOnlineGameContext;
-    action_panel: IComponent | null = null;
-    status_bar: IComponent | null = null;
-    button_bar: IComponent | null = null;
     render_ctrl: IRenderController;
 
     constructor()
@@ -45,11 +42,11 @@ class OnlineController implements IOnlineController
         this.context.on_loading(() => { this.status = OnlineGameStatus.Loading; });
         this.context.on_move(() => { this.status = OnlineGameStatus.WaitForOpponent; });
 
-        let stub = new class _ implements IComponent { render() { } };
+        let stub = class stub implements IComponent { render() { } };
         let components = {
-            action_panel: stub,
-            status_bar: stub,
-            button_bar: stub
+            action_panel: new stub,
+            status_bar: new stub,
+            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
         };
 
         this.render_ctrl = new RenderController(this.context, components);
@@ -100,7 +97,7 @@ class OnlineController implements IOnlineController
             OnlineGameStatus.Defeated,
             OnlineGameStatus.Tied].indexOf(value) > -1)
         {
-            this.render_ctrl.show_present();
+            this.render_ctrl.components.button_bar.view_last_round = false;
         }
 
         if (this._status != value)

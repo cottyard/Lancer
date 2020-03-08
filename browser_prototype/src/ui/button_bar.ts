@@ -1,3 +1,8 @@
+interface IButtonBar extends IComponent
+{
+    view_last_round: boolean;
+}
+
 class ButtonBar implements IComponent
 {
     submit: HTMLButtonElement | null = null;

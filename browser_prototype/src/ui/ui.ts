@@ -8,11 +8,11 @@ function ui_solitude()
         },
         Game.new_game());
 
-    let stub = new class _ implements IComponent { render() { } };
+    let stub = class stub implements IComponent { render() { } };
     let components = {
-        action_panel: stub,
-        status_bar: stub,
-        button_bar: stub
+        action_panel: new stub,
+        status_bar: new stub,
+        button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
     };
 
     let ctrl = new RenderController(context, components);
