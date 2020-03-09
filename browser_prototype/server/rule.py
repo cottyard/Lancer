@@ -136,11 +136,11 @@ def run_battle_phase(board, player_action_list, force_board):
             if outcome.tied():
                 bu1 = outcome.arriver_map.get(player_1)
                 bu2 = outcome.arriver_map.get(player_2)
-                martyr_list.extend([Martyr(bu1, False), Martyr(bu2, False)])
+                martyr_list.extend([Martyr(bu1), Martyr(bu2)])
             else:
                 player_lost = opponent(outcome.player_won)
                 bunit = outcome.arriver_map.get(player_lost)
-                martyr_list.append(Martyr(bunit, False))
+                martyr_list.append(Martyr(bunit))
         else:
             player_invader = outcome.arriver_map.arrived_players()[0]
             bunit = outcome.arriver_map.get(player_invader)

@@ -583,18 +583,20 @@ class Rule
                     if (conqueror)
                     {
                         let fallen = force.arriver[opponent(conqueror.owner)]!;
-                        martyrs.push(new Martyr(fallen, 0));
+                        martyrs.push(new Martyr(fallen, fallen.unit.get_trophy()));
                     }
                     else
                     {
-                        martyrs.push(new Martyr(q1, 0), new Martyr(q2, 0));
+                        martyrs.push(
+                            new Martyr(q1, q1.unit.get_trophy()),
+                            new Martyr(q2, q2.unit.get_trophy()));
                     }
                 }
                 else
                 {
                     conqueror = r1 > r2 ? q1.unit : q2.unit;
                     let defeated = r1 > r2 ? q2 : q1;
-                    martyrs.push(new Martyr(defeated, 0));
+                    martyrs.push(new Martyr(defeated, defeated.unit.get_trophy()));
                 }
             }
             else
