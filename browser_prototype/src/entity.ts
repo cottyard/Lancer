@@ -529,7 +529,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
         {
             return;
         }
-        this.current = this.owner == Player.P1 ? inborn : inborn.flip();
+        this.current = this.owner == Player.P1 ? inborn.copy() : inborn.flip();
     }
 
     type(): UnitConstructor
