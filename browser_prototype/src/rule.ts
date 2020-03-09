@@ -523,7 +523,7 @@ class Rule
             }
             else
             {
-                let action = clash[surviver.owner];
+                let action = clash[opponent(surviver.owner)];
                 player_actions[surviver.owner].extract((a): a is Action => a == action);
                 ceased.push(action);
             }

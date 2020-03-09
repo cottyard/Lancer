@@ -724,8 +724,8 @@ abstract class BasicUnit extends UnitConstructor
         {
             for (let future_type of this.promotion_options)
             {
-                potentials = potentials.union(g.perfect_skills.get(
-                    <UnitConstructor> future_type)!);
+                potentials = potentials.union(
+                    g.perfect_skills.get(<UnitConstructor> future_type)!);
             }
         }
 
