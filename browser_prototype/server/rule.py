@@ -220,39 +220,47 @@ def is_king_side(board, player, position):
     king_side = reachable_positions(board, king_position)
     return position in king_side
 
+def validate_recall(board, move, player):
+    recalled = board.at(move.position_to)
+    if recalled is None:
+        raise InvalidMoveException("recalled grid is empty")
+    if recalled.owner != player:
+        raise InvalidMoveException("recalled unit is enemy")
+
+    heat_board = get_heat_board(board)
+    enemy_player = player_2 if recalled.owner == player_1 else player_1
+
+    if heat_board.heat(move.position_to, enemy_player) > 0:
+        raise InvalidMoveException("recalled unit is under attack")
+    if heat_board.heat(move.position_from, enemy_player) > 0:
+        raise InvalidMoveException("recall destination is under attack")
+
+    return Action(move, ActionType.Recall, type(recalled))
+
+def validate_spawn(board, move, player):
+    if move.position_from.y != spawn_row[player]:
+        return InvalidMoveException("grid is empty")
+    try:
+        skill = move.get_skill()
+    except InvalidParameter:
+        return InvalidMoveException("not a valid skill")
+    unit_recruited = Unit.create_from_skill(player, skill)
+    if unit_recruited is None:
+        return InvalidMoveException("this skill recruits nothing")
+    if count_unit(board, player) >= max_unit_count:
+        return InvalidMoveException("units limit exceeded")
+    return Action(move, ActionType.Recruit, type(unit_recruited))
+
 def validate_move(board, move, player):
     unit = board.at(move.position_from)
     if unit is None:
-        if is_king_side(board, player, move.position_from):
-            recalled = board.at(move.position_to)
-            if recalled is None:
-                raise InvalidMoveException("recalled grid is empty")
-            if recalled.owner != player:
-                raise InvalidMoveException("recalled unit is enemy")
-
-            heat_board = get_heat_board(board)
-            enemy_player = player_2 if recalled.owner == player_1 else player_1
-
-            if heat_board.heat(move.position_to, enemy_player) > 0:
-                raise InvalidMoveException("recalled unit is under attack")
-            if heat_board.heat(move.position_from, enemy_player) > 0:
-                raise InvalidMoveException("recall destination is under attack")
-
-            return Action(move, ActionType.Recall, type(recalled))
-
-        if move.position_from.y != spawn_row[player]:
-            raise InvalidMoveException("grid is empty")
-        elif count_unit(board, player) >= max_unit_count:
-            raise InvalidMoveException("units limit exceeded - cannot recruit anymore")
+        action_or_error = validate_spawn(board, move, player)
+        if type(action_or_error) is Action:
+            return action_or_error
+        elif is_king_side(board, player, move.position_from):
+            return validate_recall(board, move, player)
         else:
-            try:
-                skill = move.get_skill()
-            except InvalidParameter:
-                raise InvalidMoveException("not a valid skill")
-            unit_recruited = Unit.create_from_skill(player, skill)
-            if unit_recruited is None:
-                raise InvalidMoveException("this skill recruits nothing")
-            return Action(move, ActionType.Recruit, type(unit_recruited))
+            raise InvalidMoveException(str(action_or_error))
 
     if unit.owner != player:
         raise InvalidMoveException("grid belongs to enemy")
