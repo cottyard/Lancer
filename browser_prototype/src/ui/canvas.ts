@@ -16,7 +16,7 @@ class GameCanvas
         this.static = static_;
         this.animate = animate;
         this.animate_transparent = animate_transparent;
-        
+
         this.bg_ctx = this.set_canvas_attr(this.background, 1, g.settings.cvs_size, g.settings.cvs_border_width, false);
         this.st_ctx = this.set_canvas_attr(this.static, 2, g.settings.cvs_size, g.settings.cvs_border_width, true);
         this.am_ctx_t = this.set_canvas_attr(this.animate_transparent, 3, g.settings.cvs_size, g.settings.cvs_border_width, true);
@@ -25,10 +25,11 @@ class GameCanvas
 
     set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number, absolute: boolean): CanvasRenderingContext2D
     {
-        cvs.style.border = `solid #000 ${border_width}px`;
-        if (absolute) {
+        cvs.style.border = `solid #000 ${ border_width }px`;
+        if (absolute)
+        {
             cvs.style.position = "absolute";
-            cvs.style.setProperty("z-index", `${z_index}`);
+            cvs.style.setProperty("z-index", `${ z_index }`);
         }
         cvs.width = cvs.height = size;
         let ctx = cvs.getContext('2d');
@@ -42,24 +43,24 @@ class GameCanvas
     static get_grid_center(coord: Coordinate): Position
     {
         return new Position(
-            coord.x * g.settings.grid_size + g.settings.grid_size / 2, 
+            coord.x * g.settings.grid_size + g.settings.grid_size / 2,
             coord.y * g.settings.grid_size + g.settings.grid_size / 2);
     }
 
     static get_grid_position(coord: Coordinate): Position
     {
         return new Position(
-            coord.x * g.settings.grid_size, 
+            coord.x * g.settings.grid_size,
             coord.y * g.settings.grid_size);
     }
 
     static to_coordinate(pixel_x: number, pixel_y: number): Coordinate
-    { 
+    {
         function gridify(pixel: number)
         {
             let i = Math.floor(pixel / g.settings.grid_size);
-            if (i < 0) { return 0 };
-            if (i >= g.grid_count ) { return g.grid_count - 1 };
+            if (i < 0) { return 0; };
+            if (i >= g.grid_count) { return g.grid_count - 1; };
             return i;
         }
 
@@ -71,21 +72,25 @@ class GameCanvas
         let grid_size = g.settings.grid_size;
         let grids = g.grid_count;
 
-        using(new Renderer(this.bg_ctx), (renderer) => {
+        using(new Renderer(this.bg_ctx), (renderer) =>
+        {
             renderer.set_color(g.const.STYLE_GREY);
-            
-            for (let i = 0; i < grids; ++i) {
-                for (let j = 0; j < grids; ++j) {
-                    if ((i + j) % 2 != 0) {
+
+            for (let i = 0; i < grids; ++i)
+            {
+                for (let j = 0; j < grids; ++j)
+                {
+                    if ((i + j) % 2 != 0)
+                    {
                         renderer.rectangle(
-                            new Position(i * grid_size, j * grid_size), 
+                            new Position(i * grid_size, j * grid_size),
                             grid_size, grid_size, 0, g.const.STYLE_GREY);
                     }
                 }
             }
         });
     }
-    
+
     paint_grid_indicator(coordinate: Coordinate, style: string | null = null, width: number = 3)
     {
         let center = GameCanvas.get_grid_center(coordinate);
@@ -99,17 +104,18 @@ class GameCanvas
         let style_ = style;
         for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
         {
-            using(new Renderer(this.am_ctx), (renderer) => {
+            using(new Renderer(this.am_ctx), (renderer) =>
+            {
                 renderer.set_alpha(0.8);
-                renderer.set_color(style_);        
+                renderer.set_color(style_);
                 renderer.translate(center);
                 renderer.translate(new Position(p * half_grid, q * half_grid));
                 let zero = new Position(-p * (width / 2 + 1), -q * (width / 2 + 1));
                 renderer.line(
-                    zero.add(new PositionDelta(p * width / 2, 0)), 
+                    zero.add(new PositionDelta(p * width / 2, 0)),
                     zero.add(new PositionDelta(-p * size, 0)), width);
                 renderer.line(
-                    zero, 
+                    zero,
                     zero.add(new PositionDelta(0, -q * size)), width);
             });
         }
@@ -120,10 +126,11 @@ class GameCanvas
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 7;
         let width = 6;
-        using(new Renderer(this.am_ctx), (renderer) => {
+        using(new Renderer(this.am_ctx), (renderer) =>
+        {
             renderer.set_color(g.const.STYLE_RED);
             renderer.translate(center.add(new PositionDelta(
-                g.settings.grid_size / 2 - 10, 
+                g.settings.grid_size / 2 - 10,
                 -g.settings.grid_size / 2 + 10)));
 
             renderer.line(
@@ -134,9 +141,9 @@ class GameCanvas
                 new Position(-size, size),
                 new Position(size, -size),
                 width);
-            
+
             renderer.set_color(g.const.STYLE_GREEN);
-            renderer.ctx.font="Bold 14px Sans-Serif";
+            renderer.ctx.font = "Bold 14px Sans-Serif";
             renderer.ctx.fillText(trophy.toString(), -size, size * 3.5);
         });
     }
@@ -144,7 +151,8 @@ class GameCanvas
     paint_heat(coordinate: Coordinate, heat: Heat)
     {
         let begin = GameCanvas.get_grid_position(coordinate);
-        using(new Renderer(this.am_ctx), (renderer) => {
+        using(new Renderer(this.am_ctx), (renderer) =>
+        {
             renderer.translate(begin);
             let offset = 5;
             let size = 3;
@@ -153,17 +161,18 @@ class GameCanvas
             {
                 let h = heat.friendly(player);
                 let repeat = h;
-                if (h > 5)
+                if (h > 3)
                 {
                     repeat = 1;
-                    renderer.ctx.font="Bold 11px Sans-Serif";
+                    renderer.ctx.font = "Bold 11px Sans-Serif";
+                    renderer.set_color(g.const.STYLE_BLACK);
                     renderer.ctx.fillText(h.toString(), offset - 3, size * 5 + 5);
                 }
-                
+
                 for (let i = 1; i <= repeat; i++)
                 {
                     renderer.circle(
-                        new Position(offset, size * 2.5 * i), 
+                        new Position(offset, size * 2.5 * i),
                         size, 1, g.settings.player_color_map[player]);
                 }
                 offset += 8;
@@ -180,7 +189,8 @@ class GameCanvas
         let begin = GameCanvas.get_grid_position(coordinate).add(
             new PositionDelta(g.settings.grid_size - size_x - 2, 3));
 
-        using(new Renderer(this.am_ctx), (renderer) => {
+        using(new Renderer(this.am_ctx), (renderer) =>
+        {
             renderer.translate(begin);
             let offset = 0;
             let last_upwards: boolean | null = null;
@@ -191,14 +201,14 @@ class GameCanvas
                 {
                     continue;
                 }
-                
-                let top = 0; 
+
+                let top = 0;
                 let bottom = size_y;
                 let upwards = b < 0;
                 if (!upwards)
                 {
                     [top, bottom] = [bottom, top];
-                    
+
                 }
 
                 if (last_upwards != null)
@@ -207,13 +217,13 @@ class GameCanvas
                 }
 
                 let style = g.action_style.get(type)!;
-                renderer.set_color(style)
+                renderer.set_color(style);
                 renderer.triangle(
                     new Position(-offset, top),
-                    new Position(-offset - size_x, bottom), 
-                    new Position(-offset + size_x, bottom), 
+                    new Position(-offset - size_x, bottom),
+                    new Position(-offset + size_x, bottom),
                     1, style);
-                
+
                 last_upwards = upwards;
             }
         });
@@ -230,13 +240,14 @@ class GameCanvas
             [tip_y, bottom_y] = [bottom_y, tip_y];
         }
 
-        using(new Renderer(this.am_ctx), (renderer) => {
+        using(new Renderer(this.am_ctx), (renderer) =>
+        {
             renderer.set_color(color);
             renderer.translate(pos);
             renderer.triangle(
                 new Position(0, tip_y),
-                new Position(-size, bottom_y), 
-                new Position(size, bottom_y), 
+                new Position(-size, bottom_y),
+                new Position(size, bottom_y),
                 1, color);
         });
     }
@@ -273,7 +284,7 @@ class GameCanvas
             let go_around = false;
             let rider_move = false;
 
-            if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) && 
+            if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) &&
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
             {
                 let middleground = a.action.move.from.add(skill.x / 2, skill.y / 2);
@@ -288,7 +299,8 @@ class GameCanvas
                     go_around = true;
                 }
                 else if (
-                    player_action.actions.reduce<boolean>((previous: boolean, current: DisplayAction) => {
+                    player_action.actions.reduce<boolean>((previous: boolean, current: DisplayAction) =>
+                    {
                         return previous || current.action.move.from.equals(_middleground);
                     }, false))
                 {
@@ -301,7 +313,7 @@ class GameCanvas
             {
                 rider_move = true;
             }
-            
+
             if (go_around)
             {
                 const control_distance = g.settings.grid_size * 0.75;
@@ -310,7 +322,8 @@ class GameCanvas
                 let control = new Position(
                     (from.x + to.x) / 2 - sy * control_distance,
                     (from.y + to.y) / 2 + sx * control_distance);
-                using(new Renderer(this.am_ctx), (renderer) => {
+                using(new Renderer(this.am_ctx), (renderer) =>
+                {
                     renderer.curved_arrow(
                         renderer.go_towards(from, control, shrink),
                         control,
@@ -325,7 +338,8 @@ class GameCanvas
                 {
                     return a * weight + b * (1 - weight);
                 }
-                using(new Renderer(this.am_ctx), (renderer) => {
+                using(new Renderer(this.am_ctx), (renderer) =>
+                {
                     let from_s = renderer.go_towards(from, to, shrink);
                     let to_s = renderer.go_towards(to, from, shrink);
                     let mid = new Position((from.x + to.x) / 2, (from.y + to.y) / 2);
@@ -359,7 +373,8 @@ class GameCanvas
             }
             else
             {
-                using(new Renderer(this.am_ctx), (renderer) => {
+                using(new Renderer(this.am_ctx), (renderer) =>
+                {
                     renderer.arrow(
                         GameCanvas.get_grid_center(a.action.move.from),
                         GameCanvas.get_grid_center(a.action.move.to),
@@ -373,7 +388,8 @@ class GameCanvas
     paint_unit(unit: CanvasUnit, coordinate: Coordinate, hint: boolean = false)
     {
         let context = hint ? this.am_ctx_t : this.st_ctx;
-        using (new Renderer(context), (renderer) => {
+        using(new Renderer(context), (renderer) =>
+        {
             renderer.translate(GameCanvas.get_grid_center(coordinate));
             renderer.ctx.scale(0.9, 0.9);
             unit.paint(renderer);
@@ -427,7 +443,7 @@ class PositionDelta
         this.dy = dy;
     }
 
-    opposite() : PositionDelta
+    opposite(): PositionDelta
     {
         return new PositionDelta(-this.dx, -this.dy);
     }
@@ -449,7 +465,7 @@ class Direction
         return new Direction(this.value + value);
     }
 
-    opposite() : Direction
+    opposite(): Direction
     {
         return new Direction((this.value + 180) % 360);
     }
@@ -467,7 +483,8 @@ class RadianDirection
     }
 }
 
-class HaloDirection {
+class HaloDirection
+{
     static Up = new Direction(-90);
     static Down = new Direction(90);
     static Left = new Direction(180);
@@ -497,14 +514,14 @@ class Angle
         this.end = end;
     }
 
-    static create(direction: Direction, size: number) : Angle
+    static create(direction: Direction, size: number): Angle
     {
         return new Angle(direction.add(-size / 2), direction.add(size / 2));
     }
 
     to_radian()
     {
-        return new RadianAngle(this.start.to_radian(),  this.end.to_radian())
+        return new RadianAngle(this.start.to_radian(), this.end.to_radian());
     }
 }
 
