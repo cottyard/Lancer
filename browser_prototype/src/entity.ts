@@ -431,7 +431,7 @@ class Action implements ICopyable<Action>
                     case Rider:
                         return 15;
                     case Wagon:
-                        return 15;
+                        return 10;
                 }
                 throw new Error("Action.cost");
             case ActionType.Recall:

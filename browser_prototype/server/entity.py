@@ -99,7 +99,7 @@ class Action:
                 Soldier: 10,
                 Archer: 10,
                 Rider: 15,
-                Wagon: 15
+                Wagon: 10
             }[self.unit_type]
         elif self.type == ActionType.Recall:
             return 8
