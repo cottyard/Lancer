@@ -28,63 +28,76 @@ class Rule
             }));
     }
 
+    static validate_recall(board: Board<Unit>, move: Move, player: Player): Action
+    {
+        let recalled = board.at(move.to);
+        if (recalled == null)
+        {
+            throw new InvalidMove("recalled grid is empty");
+        }
+        if (recalled.owner != player)
+        {
+            throw new InvalidMove("recalled unit is enemy");
+        }
+
+        let heat = this.get_heat(board);
+        if (heat.at(move.to).hostile(player) > 0)
+        {
+            throw new InvalidMove("recalled unit is under attack");
+        }
+        if (heat.at(move.from).hostile(player) > 0)
+        {
+            throw new InvalidMove("recall destination is under attack");
+        }
+
+        return new Action(move, ActionType.Recall, recalled.type());
+    }
+
+    static validate_spawn(board: Board<Unit>, move: Move, player: Player): Action | InvalidMove
+    {
+        if (move.from.y != this.spawn_row[player])
+        {
+            return new InvalidMove("grid is empty");
+        }
+        let skill: Skill;
+        try
+        {
+            skill = move.which_skill();
+        }
+        catch (InvalidParameter)
+        {
+            return new InvalidMove("not a valid skill");
+        }
+
+        let type = Unit.which_to_spawn(skill);
+        if (type == null)
+        {
+            return new InvalidMove("this skill recruits nothing");
+        }
+        if (Rule.count_unit(board, player) >= g.max_unit_count)
+        {
+            return new InvalidMove("units limit exceeded");
+        }
+        return new Action(move, ActionType.Recruit, type);
+    }
+
     static validate_move(board: Board<Unit>, move: Move, player: Player): Action
     {
         let unit = board.at(move.from);
         if (unit == null)
         {
-            if (this.is_king_side(board, player, move.from))
+            let action_or_error = this.validate_spawn(board, move, player);
+            if (action_or_error instanceof Action)
             {
-                let recalled = board.at(move.to);
-                if (recalled == null)
-                {
-                    throw new InvalidMove("recalled grid is empty");
-                }
-                if (recalled.owner != player)
-                {
-                    throw new InvalidMove("recalled unit is enemy");
-                }
-
-                let heat = this.get_heat(board);
-                if (heat.at(move.to).hostile(player) > 0)
-                {
-                    throw new InvalidMove("recalled unit is under attack");
-                }
-                if (heat.at(move.from).hostile(player) > 0)
-                {
-                    throw new InvalidMove("recall destination is under attack");
-                }
-
-                return new Action(move, ActionType.Recall, recalled.type());
+                return action_or_error;
             }
-
-            if (move.from.y != this.spawn_row[player])
+            else if (this.is_king_side(board, player, move.from))
             {
-                throw new InvalidMove("grid is empty");
-            }
-            else if (Rule.count_unit(board, player) >= g.max_unit_count)
-            {
-                throw new InvalidMove("units limit exceeded");
+                return this.validate_recall(board, move, player);
             }
             else
             {
-                let skill: Skill;
-                try
-                {
-                    skill = move.which_skill();
-                }
-                catch (InvalidParameter)
-                {
-                    throw new InvalidMove("not a valid skill");
-                }
-
-                let type = Unit.which_to_spawn(skill);
-                if (type == null)
-                {
-                    throw new InvalidMove("this skill recruits nothing");
-                }
-
-                return new Action(move, ActionType.Recruit, type);
+                throw action_or_error;
             }
         }
 
@@ -344,11 +357,15 @@ class Rule
         }
 
         let all: Coordinate[] = [];
+        let spawnable = new HashSet<Coordinate>(this.spawnable_by(board, coord));
         board.iterate_units((u, c) =>
         {
             if (u.owner == player && heat.at(c).hostile(player) == 0)
             {
-                all.push(c);
+                if (!spawnable.has(c))
+                {
+                    all.push(c);
+                }
             }
         });
 
@@ -375,6 +392,14 @@ class Rule
             }
             else
             {
+                if (c.y == this.spawn_row[player] && this.count_unit(board, player) < g.max_unit_count)
+                {
+                    for (let dest of this.spawnable_by(board, c))
+                    {
+                        all.push(new Move(c, dest));
+                    }
+                }
+
                 if (this.is_king_side(board, player, c))
                 {
                     for (let dest of this.recallable_by(board, player, c))
@@ -382,18 +407,9 @@ class Rule
                         all.push(new Move(c, dest));
                     }
                 }
-                else
-                {
-                    if (c.y == this.spawn_row[player] && this.count_unit(board, player) < g.max_unit_count)
-                    {
-                        for (let dest of this.spawnable_by(board, c))
-                        {
-                            all.push(new Move(c, dest));
-                        }
-                    }
-                }
             }
         });
+
         return all;
     }
 

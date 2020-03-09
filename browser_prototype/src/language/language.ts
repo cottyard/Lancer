@@ -42,6 +42,33 @@ class HashMap<K extends IHashable, V>
     }
 }
 
+class HashSet<V extends IHashable>
+{
+    private map = new Map<string, V>();
+    constructor(init: V[] = [])
+    {
+        for (let value of init)
+        {
+            this.put(value);
+        }
+    }
+
+    put(value: V): void
+    {
+        this.map.set(value.hash(), value);
+    }
+
+    has(value: V): boolean
+    {
+        return this.map.get(value.hash()) != undefined;
+    }
+
+    as_list(): V[]
+    {
+        return Array.from(this.map.values());
+    }
+}
+
 interface IDeserializable<T>
 {
     new(...args: any[]): T;

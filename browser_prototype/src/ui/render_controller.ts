@@ -337,18 +337,16 @@ class RenderController implements IRenderController
             else
             {
                 this.options_capable = [];
+                this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
+
                 for (let player of Player.both())
                 {
                     if (Rule.is_king_side(this.displaying_board, player, coord))
                     {
-                        this.options_upgrade = [];
                         this.options_recall = Rule.recallable_by(this.displaying_board, player, coord);
                         return;
                     }
                 }
-
-                this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
-                this.options_recall = [];
             }
         }
     }
@@ -391,15 +389,14 @@ class DisplayPlayerAction
     {
         this.player = player_action.player;
 
-        let first_arriver = new HashMap<Coordinate, true>();
+        let first_arriver = new HashSet<Coordinate>();
         this.actions = player_action.actions.map((a: Action) =>
         {
             let type = <DisplayActionType> <unknown> a.type;
             if (a.type == ActionType.Attack || a.type == ActionType.Move)
             {
-                let arriver = first_arriver.get(a.move.to);
-                first_arriver.put(a.move.to, true);
-                let is_first = !arriver;
+                let is_first = !first_arriver.has(a.move.to);
+                first_arriver.put(a.move.to);
                 if (!is_first)
                 {
                     if (a.type == ActionType.Attack)

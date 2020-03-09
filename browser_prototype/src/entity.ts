@@ -292,7 +292,7 @@ function serialize_player(player: Player)
     return JSON.stringify(player);
 }
 
-class Move implements ISerializable, ICopyable<Move>
+class Move implements ISerializable, ICopyable<Move>, IHashable
 {
     constructor(public from: Coordinate, public to: Coordinate)
     {
@@ -306,6 +306,11 @@ class Move implements ISerializable, ICopyable<Move>
     which_skill(): Skill
     {
         return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
+    }
+
+    hash(): string
+    {
+        return `Move(${ this.from.hash() },${ this.to.hash() })`;
     }
 
     serialize(): string
