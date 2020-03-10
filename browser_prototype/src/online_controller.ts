@@ -50,7 +50,7 @@ class OnlineController implements IOnlineController
         let components = {
             action_panel: new stub,
             status_bar: new stub,
-            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; submit_move = () => { }; }
+            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
         };
 
         this.render_ctrl = new RenderController(this.context, components);
@@ -178,8 +178,11 @@ class OnlineController implements IOnlineController
 
         if (this.seconds_before_submit <= 0)
         {
-            this.render_ctrl.components.button_bar.submit_move();
-            this.stop_count_down();
+            while (!this.adequate_supply())
+            {
+                this.context.pop_move(this.context.player);
+            }
+            this.submit_move();
         }
     }
 

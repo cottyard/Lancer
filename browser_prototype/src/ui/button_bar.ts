@@ -1,7 +1,6 @@
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
-    submit_move(): void;
 }
 
 class ButtonBar implements IButtonBar
@@ -18,14 +17,6 @@ class ButtonBar implements IButtonBar
         public render_ctrl: IRenderController,
         public online_ctrl: IOnlineController)
     {
-    }
-
-    submit_move()
-    {
-        if (this.submit_button)
-        {
-            this.submit_button.click();
-        }
     }
 
     set view_last_round(value: boolean)
@@ -279,14 +270,6 @@ class SolitudeButtonBar implements IButtonBar
     constructor(public dom_element: HTMLDivElement, public render_ctrl: IRenderController, public context: IGameContext)
     {
         context.on_new_game(this.render.bind(this));
-    }
-
-    submit_move()
-    {
-        if (this.next_round)
-        {
-            this.next_round.click();
-        }
     }
 
     set view_last_round(value: boolean)
