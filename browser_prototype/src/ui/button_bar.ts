@@ -8,6 +8,7 @@ class ButtonBar implements IButtonBar
     submit_button: HTMLButtonElement | null = null;
     last_round_button: HTMLButtonElement | null = null;
     heat_button: HTMLButtonElement | null = null;
+    alarm_button: HTMLButtonElement | null = null;
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
@@ -62,6 +63,7 @@ class ButtonBar implements IButtonBar
     {
         this.update_last_round_name();
         this.update_heat_name();
+        this.update_alarm_name();
     }
 
     update_last_round_name()
@@ -77,6 +79,14 @@ class ButtonBar implements IButtonBar
         if (this.heat_button)
         {
             this.heat_button.innerText = this.show_heat ? "Heat:  On" : "Heat: Off";
+        }
+    }
+
+    update_alarm_name()
+    {
+        if (this.alarm_button)
+        {
+            this.alarm_button.innerText = this.online_ctrl.enable_sound ? "Alarm:  On" : "Alarm: Off";
         }
     }
 
@@ -251,6 +261,16 @@ class ButtonBar implements IButtonBar
             };
 
             this.dom_element.appendChild(this.heat_button);
+
+            this.alarm_button = DomHelper.createButton();
+
+            this.alarm_button.onclick = () =>
+            {
+                this.online_ctrl.enable_sound = !this.online_ctrl.enable_sound;
+                this.update_alarm_name();
+            };
+
+            this.dom_element.appendChild(this.alarm_button);
         }
 
         this.update_button_names();

@@ -2,6 +2,7 @@ interface IOnlineController
 {
     status: OnlineGameStatus;
     seconds_before_submit: number;
+    enable_sound: boolean;
     adequate_supply(): boolean;
     is_playing(): boolean;
     is_in_queue(): boolean;
@@ -35,6 +36,7 @@ class OnlineController implements IOnlineController
     render_ctrl: IRenderController;
     seconds_before_submit = 0;
     timer_handle: number | null = null;
+    enable_sound = false;
 
     constructor()
     {
@@ -107,7 +109,7 @@ class OnlineController implements IOnlineController
 
         if (value == OnlineGameStatus.WaitForPlayer)
         {
-            this.count_down();
+            this.start_count_down();
             this.render_ctrl.unfreeze_selection();
         }
 
@@ -155,7 +157,7 @@ class OnlineController implements IOnlineController
         this.status = OnlineGameStatus.InQueue;
     }
 
-    count_down()
+    start_count_down()
     {
         this.seconds_before_submit = this.round_time;
         this.render_ctrl.components.button_bar.render();
@@ -176,8 +178,16 @@ class OnlineController implements IOnlineController
         this.seconds_before_submit--;
         this.render_ctrl.components.button_bar.render();
 
+        if (this.enable_sound &&
+            this.seconds_before_submit > 0 &&
+            this.seconds_before_submit <= 10)
+        {
+            beep();
+        }
+
         if (this.seconds_before_submit <= 0)
         {
+
             while (!this.adequate_supply())
             {
                 this.context.pop_move(this.context.player);
@@ -229,4 +239,17 @@ class OnlineController implements IOnlineController
     {
         return this.status == OnlineGameStatus.NotStarted;
     }
+}
+
+function beep()
+{
+    let v = g.audio_context.createOscillator();
+    let u = g.audio_context.createGain();
+    v.connect(u);
+    v.frequency.value = 880;
+    u.gain.value = 0.01;
+    v.type = "square";
+    u.connect(g.audio_context.destination);
+    v.start(g.audio_context.currentTime);
+    v.stop(g.audio_context.currentTime + 0.05);
 }

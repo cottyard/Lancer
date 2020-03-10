@@ -2,6 +2,7 @@ class Module
 {
     online_control: IOnlineController | null = null;
     render_control: IRenderController | null = null;
+    audio_context = new AudioContext();
 
     readonly cvs_size: number = 720;
     readonly board_size_x: number = 9;
