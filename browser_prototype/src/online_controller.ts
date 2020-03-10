@@ -71,6 +71,7 @@ class OnlineController implements IOnlineController
 
     submit_move(): void
     {
+        this.stop_count_down();
         this.context.make_move(this.context.player);
     }
 
@@ -161,6 +162,15 @@ class OnlineController implements IOnlineController
         this.timer_handle = setInterval(this.timer.bind(this), 1000);
     }
 
+    stop_count_down()
+    {
+        if (this.timer_handle)
+        {
+            clearInterval(this.timer_handle);
+            this.timer_handle = null;
+        }
+    }
+
     timer()
     {
         this.seconds_before_submit--;
@@ -169,11 +179,7 @@ class OnlineController implements IOnlineController
         if (this.seconds_before_submit <= 0)
         {
             this.render_ctrl.components.button_bar.submit_move();
-            if (this.timer_handle)
-            {
-                clearInterval(this.timer_handle);
-                this.timer_handle = null;
-            }
+            this.stop_count_down();
         }
     }
 
