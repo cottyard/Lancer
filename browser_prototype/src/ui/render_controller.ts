@@ -13,6 +13,8 @@ interface IRenderController
     show_heat(): void;
     hide_heat(): void;
     refresh_all(): void;
+    freeze_selection(): void;
+    unfreeze_selection(): void;
 }
 
 class RenderController implements IRenderController
@@ -26,6 +28,7 @@ class RenderController implements IRenderController
     options_recall: Coordinate[] = [];
     _show_heat: boolean = false;
     show_threats: boolean = true;
+    selection_frozen: boolean = false;
 
     _displaying_board: Board<Unit>;
     displaying_heat_board: FullBoard<Heat>;
@@ -124,12 +127,14 @@ class RenderController implements IRenderController
         if (value && this.context.last)
         {
             this._show_last_round = true;
+            this.selection_frozen = true;
             this.displaying_actions = this.context.present.last_actions!;
             this.displaying_board = this.context.last!.board;
         }
         else if (!value)
         {
             this._show_last_round = false;
+            this.selection_frozen = false;
             this.displaying_actions = this.context.actions;
             this.displaying_board = this.context.present.board;
         }
@@ -292,16 +297,30 @@ class RenderController implements IRenderController
     on_mouse_down(event: MouseEvent): void
     {
         let coord = this.get_coordinate(event);
-        this.selected = coord;
+        if (!this.selection_frozen)
+        {
+            this.selected = coord;
+        }
         this.show_threats = false;
         this.update_options(coord);
         this.render_indicators();
     }
 
+    freeze_selection(): void
+    {
+        this.selection_frozen = true;
+    }
+
+    unfreeze_selection(): void
+    {
+        this.selection_frozen = false;
+    }
+
     on_mouse_up(event: MouseEvent): void
     {
         this.current = this.get_coordinate(event);
-        if (this.selected && !this.show_last_round)
+
+        if (this.selected && !this.selection_frozen)
         {
             for (let player of Player.both())
             {
@@ -311,6 +330,7 @@ class RenderController implements IRenderController
                 }
             }
         }
+
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);

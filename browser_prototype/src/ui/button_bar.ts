@@ -1,13 +1,14 @@
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
+    submit_move(): void;
 }
 
-class ButtonBar implements IComponent
+class ButtonBar implements IButtonBar
 {
-    submit: HTMLButtonElement | null = null;
-    last_round: HTMLButtonElement | null = null;
-    heat: HTMLButtonElement | null = null;
+    submit_button: HTMLButtonElement | null = null;
+    last_round_button: HTMLButtonElement | null = null;
+    heat_button: HTMLButtonElement | null = null;
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
@@ -17,6 +18,14 @@ class ButtonBar implements IComponent
         public render_ctrl: IRenderController,
         public online_ctrl: IOnlineController)
     {
+    }
+
+    submit_move()
+    {
+        if (this.submit_button)
+        {
+            this.submit_button.click();
+        }
     }
 
     set view_last_round(value: boolean)
@@ -66,17 +75,17 @@ class ButtonBar implements IComponent
 
     update_last_round_name()
     {
-        if (this.last_round)
+        if (this.last_round_button)
         {
-            this.last_round.innerText = this.view_last_round ? "Return To Now" : "Show Last Round";
+            this.last_round_button.innerText = this.view_last_round ? "Return To Now" : "Show Last Round";
         }
     }
 
     update_heat_name()
     {
-        if (this.heat)
+        if (this.heat_button)
         {
-            this.heat.innerText = this.show_heat ? "Heat:  On" : "Heat: Off";
+            this.heat_button.innerText = this.show_heat ? "Heat:  On" : "Heat: Off";
         }
     }
 
@@ -144,6 +153,8 @@ class ButtonBar implements IComponent
                     submit_button.innerText = "Submit Move";
                     submit_button.onclick = () => { this.online_ctrl.submit_move(); };
                 }
+
+                submit_button.innerText += ` (${ this.online_ctrl.seconds_before_submit })`;
             }
             else if (this.online_ctrl.status == OnlineGameStatus.WaitForOpponent)
             {
@@ -157,7 +168,7 @@ class ButtonBar implements IComponent
             }
 
             this.dom_element.appendChild(submit_button);
-            this.submit = submit_button;
+            this.submit_button = submit_button;
         }
 
         if (this.online_ctrl.is_finished())
@@ -190,14 +201,14 @@ class ButtonBar implements IComponent
 
         if (!this.online_ctrl.is_not_started() && !this.online_ctrl.is_in_queue())
         {
-            this.last_round = DomHelper.createButton();
+            this.last_round_button = DomHelper.createButton();
 
-            this.last_round.onclick = () =>
+            this.last_round_button.onclick = () =>
             {
                 this.view_last_round = !this.view_last_round;
             };
 
-            this.last_round.onmouseenter = () =>
+            this.last_round_button.onmouseenter = () =>
             {
                 if (!this.view_last_round)
                 {
@@ -207,7 +218,7 @@ class ButtonBar implements IComponent
                     }, 200);
                 }
             };
-            this.last_round.onmouseleave = () =>
+            this.last_round_button.onmouseleave = () =>
             {
                 if (!this.view_last_round)
                 {
@@ -222,40 +233,40 @@ class ButtonBar implements IComponent
 
             if (this.online_ctrl.is_first_round())
             {
-                this.last_round.disabled = true;
+                this.last_round_button.disabled = true;
             }
 
-            this.dom_element.appendChild(this.last_round);
+            this.dom_element.appendChild(this.last_round_button);
 
-            this.heat = DomHelper.createButton();
+            this.heat_button = DomHelper.createButton();
 
-            this.heat.onmouseenter = () =>
+            this.heat_button.onmouseenter = () =>
             {
                 if (!this.show_heat)
                 {
                     this.render_ctrl.show_heat();
                 }
             };
-            this.heat.onmouseleave = () =>
+            this.heat_button.onmouseleave = () =>
             {
                 if (!this.show_heat)
                 {
                     this.render_ctrl.hide_heat();
                 }
             };
-            this.heat.onclick = () =>
+            this.heat_button.onclick = () =>
             {
                 this.show_heat = !this.show_heat;
             };
 
-            this.dom_element.appendChild(this.heat);
+            this.dom_element.appendChild(this.heat_button);
         }
 
         this.update_button_names();
     }
 }
 
-class SolitudeButtonBar implements IComponent
+class SolitudeButtonBar implements IButtonBar
 {
     next_round: HTMLButtonElement | null = null;
     last_round: HTMLButtonElement | null = null;
@@ -268,6 +279,14 @@ class SolitudeButtonBar implements IComponent
     constructor(public dom_element: HTMLDivElement, public render_ctrl: IRenderController, public context: IGameContext)
     {
         context.on_new_game(this.render.bind(this));
+    }
+
+    submit_move()
+    {
+        if (this.next_round)
+        {
+            this.next_round.click();
+        }
     }
 
     set view_last_round(value: boolean)

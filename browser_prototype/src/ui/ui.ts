@@ -12,7 +12,7 @@ function ui_solitude()
     let components = {
         action_panel: new stub,
         status_bar: new stub,
-        button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
+        button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; submit_move = () => { }; }
     };
 
     let ctrl = new RenderController(context, components);

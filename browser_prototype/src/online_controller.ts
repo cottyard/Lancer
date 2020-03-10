@@ -1,6 +1,7 @@
 interface IOnlineController
 {
     status: OnlineGameStatus;
+    seconds_before_submit: number;
     adequate_supply(): boolean;
     is_playing(): boolean;
     is_in_queue(): boolean;
@@ -27,10 +28,13 @@ enum OnlineGameStatus
 
 class OnlineController implements IOnlineController
 {
+    readonly round_time = 60;
     player_name: string = `player${ Math.floor(10000 * Math.random()) }`;
     private _status: OnlineGameStatus = OnlineGameStatus.NotStarted;
     context: IOnlineGameContext;
     render_ctrl: IRenderController;
+    seconds_before_submit = 0;
+    timer_handle: number | null = null;
 
     constructor()
     {
@@ -46,7 +50,7 @@ class OnlineController implements IOnlineController
         let components = {
             action_panel: new stub,
             status_bar: new stub,
-            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
+            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; submit_move = () => { }; }
         };
 
         this.render_ctrl = new RenderController(this.context, components);
@@ -100,6 +104,17 @@ class OnlineController implements IOnlineController
             this.render_ctrl.components.button_bar.view_last_round = false;
         }
 
+        if (value == OnlineGameStatus.WaitForPlayer)
+        {
+            this.count_down();
+            this.render_ctrl.unfreeze_selection();
+        }
+
+        if (value == OnlineGameStatus.WaitForOpponent)
+        {
+            this.render_ctrl.freeze_selection();
+        }
+
         if (this._status != value)
         {
             this._status = value;
@@ -125,9 +140,11 @@ class OnlineController implements IOnlineController
             case GameStatus.Tied:
                 this.status = OnlineGameStatus.Tied;
                 break;
-            default:
+            case GameStatus.Ongoing:
                 this.status = OnlineGameStatus.WaitForPlayer;
                 break;
+            default:
+                throw new Error("Unknown status");
         }
     }
 
@@ -135,6 +152,29 @@ class OnlineController implements IOnlineController
     {
         console.log('new session:', session_id);
         this.status = OnlineGameStatus.InQueue;
+    }
+
+    count_down()
+    {
+        this.seconds_before_submit = this.round_time;
+        this.render_ctrl.components.button_bar.render();
+        this.timer_handle = setInterval(this.timer.bind(this), 1000);
+    }
+
+    timer()
+    {
+        this.seconds_before_submit--;
+        this.render_ctrl.components.button_bar.render();
+
+        if (this.seconds_before_submit <= 0)
+        {
+            this.render_ctrl.components.button_bar.submit_move();
+            if (this.timer_handle)
+            {
+                clearInterval(this.timer_handle);
+                this.timer_handle = null;
+            }
+        }
     }
 
     new_game()
