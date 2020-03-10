@@ -95,11 +95,11 @@ class Action:
                 return 4
         elif self.type == ActionType.Recruit:
             return {
-                Barbarian: 10,
-                Soldier: 10,
-                Archer: 10,
-                Rider: 15,
-                Wagon: 10
+                Barbarian: 8,
+                Soldier: 8,
+                Archer: 8,
+                Rider: 12,
+                Wagon: 8
             }[self.unit_type]
         elif self.type == ActionType.Recall:
             return 8
@@ -439,7 +439,7 @@ class Wagon(Unit):
     level = 0
     
     def get_trophy(self):
-        return 20 if self.is_perfect() else 10
+        return 20 if self.is_perfect() else 8
 
 
 def convert_skill_list_map_to_skillset_map(skill_list_map):

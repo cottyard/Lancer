@@ -427,11 +427,11 @@ class Action implements ICopyable<Action>
                     case Barbarian:
                     case Archer:
                     case Soldier:
-                        return 10;
+                        return 8;
                     case Rider:
-                        return 15;
+                        return 12;
                     case Wagon:
-                        return 10;
+                        return 8;
                 }
                 throw new Error("Action.cost");
             case ActionType.Recall:
@@ -830,6 +830,6 @@ class Wagon extends UnitConstructor
 
     get_trophy(): number
     {
-        return this.is_perfect() ? 20 : 10;
+        return this.is_perfect() ? 20 : 8;
     }
 }
