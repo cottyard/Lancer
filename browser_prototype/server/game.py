@@ -111,7 +111,7 @@ class Game:
             [
                 [
                     martyr.board_unit.position.serialize(), 
-                    martyr.board_unit.unit.trophy if martyr.has_trophy else 0
+                    martyr.board_unit.unit.get_trophy() if martyr.has_trophy else 0
                 ] for martyr in self.martyr_list
             ]
         ])
