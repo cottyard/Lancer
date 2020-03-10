@@ -159,6 +159,7 @@ class OnlineController implements IOnlineController
 
     start_count_down()
     {
+        this.stop_count_down();
         this.seconds_before_submit = this.round_time;
         this.render_ctrl.components.button_bar.render();
         this.timer_handle = setInterval(this.timer.bind(this), 1000);

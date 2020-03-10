@@ -62,6 +62,9 @@ def rollback_game(session_id):
         if session_id in pool:
             session = pool[session_id]
             session.rollback()
+            sg_player_move = game_player_move_map[session.current_game_id()]
+            if sg_player_move:
+                sg_player_move.reset()
             return 'done'
     abort(404)
 
