@@ -20,6 +20,7 @@ enum OnlineGameStatus
     NotStarted,
     InQueue,
     WaitForPlayer,
+    Submitting,
     WaitForOpponent,
     Loading,
     Victorious,
@@ -58,7 +59,7 @@ class OnlineController implements IOnlineController
         this.render_ctrl = new RenderController(this.context, components);
 
         components.action_panel = new ActionPanel(<HTMLDivElement> document.getElementById('action-panel'), this.render_ctrl, this.context);
-        components.status_bar = new StatusBar(<HTMLDivElement> document.getElementById('status-bar'), this.context);
+        components.status_bar = new StatusBar(<HTMLDivElement> document.getElementById('status-bar'), this.render_ctrl, this.context);
         components.button_bar = new ButtonBar(<HTMLDivElement> document.getElementById('button-bar'), this.render_ctrl, this);
 
         this.render_ctrl.refresh_all();
@@ -75,6 +76,7 @@ class OnlineController implements IOnlineController
     {
         this.stop_count_down();
         this.context.make_move(this.context.player);
+        this.status = OnlineGameStatus.Submitting;
     }
 
     is_first_round(): boolean
@@ -113,13 +115,21 @@ class OnlineController implements IOnlineController
             this.render_ctrl.unfreeze_selection();
         }
 
-        if (value == OnlineGameStatus.WaitForOpponent)
+        if (value == OnlineGameStatus.Submitting)
         {
             this.render_ctrl.freeze_selection();
         }
 
         if (this._status != value)
         {
+            if (value == OnlineGameStatus.WaitForOpponent)
+            {
+                if (this.status != OnlineGameStatus.Submitting)
+                {
+                    return;
+                }
+            }
+
             this._status = value;
             this.render_ctrl.refresh();
         }
@@ -217,6 +227,7 @@ class OnlineController implements IOnlineController
     {
         return [
             OnlineGameStatus.WaitForOpponent,
+            OnlineGameStatus.Submitting,
             OnlineGameStatus.WaitForPlayer,
             OnlineGameStatus.Loading,
         ].indexOf(this.status) > -1;

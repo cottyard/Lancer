@@ -70,7 +70,7 @@ class ButtonBar implements IButtonBar
     {
         if (this.last_round_button)
         {
-            this.last_round_button.innerText = this.view_last_round ? "Return To Now" : "Show Last Round";
+            this.last_round_button.innerText = this.view_last_round ? "Proceed To Now" : "Show Last Round";
         }
     }
 
@@ -161,6 +161,11 @@ class ButtonBar implements IButtonBar
             {
                 submit_button.disabled = true;
                 submit_button.innerText = "Waiting for opponent...";
+            }
+            else if (this.online_ctrl.status == OnlineGameStatus.Submitting)
+            {
+                submit_button.disabled = true;
+                submit_button.innerText = "Submitting...";
             }
             else
             {

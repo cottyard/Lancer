@@ -6,6 +6,7 @@ interface IRenderController
         status_bar: IComponent,
         button_bar: IButtonBar;
     };
+    show_last_round: boolean;
     refresh(): void;
     highlight(coord: Coordinate): void;
     show_last(): void;

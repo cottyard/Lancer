@@ -2,6 +2,7 @@ class StatusBar implements IComponent
 {
     constructor(
         public dom_element: HTMLDivElement,
+        public render_ctrl: IRenderController,
         public context: IOnlineGameContext)
     {
     }
@@ -31,8 +32,14 @@ class StatusBar implements IComponent
 
             if (player == Player.P1)
             {
+                let round_number = this.context.present.round_count;
+                if (this.render_ctrl.show_last_round)
+                {
+                    round_number--;
+                }
+
                 this.dom_element.appendChild(DomHelper.createText(
-                    `Round ${ this.context.present.round_count }`,
+                    `Round ${ round_number }`,
                     {
                         'text-align': 'center',
                         fontWeight: "bold",
