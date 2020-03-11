@@ -53,7 +53,7 @@ class OnlineController implements IOnlineController
         let components = {
             action_panel: new stub,
             status_bar: new stub,
-            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; }
+            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; render_text = () => { }; }
         };
 
         this.render_ctrl = new RenderController(this.context, components);
@@ -106,7 +106,7 @@ class OnlineController implements IOnlineController
             OnlineGameStatus.Defeated,
             OnlineGameStatus.Tied].indexOf(value) > -1)
         {
-            this.render_ctrl.components.button_bar.view_last_round = false;
+            this.render_ctrl.components.button_bar.view_last_round = this.context.present.round_count > 0;
         }
 
         if (value == OnlineGameStatus.WaitForPlayer)
@@ -171,7 +171,7 @@ class OnlineController implements IOnlineController
     {
         this.stop_count_down();
         this.seconds_before_submit = this.round_time;
-        this.render_ctrl.components.button_bar.render();
+        this.render_ctrl.components.button_bar.render_text();
         this.timer_handle = setInterval(this.timer.bind(this), 1000);
     }
 
@@ -187,7 +187,7 @@ class OnlineController implements IOnlineController
     timer()
     {
         this.seconds_before_submit--;
-        this.render_ctrl.components.button_bar.render();
+        this.render_ctrl.components.button_bar.render_text();
 
         if (this.enable_sound &&
             this.seconds_before_submit > 0 &&

@@ -1,6 +1,7 @@
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
+    render_text(): void;
 }
 
 class ButtonBar implements IButtonBar
@@ -9,6 +10,7 @@ class ButtonBar implements IButtonBar
     last_round_button: HTMLButtonElement | null = null;
     heat_button: HTMLButtonElement | null = null;
     alarm_button: HTMLButtonElement | null = null;
+    private _view_last_round_on_hover = true;
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
     private view_last_round_handle: number | null = null;
@@ -59,11 +61,12 @@ class ButtonBar implements IButtonBar
         return this._show_heat;
     }
 
-    update_button_names()
+    render_text()
     {
         this.update_last_round_name();
         this.update_heat_name();
         this.update_alarm_name();
+        this.update_submit_name();
     }
 
     update_last_round_name()
@@ -87,6 +90,44 @@ class ButtonBar implements IButtonBar
         if (this.alarm_button)
         {
             this.alarm_button.innerText = this.online_ctrl.enable_sound ? "Alarm:  On" : "Alarm: Off";
+        }
+    }
+
+    update_submit_name()
+    {
+        if (!this.submit_button)
+        {
+            return;
+        }
+
+        if (this.online_ctrl.status == OnlineGameStatus.WaitForPlayer)
+        {
+            if (!this.online_ctrl.adequate_supply())
+            {
+                this.submit_button.disabled = true;
+                this.submit_button.innerText = "Insufficient supply";
+            }
+            else
+            {
+                this.submit_button.innerText = "Submit Move";
+            }
+
+            this.submit_button.innerText += ` (${ this.online_ctrl.seconds_before_submit })`;
+        }
+        else if (this.online_ctrl.status == OnlineGameStatus.WaitForOpponent)
+        {
+            this.submit_button.disabled = true;
+            this.submit_button.innerText = "Waiting for opponent...";
+        }
+        else if (this.online_ctrl.status == OnlineGameStatus.Submitting)
+        {
+            this.submit_button.disabled = true;
+            this.submit_button.innerText = "Submitting...";
+        }
+        else
+        {
+            this.submit_button.disabled = true;
+            this.submit_button.innerText = "Loading next round...";
         }
     }
 
@@ -144,33 +185,10 @@ class ButtonBar implements IButtonBar
 
             if (this.online_ctrl.status == OnlineGameStatus.WaitForPlayer)
             {
-                if (!this.online_ctrl.adequate_supply())
+                if (this.online_ctrl.adequate_supply())
                 {
-                    submit_button.disabled = true;
-                    submit_button.innerText = "Insufficient supply";
-                }
-                else
-                {
-                    submit_button.innerText = "Submit Move";
                     submit_button.onclick = () => { this.online_ctrl.submit_move(); };
                 }
-
-                submit_button.innerText += ` (${ this.online_ctrl.seconds_before_submit })`;
-            }
-            else if (this.online_ctrl.status == OnlineGameStatus.WaitForOpponent)
-            {
-                submit_button.disabled = true;
-                submit_button.innerText = "Waiting for opponent...";
-            }
-            else if (this.online_ctrl.status == OnlineGameStatus.Submitting)
-            {
-                submit_button.disabled = true;
-                submit_button.innerText = "Submitting...";
-            }
-            else
-            {
-                submit_button.disabled = true;
-                submit_button.innerText = "Loading next round...";
             }
 
             this.dom_element.appendChild(submit_button);
@@ -211,12 +229,13 @@ class ButtonBar implements IButtonBar
 
             this.last_round_button.onclick = () =>
             {
+                this._view_last_round_on_hover = false;
                 this.view_last_round = !this.view_last_round;
             };
 
             this.last_round_button.onmouseenter = () =>
             {
-                if (!this.view_last_round)
+                if (!this.view_last_round && this._view_last_round_on_hover)
                 {
                     this.view_last_round_handle = setTimeout(() =>
                     {
@@ -226,6 +245,7 @@ class ButtonBar implements IButtonBar
             };
             this.last_round_button.onmouseleave = () =>
             {
+                this._view_last_round_on_hover = true;
                 if (!this.view_last_round)
                 {
                     this.render_ctrl.show_present();
@@ -278,7 +298,7 @@ class ButtonBar implements IButtonBar
             this.dom_element.appendChild(this.alarm_button);
         }
 
-        this.update_button_names();
+        this.render_text();
     }
 }
 
@@ -336,7 +356,7 @@ class SolitudeButtonBar implements IButtonBar
         return this._show_heat;
     }
 
-    update_button_names()
+    render_text()
     {
         this.update_last_round_name();
         this.update_heat_name();
@@ -538,6 +558,6 @@ class SolitudeButtonBar implements IButtonBar
 
         this.dom_element.appendChild(this.heat);
 
-        this.update_button_names();
+        this.render_text();
     }
 }

@@ -29,7 +29,7 @@ class RenderController implements IRenderController
     options_recall: Coordinate[] = [];
     _show_heat: boolean = false;
     show_threats: boolean = true;
-    selection_frozen: boolean = false;
+    _selection_frozen: boolean = false;
 
     _displaying_board: Board<Unit>;
     displaying_heat_board: FullBoard<Heat>;
@@ -128,14 +128,12 @@ class RenderController implements IRenderController
         if (value && this.context.last)
         {
             this._show_last_round = true;
-            this.selection_frozen = true;
             this.displaying_actions = this.context.present.last_actions!;
             this.displaying_board = this.context.last!.board;
         }
         else if (!value)
         {
             this._show_last_round = false;
-            this.selection_frozen = false;
             this.displaying_actions = this.context.actions;
             this.displaying_board = this.context.present.board;
         }
@@ -309,12 +307,17 @@ class RenderController implements IRenderController
 
     freeze_selection(): void
     {
-        this.selection_frozen = true;
+        this._selection_frozen = true;
     }
 
     unfreeze_selection(): void
     {
-        this.selection_frozen = false;
+        this._selection_frozen = false;
+    }
+
+    get selection_frozen(): boolean
+    {
+        return this._selection_frozen || this.show_last_round;
     }
 
     on_mouse_up(event: MouseEvent): void
