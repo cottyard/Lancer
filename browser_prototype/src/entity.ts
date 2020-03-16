@@ -17,14 +17,11 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 
     add(dx: number, dy: number): Coordinate | null
     {
-        if (Coordinate.is_valid(this.x + dx, this.y + dy))
-        {
-            return new Coordinate(this.x + dx, this.y + dy);
-        }
-        else
+        if (!Coordinate.is_valid(this.x + dx, this.y + dy))
         {
             return null;
         }
+        return new Coordinate(this.x + dx, this.y + dy);
     }
 
     copy(): Coordinate
@@ -305,7 +302,7 @@ class Move implements ISerializable, ICopyable<Move>, IHashable
         let dy = this.to.y - this.from.y;
         if (Skill.is_valid(dx, dy))
         {
-            return new Skill(dy, dy);
+            return new Skill(dx, dy);
         }
         else
         {
