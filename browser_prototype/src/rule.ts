@@ -679,30 +679,22 @@ class Rule
 
 class Buff
 {
-    map = new Map<ActionType, number>([
-        [ActionType.Attack, 0],
-        [ActionType.Defend, 0],
-        [ActionType.Move, 0],
-        [ActionType.Upgrade, 0]
-    ]);
+    map = [0, 0, 0, 0, 0];
 
     add(type: ActionType, amount: number)
     {
-        this.map.set(type, this.map.get(type)! + amount);
+        this.map[type] += amount;
     }
 
     get(type: ActionType): number
     {
-        return this.map.get(type)!;
+        return this.map[type];
     }
 }
 
 class Heat
 {
-    map: Players<number> = {
-        [Player.P1]: 0,
-        [Player.P2]: 0
-    };
+    map = [0, 0, 0];
 
     heatup(player: Player)
     {
@@ -722,14 +714,8 @@ class Heat
 
 class Force
 {
-    reinforcers: Players<Unit[]> = {
-        [Player.P1]: [],
-        [Player.P2]: []
-    };
-    arriver: Players<Quester | null> = {
-        [Player.P1]: null,
-        [Player.P2]: null
-    };
+    reinforcers: Unit[][] = [[], [], []];
+    arriver: (Quester | null)[] = [null, null, null];
 }
 
 class Martyr

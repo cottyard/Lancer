@@ -21,7 +21,7 @@ class AI
             return Rule.validate_move(game.board, m, Player.P2);
         });;
 
-        for (let i = 0; i < 1000; ++i)
+        for (let i = 0; i < 10000; ++i)
         {
             let p1 = new PlayerMove(Player.P1, AI.pick_moves(p1_actions, buff, p1_supply));
             let p2 = new PlayerMove(Player.P2, AI.pick_moves(p2_actions, buff, p2_supply));
