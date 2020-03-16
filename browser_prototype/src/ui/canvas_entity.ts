@@ -1,6 +1,6 @@
 type CanvasUnitConstructor = new (unit: Unit) => CanvasUnit;
 
-let CanvasUnitFactory = function(unit: Unit): CanvasUnit
+let CanvasUnitFactory = function (unit: Unit): CanvasUnit
 {
     let cmap = new Map<UnitConstructor, CanvasUnitConstructor>([
         [Rider, CanvasRider],
@@ -19,15 +19,15 @@ let CanvasUnitFactory = function(unit: Unit): CanvasUnit
     let constructor = cmap.get(unit.type());
     if (!constructor)
     {
-        throw new Error(`Canvas ${unit.type().name} missing`);
+        throw new Error(`Canvas ${ unit.type().name } missing`);
     }
     return new constructor(unit);
-}
+};
 
 abstract class CanvasUnit
 {
     color: string;
-    
+
     static halo_size_small = 30;
     static halo_size_large = 45;
     static halo_radius_small = g.settings.grid_size / 2 - 5;
@@ -68,7 +68,8 @@ abstract class CanvasHaloUnit extends CanvasUnit
 
     get_halo_angles_and_radius(): [Angle, number][]
     {
-        return this.get_directions(this.skill_direction).map(dir => {
+        return this.get_directions(this.skill_direction).map(dir =>
+        {
             return [Angle.create(dir, this.halo_size), this.halo_radius];
         });
     }
@@ -76,7 +77,8 @@ abstract class CanvasHaloUnit extends CanvasUnit
     get_directions(map: HashMap<Skill, Direction>): Direction[]
     {
         return this.unit.current.as_list().map(
-            (skill: Skill) => {
+            (skill: Skill) =>
+            {
                 return map.get(skill);
             }
         ).filter((d: Direction | undefined): d is Direction => !!d);
@@ -269,10 +271,12 @@ class CanvasSpearman extends CanvasHaloUnit
 
     get_halo_angles_and_radius(): [Angle, number][]
     {
-        let a1: [Angle, number][] = this.get_directions(this.inner_skill_direction).map(d => {
+        let a1: [Angle, number][] = this.get_directions(this.inner_skill_direction).map(d =>
+        {
             return [Angle.create(d, this.halo_size), CanvasUnit.halo_radius_small];
         });
-        let a2: [Angle, number][] = this.get_directions(this.outer_skill_direction).map(d => {
+        let a2: [Angle, number][] = this.get_directions(this.outer_skill_direction).map(d =>
+        {
             return [Angle.create(d, this.halo_size), CanvasUnit.halo_radius_large];
         });
 

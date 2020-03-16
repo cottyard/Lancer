@@ -71,7 +71,6 @@ class HashSet<V extends IHashable>
 
 interface IDeserializable<T>
 {
-    new(...args: any[]): T;
     deserialize(payload: string): T;
 }
 

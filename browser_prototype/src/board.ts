@@ -119,6 +119,7 @@ class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T>
 
 interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _> extends IDeserializable<SerializableBoard<T>>
 {
+    new(): SerializableBoard<T>;
     deserialize(payload: string): SerializableBoard<T>;
 }
 

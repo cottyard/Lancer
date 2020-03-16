@@ -87,7 +87,7 @@ class ActionPanel implements IComponent
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.context.buff).toString(),
+            "🍞" + action.action.cost(this.context.present.board.buff).toString(),
             { 'font-weight': 'bold' }
         ));
 
@@ -233,15 +233,15 @@ class ActionPanel implements IComponent
     {
         if (action.type === DisplayActionType.Recruit)
         {
-            return new action.action.unit_type(action.player);
+            return new action.action.unit_type(action.player, null);
         }
         else if (action.type === DisplayActionType.Recall)
         {
-            return this.context.present.board.at(action.action.move.to)!;
+            return this.context.present.board.unit.at(action.action.move.to)!;
         }
         else
         {
-            return this.context.present.board.at(action.action.move.from)!;
+            return this.context.present.board.unit.at(action.action.move.from)!;
         }
     }
 
@@ -249,7 +249,7 @@ class ActionPanel implements IComponent
     {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.context.present.board.at(action.action.move.to);
+            return this.context.present.board.unit.at(action.action.move.to);
         }
         return null;
     }

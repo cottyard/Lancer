@@ -7,7 +7,6 @@ class AI
 
         let begin = new Date().getTime();
 
-        let buff = Rule.get_buff(game.board);
         let p1_supply = game.supply(Player.P1);
         let p2_supply = game.supply(Player.P2);
         let p1_moves = Rule.valid_moves(game.board, Player.P1);
@@ -23,8 +22,8 @@ class AI
 
         for (let i = 0; i < 10000; ++i)
         {
-            let p1 = new PlayerMove(Player.P1, AI.pick_moves(p1_actions, buff, p1_supply));
-            let p2 = new PlayerMove(Player.P2, AI.pick_moves(p2_actions, buff, p2_supply));
+            let p1 = new PlayerMove(Player.P1, AI.pick_moves(p1_actions, game.board.buff, p1_supply));
+            let p2 = new PlayerMove(Player.P2, AI.pick_moves(p2_actions, game.board.buff, p2_supply));
             game.make_move({
                 [Player.P1]: p1,
                 [Player.P2]: p2

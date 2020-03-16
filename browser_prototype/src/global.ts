@@ -163,8 +163,8 @@ class Module
          -xxx-
          -xxx-`;
 
-    readonly perfect_skills = new Map<UnitConstructor, SkillSet>();
-    readonly inborn_skills = new Map<UnitConstructor, SkillSet>();
+    readonly perfect_skills: SkillSet[] = [];
+    readonly inborn_skills: SkillSet[] = [];
 
     initialize()
     {
@@ -177,19 +177,13 @@ class Module
             {
                 throw new Error(`${ type.name } not found`);
             }
-            this.perfect_skills.set(
-                type,
-                SkillSet.from_literal(literal)
-            );
+            this.perfect_skills[type.id] = SkillSet.from_literal(literal);
 
             let inborn = this.inborn_skills_literal[type.name];
 
             if (inborn)
             {
-                this.inborn_skills.set(
-                    type,
-                    SkillSet.from_literal(inborn)
-                );
+                this.inborn_skills[type.id] = SkillSet.from_literal(inborn);
             }
         });
 

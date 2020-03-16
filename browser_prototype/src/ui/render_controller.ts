@@ -1,6 +1,6 @@
 interface IRenderController
 {
-    displaying_board: Board<Unit>;
+    displaying_board: BoardContext;
     components: {
         action_panel: IComponent,
         status_bar: IComponent,
@@ -31,9 +31,7 @@ class RenderController implements IRenderController
     show_threats: boolean = true;
     _selection_frozen: boolean = false;
 
-    _displaying_board: Board<Unit>;
-    displaying_heat_board: FullBoard<Heat>;
-    displaying_buff_board: FullBoard<Buff>;
+    _displaying_board: BoardContext;
     private _show_last_round: boolean = false;
 
     displaying_actions: Players<PlayerAction>;
@@ -62,8 +60,6 @@ class RenderController implements IRenderController
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
         this.displaying_actions = Players.empty((p) => new PlayerAction(p));
-        this.displaying_heat_board = new FullBoard<Heat>(() => new Heat());
-        this.displaying_buff_board = new FullBoard<Buff>(() => new Buff());
 
         this.canvas.paint_background();
 
@@ -109,11 +105,9 @@ class RenderController implements IRenderController
         this.components.button_bar.render();
     }
 
-    set displaying_board(value: Board<Unit>)
+    set displaying_board(value: BoardContext)
     {
         this._displaying_board = value;
-        this.displaying_heat_board = Rule.get_heat(value);
-        this.displaying_buff_board = Rule.get_buff(value);
         this.render_board();
         this.render_indicators();
     }
@@ -185,7 +179,7 @@ class RenderController implements IRenderController
         }
         for (let player_action of Array.from(Player.values(this.displaying_actions)))
         {
-            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board);
+            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board.unit);
         }
         if (this.show_last_round)
         {
@@ -217,11 +211,11 @@ class RenderController implements IRenderController
 
     render_heat(): void
     {
-        this.displaying_heat_board.iterate_units((heat, coord) =>
+        this.displaying_board.heat.iterate_units((heat, coord) =>
         {
             this.canvas.paint_heat(coord, heat);
         });
-        this.displaying_buff_board.iterate_units((buff, coord) =>
+        this.displaying_board.buff.iterate_units((buff, coord) =>
         {
             this.canvas.paint_buff(coord, buff);
         });
@@ -345,27 +339,27 @@ class RenderController implements IRenderController
     {
         if (this.show_threats)
         {
-            this.options_capable = Rule.which_can_reach(this.displaying_board, coord);
+            this.options_capable = Rule.which_can_reach(this.displaying_board.unit, coord);
             this.options_upgrade = [];
             this.options_recall = [];
         }
         else
         {
-            let unit = this.displaying_board.at(coord);
+            let unit = this.displaying_board.unit.at(coord);
             if (unit)
             {
-                this.options_capable = Rule.reachable_by(this.displaying_board, coord);
-                this.options_upgrade = Rule.upgradable_by(this.displaying_board, coord);
+                this.options_capable = Rule.reachable_by(this.displaying_board.unit, coord);
+                this.options_upgrade = Rule.upgradable_by(this.displaying_board.unit, coord);
                 this.options_recall = [];
             }
             else
             {
                 this.options_capable = [];
-                this.options_upgrade = Rule.spawnable_by(this.displaying_board, coord);
+                this.options_upgrade = Rule.spawnable_by(this.displaying_board.unit, coord);
 
                 for (let player of Player.both())
                 {
-                    if (Rule.is_king_side(this.displaying_board, player, coord))
+                    if (Rule.is_king_side(this.displaying_board.unit, player, coord))
                     {
                         this.options_recall = Rule.recallable_by(this.displaying_board, player, coord);
                         return;
@@ -378,7 +372,7 @@ class RenderController implements IRenderController
     render_board()
     {
         this.canvas.clear_canvas(this.canvas.st_ctx);
-        this.displaying_board.iterate_units((unit, coord) =>
+        this.displaying_board.unit.iterate_units((unit, coord) =>
         {
             this.canvas.paint_unit(CanvasUnitFactory(unit), coord);
         });

@@ -13,7 +13,7 @@ class Game
     static readonly supply_basic_incremental = 20;
     constructor(
         readonly round_count: number,
-        readonly board: Board<Unit>,
+        readonly board: BoardContext,
         readonly supplies: Players<number>,
         readonly last_actions: Players<PlayerAction> | null,
         readonly martyrs: Martyr[])
@@ -33,11 +33,10 @@ class Game
             [Player.P2]: 0
         };
 
-        let buff = Rule.get_buff(this.board);
         for (let player of Player.both())
         {
             let supply = this.supplies[player];
-            supply -= actions[player].cost(buff);
+            supply -= actions[player].cost(this.board.buff);
             supply += this.supply_income(player);
             supply += martyrs.reduce<number>((total: number, martyr: Martyr) =>
             {
@@ -57,8 +56,8 @@ class Game
 
     status(): GameStatus
     {
-        let king_1 = Rule.count_unit(this.board, Player.P1, King);
-        let king_2 = Rule.count_unit(this.board, Player.P2, King);
+        let king_1 = Rule.count_unit(this.board.unit, Player.P1, King);
+        let king_2 = Rule.count_unit(this.board.unit, Player.P2, King);
         if (king_1 && king_2)
         {
             return GameStatus.Ongoing;
@@ -80,8 +79,7 @@ class Game
     validate_move(move: PlayerMove): PlayerAction
     {
         let action = Rule.validate_player_move(this.board, move);
-        let buff = Rule.get_buff(this.board);
-        if (action.cost(buff) > this.supplies[action.player])
+        if (action.cost(this.board.buff) > this.supplies[action.player])
         {
             throw new InsufficientSupply();
         }
@@ -96,7 +94,7 @@ class Game
     supply_income(player: Player): number 
     {
         let wagon_revenue = 0;
-        this.board.iterate_units((unit: Unit, _) =>
+        this.board.unit.iterate_units((unit: Unit, _) =>
         {
             if (unit.owner == player && is_wagon(unit))
             {
@@ -120,7 +118,8 @@ class Game
         {
             for (let i = 0; i < g.board_size_x; i++)
             {
-                let unit = new setting[i](player);
+                let unit = new setting[i](player, null);
+                unit.endow_inborn();
                 board.put(new Coordinate(i, row), unit);
             }
         }
@@ -132,7 +131,7 @@ class Game
         let board = new board_ctor();
         this.set_out(board);
         return new Game(
-            0, board,
+            0, new BoardContext(board),
             {
                 [Player.P1]: Game.supply_basic_incremental,
                 [Player.P2]: Game.supply_basic_incremental
@@ -147,7 +146,7 @@ class Game
         let random_player = Math.floor(Math.random() * 2) + 1;
         board.put(new Coordinate(4, 4), Unit.spawn_perfect(random_player, random_unit));
         return new Game(
-            0, board,
+            0, new BoardContext(board),
             {
                 [Player.P1]: 0,
                 [Player.P2]: 0
@@ -185,18 +184,17 @@ class Game
             let coord = Coordinate.deserialize(victim);
 
             // TODO: temporarily stub all deserialized martyr as wagon
-            martyrs.push(new Martyr(new Quester(new Wagon(), coord), trophy));
+            martyrs.push(new Martyr(new Quester(new Wagon(Player.P1, null), coord), trophy));
         }
 
         let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
-        return new Game(round_count, board, supplies, last_round_actions, martyrs);
+        return new Game(round_count, new BoardContext(board), supplies, last_round_actions, martyrs);
     }
 }
 
 interface IGameContext
 {
     last: Game | null;
-    buff: FullBoard<Buff>;
     present: Game;
     actions: Players<PlayerAction>;
     status: GameStatus;
@@ -227,7 +225,6 @@ interface IOnlineGameContext extends IGameContext
 
 class GameContext implements IGameContext
 {
-    protected _buff: FullBoard<Buff>;
     protected history: Game[] = [];
     protected listeners: Function[] = [];
 
@@ -248,7 +245,6 @@ class GameContext implements IGameContext
 
     constructor(protected player_names: Players<string>, protected _present: Game)
     {
-        this._buff = Rule.get_buff(_present.board);
     }
 
     get status(): GameStatus
@@ -268,11 +264,6 @@ class GameContext implements IGameContext
     get present(): Game
     {
         return this._present;
-    }
-
-    get buff(): FullBoard<Buff>
-    {
-        return this._buff;
     }
 
     get actions(): Players<PlayerAction>
@@ -302,7 +293,7 @@ class GameContext implements IGameContext
 
     action_cost(player: Player): number
     {
-        return this.player_actions[player].cost(this._buff);
+        return this.player_actions[player].cost(this._present.board.buff);
     }
 
     delete_moves(player: Player, which: (move: Move) => move is Move): Move[]
@@ -377,7 +368,6 @@ class GameContext implements IGameContext
     {
         this.history.push(this._present);
         this._present = game;
-        this._buff = Rule.get_buff(this._present.board);
 
         for (let player of Player.both())
         {

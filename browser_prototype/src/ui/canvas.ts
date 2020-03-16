@@ -270,7 +270,7 @@ class GameCanvas
             }
             else if (a.type == DisplayActionType.Recruit)
             {
-                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player)), a.action.move.from, true);
+                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player, null)), a.action.move.from, true);
                 if (a.action.move.from.equals(a.action.move.to))
                 {
                     this.mark_this_grid(to, color);

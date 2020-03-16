@@ -498,35 +498,31 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
 {
     readonly perfect: SkillSet;
     current: SkillSet;
-    display: string;
     readonly promotion_options: AdvancedUnitConstructor[] = [];
     readonly level: number = 0;
     readonly trophy: number = 0;
 
-    constructor(public owner: Player)
+    constructor(public owner: Player, current: SkillSet | null = null)
     {
-        this.perfect = g.perfect_skills.get(this.type())!;
-        this.current = new SkillSet();
-        this.display = this.constructor.name;
-        this.endow_inborn();
+        this.perfect = g.perfect_skills[this.type().id];
+        this.current = current == null ? new SkillSet() : current;
     }
 
     serialize(): string
     {
-        return JSON.stringify([this.display, this.owner, this.current.serialize()]);
+        return JSON.stringify([this.type().name, this.owner, this.current.serialize()]);
     }
 
     copy(): Unit
     {
         let ctor = <UnitConstructor> this.constructor;
-        let u = new ctor(this.owner);
-        u.current = this.current.copy();
+        let u = new ctor(this.owner, this.current.copy());
         return u;
     }
 
     endow_inborn(): void
     {
-        let inborn = g.inborn_skills.get(this.type());
+        let inborn = g.inborn_skills[this.type().id];
         if (!inborn)
         {
             return;
@@ -608,7 +604,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
             return null;
         }
 
-        let promoted = new (<AdvancedUnitConstructor> ctor)(this.owner, this);
+        let promoted = new (<AdvancedUnitConstructor> ctor)(this.owner, null);
         promoted.endow(skill);
         return promoted;
     }
@@ -627,7 +623,8 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
         {
             return null;
         }
-        let unit = new ctor(player);
+        let unit = new ctor(player, null);
+        unit.endow_inborn();
         return unit;
     }
 
@@ -652,7 +649,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     {
         for (let c of ctors)
         {
-            if (g.perfect_skills.get(c)!.has(skill))
+            if (g.perfect_skills[c.id].has(skill))
             {
                 return c;
             }
@@ -663,12 +660,15 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
 
 interface UnitConstructor extends IDeserializable<Unit>
 {
-    new(owner: Player): Unit;
+    new(owner: Player, current: SkillSet | null): Unit;
     deserialize(payload: string): Unit;
+    readonly id: number;
 }
 
 const UnitConstructor: UnitConstructor = class _ extends Unit
 {
+    static readonly id = 0;
+
     static deserialize(payload: string): Unit
     {
         let display: string, owner: string, current: string;
@@ -679,21 +679,20 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
         {
             throw new Error('Unit.deserialize: no constructor');
         }
-        let unit = new type(deserialize_player(owner));
-        unit.current = SkillSet.deserialize(current);
+        let unit = new type(deserialize_player(owner), SkillSet.deserialize(current));
         return unit;
     }
 };
 
 interface BasicUnitConstructor extends UnitConstructor
 {
-    new(owner: Player): BasicUnit;
+    new(owner: Player, current: SkillSet | null): BasicUnit;
     discriminator: 'BasicUnitConstructor';
 }
 
 interface AdvancedUnitConstructor extends UnitConstructor
 {
-    new(owner: Player, was: BasicUnit | null): AdvancedUnit;
+    new(owner: Player, current: SkillSet | null): AdvancedUnit;
     discriminator: 'AdvancedUnitConstructor';
 }
 
@@ -726,8 +725,7 @@ abstract class BasicUnit extends UnitConstructor
         {
             for (let future_type of this.promotion_options)
             {
-                potentials = potentials.union(
-                    g.perfect_skills.get(<UnitConstructor> future_type)!);
+                potentials = potentials.union(g.perfect_skills[future_type.id]);
             }
         }
 
@@ -737,15 +735,6 @@ abstract class BasicUnit extends UnitConstructor
 
 abstract class AdvancedUnit extends UnitConstructor
 {
-    constructor(owner: Player, was: BasicUnit | null = null)
-    {
-        super(owner);
-        if (was != null)
-        {
-            this.current = was.current.copy();
-        }
-    }
-
     is_advanced(): boolean
     {
         return true;
@@ -764,6 +753,7 @@ const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
 
 class Rider extends BasicUnitConstructor
 {
+    static readonly id = 1;
     readonly promotion_options = [Lancer, Knight];
     readonly level = 2;
     readonly trophy = 5;
@@ -771,6 +761,7 @@ class Rider extends BasicUnitConstructor
 
 class Soldier extends BasicUnitConstructor
 {
+    static readonly id = 2;
     readonly promotion_options = [Swordsman, Spearman];
     readonly level = 1;
     readonly trophy = 5;
@@ -778,6 +769,7 @@ class Soldier extends BasicUnitConstructor
 
 class Archer extends BasicUnitConstructor
 {
+    static readonly id = 3;
     readonly promotion_options = [Warrior, Spearman];
     readonly level = 1;
     readonly trophy = 5;
@@ -785,46 +777,54 @@ class Archer extends BasicUnitConstructor
 
 class Barbarian extends BasicUnitConstructor
 {
+    static readonly id = 4;
     readonly promotion_options = [Warrior, Swordsman];
     readonly level = 1;
 }
 
 class Lancer extends AdvancedUnitConstructor
 {
+    static readonly id = 5;
     readonly level = 3;
     readonly trophy = 10;
 }
 
 class Knight extends AdvancedUnitConstructor
 {
+    static readonly id = 6;
     readonly level = 3;
     readonly trophy = 10;
 }
 
 class Swordsman extends AdvancedUnitConstructor
 {
+    static readonly id = 7;
     readonly level = 2;
     readonly trophy = 10;
 }
 
 class Spearman extends AdvancedUnitConstructor
 {
+    static readonly id = 8;
     readonly level = 2;
     readonly trophy = 10;
 }
 
 class Warrior extends AdvancedUnitConstructor
 {
+    static readonly id = 9;
     readonly level = 2;
 }
 
 class King extends UnitConstructor
 {
+    static readonly id = 10;
     readonly level = 1;
 }
 
 class Wagon extends UnitConstructor
 {
+    static readonly id = 11;
     revenue(): number
     {
         return this.is_perfect() ? 2 : 1;

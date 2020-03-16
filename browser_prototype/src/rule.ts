@@ -7,7 +7,7 @@ class Rule
         [Player.P2]: 0
     };
 
-    static validate_player_move(board: Board<Unit>, player_move: PlayerMove): PlayerAction
+    static validate_player_move(board: BoardContext, player_move: PlayerMove): PlayerAction
     {
         let moves = player_move.moves;
         let move_set = new Set();
@@ -28,9 +28,9 @@ class Rule
             }));
     }
 
-    static validate_recall(board: Board<Unit>, move: Move, player: Player): Action
+    static validate_recall(board: BoardContext, move: Move, player: Player): Action
     {
-        let recalled = board.at(move.to);
+        let recalled = board.unit.at(move.to);
         if (recalled == null)
         {
             throw new InvalidMove("recalled grid is empty");
@@ -40,12 +40,11 @@ class Rule
             throw new InvalidMove("recalled unit is enemy");
         }
 
-        let heat = this.get_heat(board);
-        if (heat.at(move.to).hostile(player) > 0)
+        if (board.heat.at(move.to).hostile(player) > 0)
         {
             throw new InvalidMove("recalled unit is under attack");
         }
-        if (heat.at(move.from).hostile(player) > 0)
+        if (board.heat.at(move.from).hostile(player) > 0)
         {
             throw new InvalidMove("recall destination is under attack");
         }
@@ -53,7 +52,7 @@ class Rule
         return new Action(move, ActionType.Recall, recalled.type());
     }
 
-    static validate_spawn(board: Board<Unit>, move: Move, player: Player): Action | InvalidMove
+    static validate_spawn(board: BoardContext, move: Move, player: Player): Action | InvalidMove
     {
         if (move.from.y != this.spawn_row[player])
         {
@@ -71,16 +70,16 @@ class Rule
         {
             return new InvalidMove("this skill recruits nothing");
         }
-        if (Rule.count_unit(board, player) >= g.max_unit_count)
+        if (Rule.count_unit(board.unit, player) >= g.max_unit_count)
         {
             return new InvalidMove("units limit exceeded");
         }
         return new Action(move, ActionType.Recruit, type);
     }
 
-    static validate_move(board: Board<Unit>, move: Move, player: Player): Action
+    static validate_move(board: BoardContext, move: Move, player: Player): Action
     {
-        let unit = board.at(move.from);
+        let unit = board.unit.at(move.from);
         if (unit == null)
         {
             let action_or_error = this.validate_spawn(board, move, player);
@@ -88,7 +87,7 @@ class Rule
             {
                 return action_or_error;
             }
-            else if (this.is_king_side(board, player, move.from))
+            else if (this.is_king_side(board.unit, player, move.from))
             {
                 return this.validate_recall(board, move, player);
             }
@@ -111,7 +110,7 @@ class Rule
 
         if (unit.capable(skill))
         {
-            let target = board.at(move.to);
+            let target = board.unit.at(move.to);
             if (target == null)
             {
                 return new Action(move, ActionType.Move, unit.type());
@@ -164,9 +163,8 @@ class Rule
         return heat;
     }
 
-    static get_buff(board: Board<Unit>): FullBoard<Buff>
+    static get_buff(board: Board<Unit>, heat: FullBoard<Heat>): FullBoard<Buff>
     {
-        let heat = this.get_heat(board);
         let buff = new FullBoard<Buff>(() => new Buff());
         board.iterate_units((unit, coord) =>
         {
@@ -331,30 +329,29 @@ class Rule
         return [];
     }
 
-    static recallable_by(board: Board<Unit>, player: Player, coord: Coordinate): Coordinate[]
+    static recallable_by(board: BoardContext, player: Player, coord: Coordinate): Coordinate[]
     {
-        let unit = board.at(coord);
+        let unit = board.unit.at(coord);
         if (unit)
         {
             return [];
         }
 
-        if (!this.is_king_side(board, player, coord))
+        if (!this.is_king_side(board.unit, player, coord))
         {
             return [];
         }
 
-        let heat = this.get_heat(board);
-        if (heat.at(coord).hostile(player) > 0)
+        if (board.heat.at(coord).hostile(player) > 0)
         {
             return [];
         }
 
         let all: Coordinate[] = [];
-        let spawnable = new HashSet<Coordinate>(this.spawnable_by(board, coord));
-        board.iterate_units((u, c) =>
+        let spawnable = new HashSet<Coordinate>(this.spawnable_by(board.unit, coord));
+        board.unit.iterate_units((u, c) =>
         {
-            if (u.owner == player && heat.at(c).hostile(player) == 0)
+            if (u.owner == player && board.heat.at(c).hostile(player) == 0)
             {
                 if (!spawnable.has(c))
                 {
@@ -366,17 +363,17 @@ class Rule
         return all;
     }
 
-    static valid_moves(board: Board<Unit>, player: Player): Move[]
+    static valid_moves(board: BoardContext, player: Player): Move[]
     {
         let all: Move[] = [];
-        board.iterate_everything((unit, c) =>
+        board.unit.iterate_everything((unit, c) =>
         {
             if (unit)
             {
                 if (unit.owner == player)
                 {
-                    let reachable = this.reachable_by(board, c);
-                    let upgradable = this.upgradable_by(board, c);
+                    let reachable = this.reachable_by(board.unit, c);
+                    let upgradable = this.upgradable_by(board.unit, c);
 
                     for (let dest of reachable.concat(upgradable))
                     {
@@ -386,15 +383,15 @@ class Rule
             }
             else
             {
-                if (c.y == this.spawn_row[player] && this.count_unit(board, player) < g.max_unit_count)
+                if (c.y == this.spawn_row[player] && this.count_unit(board.unit, player) < g.max_unit_count)
                 {
-                    for (let dest of this.spawnable_by(board, c))
+                    for (let dest of this.spawnable_by(board.unit, c))
                     {
                         all.push(new Move(c, dest));
                     }
                 }
 
-                if (this.is_king_side(board, player, c))
+                if (this.is_king_side(board.unit, player, c))
                 {
                     for (let dest of this.recallable_by(board, player, c))
                     {
@@ -407,14 +404,14 @@ class Rule
         return all;
     }
 
-    static make_move(board: Board<Unit>, moves: Players<PlayerMove>): [Board<Unit>, Martyr[]]
+    static make_move(board: BoardContext, moves: Players<PlayerMove>): [BoardContext, Martyr[]]
     {
         let actions: Players<PlayerAction> = {
             [Player.P1]: this.validate_player_move(board, moves[Player.P1]),
             [Player.P2]: this.validate_player_move(board, moves[Player.P2])
         };
 
-        let next_board = board.copy();
+        let next_board = board.unit.copy();
         let force_board = new FullBoard<Force>(() => new Force());
         let martyrs: Martyr[] = [];
 
@@ -425,7 +422,7 @@ class Rule
         this.process_recall_phase(next_board, actions);
         this.process_recruit_phase(next_board, actions);
 
-        return [next_board, martyrs];
+        return [new BoardContext(next_board), martyrs];
     }
 
     static process_upgrade_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
@@ -674,6 +671,17 @@ class Rule
                 }
             }
         }
+    }
+}
+
+class BoardContext
+{
+    heat: FullBoard<Heat>;
+    buff: FullBoard<Buff>;
+    constructor(public unit: Board<Unit>)
+    {
+        this.heat = Rule.get_heat(unit);
+        this.buff = Rule.get_buff(unit, this.heat);
     }
 }
 
