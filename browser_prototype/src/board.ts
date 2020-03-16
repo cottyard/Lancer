@@ -4,14 +4,29 @@ class FullBoard<T>
 
     constructor(initializer: () => T)
     {
+        let value = initializer();
+        let type = typeof value;
         this.board = [];
-
-        for (let i = 0; i < g.board_size_x; i++)
+        if (value == null || type == "number" || type == "string" || type == "boolean" || type == "undefined")
         {
-            this.board[i] = [];
-            for (let j = 0; j < g.board_size_y; j++)
+            for (let i = 0; i < g.board_size_x; i++)
             {
-                this.board[i][j] = initializer();
+                this.board[i] = [];
+                for (let j = 0; j < g.board_size_y; j++)
+                {
+                    this.board[i][j] = value;
+                }
+            }
+        }
+        else
+        {
+            for (let i = 0; i < g.board_size_x; i++)
+            {
+                this.board[i] = [];
+                for (let j = 0; j < g.board_size_y; j++)
+                {
+                    this.board[i][j] = initializer();
+                }
             }
         }
     }
@@ -80,16 +95,21 @@ class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopy
 
     copy(): Board<T>
     {
-        let count = 0;
-        let copy_initializer = () =>
+        let board = new Board<T>();
+
+        for (let i = 0; i < g.board_size_x; i++)
         {
-            let j = count % g.board_size_y;
-            let i = Math.floor(count / g.board_size_y);
-            count++;
-            let u = this.board[i][j];
-            return u == null ? null : u.copy();
-        };
-        return new Board<T>(copy_initializer);
+            for (let j = 0; j < g.board_size_y; j++)
+            {
+                let u = this.board[i][j];
+                if (u)
+                {
+                    board.board[i][j] = u.copy();
+                }
+            }
+        }
+
+        return board;
     }
 }
 
