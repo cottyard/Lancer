@@ -4,7 +4,7 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 {
     constructor(public x: number, public y: number)
     {
-        if (!(0 <= x && x < g.board_size_x && 0 <= y && y < g.board_size_y))
+        if (!Coordinate.is_valid(x, y))
         {
             throw new InvalidParameter("Coordinate");
         }
@@ -17,11 +17,11 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 
     add(dx: number, dy: number): Coordinate | null
     {
-        try
+        if (Coordinate.is_valid(this.x + dx, this.y + dy))
         {
             return new Coordinate(this.x + dx, this.y + dy);
         }
-        catch
+        else
         {
             return null;
         }
@@ -46,14 +46,18 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
     {
         return new Coordinate(parseInt(payload[0]), parseInt(payload[1]));
     }
+
+    static is_valid(x: number, y: number): boolean
+    {
+        return 0 <= x && x < g.board_size_x && 0 <= y && y < g.board_size_y;
+    }
 }
 
 class Skill implements IHashable
 {
     constructor(public x: number, public y: number)
     {
-        if (!(-g.skill_range <= x && x <= g.skill_range &&
-            -g.skill_range <= y && y <= g.skill_range))
+        if (!Skill.is_valid(x, y))
         {
             throw new InvalidParameter("Skill");
         }
@@ -72,6 +76,12 @@ class Skill implements IHashable
     is_leap(): boolean
     {
         return Math.abs(this.x) > 1 || Math.abs(this.y) > 1;
+    }
+
+    static is_valid(x: number, y: number)
+    {
+        return -g.skill_range <= x && x <= g.skill_range &&
+            -g.skill_range <= y && y <= g.skill_range;
     }
 }
 
@@ -289,9 +299,18 @@ class Move implements ISerializable, ICopyable<Move>, IHashable
         return this.from.equals(other.from) && this.to.equals(other.to);
     }
 
-    which_skill(): Skill
+    which_skill(): Skill | null
     {
-        return new Skill(this.to.x - this.from.x, this.to.y - this.from.y);
+        let dx = this.to.x - this.from.x;
+        let dy = this.to.y - this.from.y;
+        if (Skill.is_valid(dx, dy))
+        {
+            return new Skill(dy, dy);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     hash(): string
@@ -381,7 +400,7 @@ class Action implements ICopyable<Action>
             case ActionType.Defend:
                 return 2;
             case ActionType.Move:
-                if (this.move.which_skill().is_leap())
+                if (this.move.which_skill()!.is_leap())
                 {
                     return 3;
                 }
@@ -399,7 +418,7 @@ class Action implements ICopyable<Action>
                     return 4;
                 }
             case ActionType.Attack:
-                if (this.move.which_skill().is_leap())
+                if (this.move.which_skill()!.is_leap())
                 {
                     return 5;
                 }

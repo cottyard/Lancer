@@ -59,12 +59,9 @@ class Rule
         {
             return new InvalidMove("grid is empty");
         }
-        let skill: Skill;
-        try
-        {
-            skill = move.which_skill();
-        }
-        catch (InvalidParameter)
+
+        let skill = move.which_skill();
+        if (skill == null)
         {
             return new InvalidMove("not a valid skill");
         }
@@ -106,12 +103,8 @@ class Rule
             throw new InvalidMove("grid belongs to enemy");
         }
 
-        let skill: Skill;
-        try
-        {
-            skill = move.which_skill();
-        }
-        catch (InvalidParameter)
+        let skill = move.which_skill();
+        if (skill == null)
         {
             throw new InvalidMove("not a valid skill");
         }
@@ -283,14 +276,15 @@ class Rule
         board.iterate_units((unit, c) =>
         {
             let skill;
-            try
+            if (Skill.is_valid(coord.x - c.x, coord.y - c.y))
             {
                 skill = new Skill(coord.x - c.x, coord.y - c.y);
             }
-            catch
+            else
             {
                 return;
             }
+
             if (unit.capable(skill))
             {
                 able.push(c);
@@ -441,7 +435,7 @@ class Rule
             for (let action of player_action.extract((a): a is Action => a.type == ActionType.Upgrade))
             {
                 let unit = board.at(action.move.from)!;
-                let skill = action.move.which_skill();
+                let skill = action.move.which_skill()!;
                 if (unit.is_promotion_ready())
                 {
                     let promoted = unit.promote(skill);
@@ -674,7 +668,7 @@ class Rule
                 }
                 if (board.at(action.move.from) == null)
                 {
-                    let skill = action.move.which_skill();
+                    let skill = action.move.which_skill()!;
                     let recruited = Unit.spawn_from_skill(player_action.player, skill);
                     board.put(action.move.from, recruited);
                 }

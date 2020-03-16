@@ -278,7 +278,7 @@ class GameCanvas
                 }
             }
 
-            const skill = a.action.move.which_skill();
+            const skill = a.action.move.which_skill()!;
             const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;
