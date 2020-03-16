@@ -77,19 +77,14 @@ class Skill implements IHashable
 
 class SkillSet implements ISerializable, ICopyable<SkillSet>
 {
-    private map: boolean[][];
+    private map: boolean[];
 
     constructor(skills: Skill[] = [])
     {
         this.map = [];
-
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size * g.skillset_size; i++)
         {
-            this.map[i] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++)
-            {
-                this.map[i][j] = false;
-            }
+            this.map[i] = false;
         }
 
         for (let skill of skills)
@@ -100,25 +95,21 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
 
     add(skill: Skill)
     {
-        this.map[skill.x][skill.y] = true;
+        this.map[(skill.x + g.skill_range) * g.skillset_size + skill.y + g.skill_range] = true;
     }
 
     has(skill: Skill): boolean
     {
-        return this.map[skill.x][skill.y];
+        return this.map[(skill.x + g.skill_range) * g.skillset_size + skill.y + g.skill_range];
     }
 
     serialize(): string
     {
-        let map: number[][] = [];
+        let map: number[] = [];
 
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size * g.skillset_size; i++)
         {
-            map[i + g.skill_range] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++)
-            {
-                map[i + g.skill_range][j + g.skill_range] = this.map[i][j] ? 1 : 0;
-            }
+            map[i] = this.map[i] ? 1 : 0;
         }
 
         return JSON.stringify(map);
@@ -128,12 +119,9 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     {
         let map = JSON.parse(payload);
         let sks = new SkillSet();
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size * g.skillset_size; i++)
         {
-            for (let j = -g.skill_range; j <= g.skill_range; j++)
-            {
-                sks.map[i][j] = map[i + g.skill_range][j + g.skill_range] == 1;
-            }
+            sks.map[i] = map[i] == 1;
         }
         return sks;
     }
@@ -164,7 +152,7 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
         {
             for (let dx = -g.skill_range; dx <= g.skill_range; dx++)
             {
-                if (this.map[dx][dy])
+                if (this.map[(dx + g.skill_range) * g.skillset_size + dy + g.skill_range])
                 {
                     skills.push(new Skill(dx, dy));
                 }
@@ -186,13 +174,9 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     {
         let result = new SkillSet();
 
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size * g.skillset_size; i++)
         {
-            result.map[i] = [];
-            for (let j = -g.skill_range; j <= g.skill_range; j++)
-            {
-                result.map[i][j] = operator(this.map[i][j], other.map[i][j]);
-            }
+            result.map[i] = operator(this.map[i], other.map[i]);
         }
 
         return result;
@@ -210,14 +194,11 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
 
     equals(other: SkillSet): boolean
     {
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size * g.skillset_size; i++)
         {
-            for (let j = -g.skill_range; j <= g.skill_range; j++)
+            if (this.map[i] != other.map[i])
             {
-                if (this.map[i][j] != other.map[i][j])
-                {
-                    return false;
-                }
+                return false;
             }
         }
         return true;
@@ -227,12 +208,17 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     {
         let flipped = this.copy();
 
-        for (let i = -g.skill_range; i <= g.skill_range; i++)
+        for (let i = 0; i < g.skillset_size; i++)
         {
-            for (let j = -g.skill_range; j < 0; j++)
+            for (let j = 0; j < g.skill_range; j++)
             {
-                let c = flipped.map[i];
-                [c[j], c[-j]] = [c[-j], c[j]];
+                [
+                    flipped.map[i * g.skillset_size + j],
+                    flipped.map[i * g.skillset_size + g.skillset_size - 1 - j]
+                ] = [
+                        flipped.map[i * g.skillset_size + g.skillset_size - 1 - j],
+                        flipped.map[i * g.skillset_size + j]
+                    ];
             }
         }
         return flipped;

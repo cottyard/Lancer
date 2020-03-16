@@ -5,52 +5,44 @@ class AI
         g.initialize();
         let game = Game.new_game();
 
-        let m = 0;
         let begin = new Date().getTime();
-        for (let i = 0; i < 100; ++i)
+
+        let buff = Rule.get_buff(game.board);
+        let p1_supply = game.supply(Player.P1);
+        let p2_supply = game.supply(Player.P2);
+        let p1_moves = Rule.valid_moves(game.board, Player.P1);
+        let p2_moves = Rule.valid_moves(game.board, Player.P2);
+        let p1_actions = p1_moves.map((m) =>
         {
-            let [p1, m1] = AI.random_player_move(game, Player.P1);
-            let [p2, m2] = AI.random_player_move(game, Player.P2);
+            return Rule.validate_move(game.board, m, Player.P1);
+        });;
+        let p2_actions = p2_moves.map((m) =>
+        {
+            return Rule.validate_move(game.board, m, Player.P2);
+        });;
+
+        for (let i = 0; i < 1000; ++i)
+        {
+            let p1 = new PlayerMove(Player.P1, AI.pick_moves(p1_actions, buff, p1_supply));
+            let p2 = new PlayerMove(Player.P2, AI.pick_moves(p2_actions, buff, p2_supply));
             game.make_move({
                 [Player.P1]: p1,
                 [Player.P2]: p2
             });
 
-            m += m1 + m2;
         }
         let end = new Date().getTime();
         console.log("total:", (end - begin) / 1000);
-        console.log("m:", m / 1000);
     }
 
-    static random_player_move(game: Game, player: Player): [PlayerMove, number]
+    static pick_moves(actions: Action[], buff: FullBoard<Buff>, supply: number): Move[]
     {
-        let player_move = new PlayerMove(player);
-        let supply = game.supply(player);
-
-        let begin_m = new Date().getTime();
-        let buff = Rule.get_buff(game.board);
-
-        let all_moves = Rule.valid_moves(game.board, player);
-
-        if (!all_moves)
-        {
-            return [player_move, 0];
-        }
-
-        let all = all_moves.map((m) =>
-        {
-            return Rule.validate_move(game.board, m, player);
-        });
-
-        let end_m = new Date().getTime();
-
         let picked = new HashSet<Coordinate>();
-
+        let picked_moves = [];
         let total_cost = 0;
         do
         {
-            let random_action = all[Math.floor(Math.random() * all.length)];
+            let random_action = actions[Math.floor(Math.random() * actions.length)];
             if (picked.has(random_action.move.from))
             {
                 break;
@@ -63,7 +55,7 @@ class AI
             if (total_cost + cost <= supply)
             {
                 total_cost += cost;
-                player_move.append(random_action.move);
+                picked_moves.push(random_action.move);
             }
             else
             {
@@ -71,7 +63,6 @@ class AI
             }
         } while (1);
 
-
-        return [player_move, end_m - begin_m];
+        return picked_moves;
     }
 }

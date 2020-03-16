@@ -9,6 +9,7 @@ class Module
     readonly board_size_y: number = 9;
     readonly grid_count: number = 9;
     readonly skill_range: number = 2;
+    readonly skillset_size: number = this.skill_range * 2 + 1;
     readonly max_unit_count: number = 28;
     readonly layout_1st: UnitConstructor[] = [Archer, Wagon, Archer, Rider, King, Rider, Archer, Wagon, Archer];
     readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
