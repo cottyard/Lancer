@@ -2,9 +2,9 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
-        "outFile": "browser/lancer.js",
+        "outDir": "browser",
         "sourceMap": true,
-        "module": "amd"
+        "module": "ES6"
     },
     "include": [
         "src"

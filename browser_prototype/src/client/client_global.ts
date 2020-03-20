@@ -27,6 +27,7 @@ class ClientGlobal
         'STYLE_TEAL': '#0292B7',
         'STYLE_TERQUOISE': '#1AC8DB'
     };
+
     settings = {
         'cvs_size': this.cvs_size,
         'cvs_border_width': 3,
@@ -36,7 +37,12 @@ class ClientGlobal
         'player_color_map': {
             [Player.P1]: this.const.STYLE_RED_LIGHT,
             [Player.P2]: this.const.STYLE_BLUE_LIGHT
-        }
+        },
+        halo_size_small: 30,
+        halo_size_large: 45,
+        halo_radius_small: 0,
+        halo_radius_medium: 0,
+        halo_radius_large: 0
     };
 
     initialize()
@@ -60,6 +66,10 @@ class ClientGlobal
             [ActionType.Recruit, cg.const.STYLE_CYAN],
             [ActionType.Recall, cg.const.STYLE_GOLD]
         ]);
+
+        this.settings.halo_radius_small = this.settings.grid_size / 2 - 5;
+        this.settings.halo_radius_small = cg.settings.grid_size / 2 - 2;
+        this.settings.halo_radius_large = cg.settings.grid_size / 2 + 1;
     }
 }
 

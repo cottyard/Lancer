@@ -33,12 +33,6 @@ abstract class CanvasUnit
 {
     color: string;
 
-    static halo_size_small = 30;
-    static halo_size_large = 45;
-    static halo_radius_small = cg.settings.grid_size / 2 - 5;
-    static halo_radius_medium = cg.settings.grid_size / 2 - 2;
-    static halo_radius_large = cg.settings.grid_size / 2 + 1;
-
     constructor(protected unit: Unit)
     {
         this.color = cg.settings.player_color_map[this.unit.owner];
@@ -111,8 +105,8 @@ class CanvasSoldier extends CanvasHaloUnit
         [new Skill(-1, 0), HaloDirection.Left],
         [new Skill(1, 0), HaloDirection.Right]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void
     {
@@ -128,8 +122,8 @@ class CanvasArcher extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -147,8 +141,8 @@ class CanvasBarbarian extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -171,8 +165,8 @@ class CanvasWarrior extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = CanvasUnit.halo_size_small;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_small;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -198,8 +192,8 @@ class CanvasRider extends CanvasHaloUnit
         [new Skill(-2, 1), HaloDirection.DownLeftLeft],
         [new Skill(2, 1), HaloDirection.DownRightRight]
     ]);
-    halo_size = CanvasUnit.halo_size_small;
-    halo_radius = CanvasUnit.halo_radius_large;
+    halo_size = cg.settings.halo_size_small;
+    halo_radius = cg.settings.halo_radius_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -215,8 +209,8 @@ class CanvasLancer extends CanvasHaloUnit
         [new Skill(-2, 0), HaloDirection.Left],
         [new Skill(2, 0), HaloDirection.Right]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_large;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -235,8 +229,8 @@ class CanvasKnight extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_large;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_large;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -263,8 +257,8 @@ class CanvasSpearman extends CanvasHaloUnit
         [new Skill(2, 0), HaloDirection.Right],
     ]);
 
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -278,11 +272,11 @@ class CanvasSpearman extends CanvasHaloUnit
     {
         let a1: [Angle, number][] = this.get_directions(this.inner_skill_direction).map(d =>
         {
-            return [Angle.create(d, this.halo_size), CanvasUnit.halo_radius_small];
+            return [Angle.create(d, this.halo_size), cg.settings.halo_radius_small];
         });
         let a2: [Angle, number][] = this.get_directions(this.outer_skill_direction).map(d =>
         {
-            return [Angle.create(d, this.halo_size), CanvasUnit.halo_radius_large];
+            return [Angle.create(d, this.halo_size), cg.settings.halo_radius_large];
         });
 
         return a1.concat(a2);
@@ -301,8 +295,8 @@ class CanvasSwordsman extends CanvasHaloUnit
         [new Skill(-1, -1), HaloDirection.UpLeft],
         [new Skill(1, -1), HaloDirection.UpRight]
     ]);
-    halo_size = CanvasUnit.halo_size_small;
-    halo_radius = CanvasUnit.halo_radius_medium;
+    halo_size = cg.settings.halo_size_small;
+    halo_radius = cg.settings.halo_radius_medium;
 
     paint_unit(renderer: Renderer): void 
     {
@@ -321,8 +315,8 @@ class CanvasWagon extends CanvasHaloUnit
         [new Skill(-1, 0), HaloDirection.Left],
         [new Skill(1, 0), HaloDirection.Right]
     ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_small;
+    halo_size = cg.settings.halo_size_large;
+    halo_radius = cg.settings.halo_radius_small;
 
     paint_unit(renderer: Renderer): void
     {
