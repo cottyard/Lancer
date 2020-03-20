@@ -2,10 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/server.js",
+  "main": "dist/server/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/server.js"
+    "build": "tsc -p tsconfig.server.json && tsc -p tsconfig.browser.json",
+    "start": "node dist/server/server.js"
   },
   "author": "",
   "license": "ISC",

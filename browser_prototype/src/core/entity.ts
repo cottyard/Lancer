@@ -1,3 +1,6 @@
+import { FullBoard } from '../core/board';
+import { Buff } from '../core/rule';
+import { g } from '../core/global';
 class InvalidParameter extends Error { }
 
 class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
@@ -246,22 +249,22 @@ module Player
         yield Player.P2;
     }
 
-    export function* values<T>(players: Players<T>)
+    export function* values<T>(players: PlayerData<T>)
     {
         yield players[Player.P1];
         yield players[Player.P2];
     }
 }
 
-type Players<T> =
+type PlayerData<T> =
     {
         [Player.P1]: T,
         [Player.P2]: T,
     };
 
-module Players
+module PlayerData
 {
-    export function empty<T>(ctor: (p: Player) => T): Players<T>
+    export function empty<T>(ctor: (p: Player) => T): PlayerData<T>
     {
         return {
             [Player.P1]: ctor(Player.P1),
@@ -835,3 +838,10 @@ class Wagon extends UnitConstructor
         return this.is_perfect() ? 20 : 8;
     }
 }
+
+export
+{
+    Coordinate, Skill, SkillSet, Move, PlayerMove, Action, PlayerAction, ActionType, Player, PlayerData, opponent,
+    UnitConstructor, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Swordsman, Spearman, Warrior, King, Wagon,
+    serialize_player, deserialize_player, is_wagon, is_basic_unit_ctor, Unit
+};

@@ -1,14 +1,17 @@
 {
+    "compileOnSave": false,
     "compilerOptions": {
+        "noEmit": true,
         "target": "ES6",
-        "outFile": "target/lancer.js",
-        "rootDir": "src",
         "removeComments": true,
-        "sourceMap": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "strict": true
-    }
+        "strict": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "src"
+    ]
 }

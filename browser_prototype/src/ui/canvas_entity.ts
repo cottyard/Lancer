@@ -1,3 +1,8 @@
+import { King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior, UnitConstructor, Unit, Skill } from '../core/entity';
+import { cg } from '../client/client_global';
+import { Renderer } from '../ui/renderer';
+import { Position, Angle, Direction, HaloDirection } from '../ui/canvas';
+
 type CanvasUnitConstructor = new (unit: Unit) => CanvasUnit;
 
 let CanvasUnitFactory = function (unit: Unit): CanvasUnit
@@ -30,13 +35,13 @@ abstract class CanvasUnit
 
     static halo_size_small = 30;
     static halo_size_large = 45;
-    static halo_radius_small = g.settings.grid_size / 2 - 5;
-    static halo_radius_medium = g.settings.grid_size / 2 - 2;
-    static halo_radius_large = g.settings.grid_size / 2 + 1;
+    static halo_radius_small = cg.settings.grid_size / 2 - 5;
+    static halo_radius_medium = cg.settings.grid_size / 2 - 2;
+    static halo_radius_large = cg.settings.grid_size / 2 + 1;
 
     constructor(protected unit: Unit)
     {
-        this.color = g.settings.player_color_map[this.unit.owner];
+        this.color = cg.settings.player_color_map[this.unit.owner];
     }
 
     paint(renderer: Renderer): void
@@ -175,7 +180,7 @@ class CanvasWarrior extends CanvasHaloUnit
         renderer.horns();
         renderer.translate(new Position(0, 15));
         renderer.soldier(this.color, this.unit.is_perfect());
-        renderer.translate(new Position(-g.settings.grid_size / 4, -1));
+        renderer.translate(new Position(-cg.settings.grid_size / 4, -1));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.axe();
     }
@@ -216,7 +221,7 @@ class CanvasLancer extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.rider(this.color, this.unit.is_perfect());
-        renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 7));
+        renderer.translate(new Position(-cg.settings.grid_size / 4 + 2, 7));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.spear();
     }
@@ -236,7 +241,7 @@ class CanvasKnight extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.rider(this.color, this.unit.is_perfect());
-        renderer.translate(new Position(-g.settings.grid_size / 4, 5));
+        renderer.translate(new Position(-cg.settings.grid_size / 4, 5));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.sword();
     }
@@ -264,7 +269,7 @@ class CanvasSpearman extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.soldier(this.color, this.unit.is_perfect());
-        renderer.translate(new Position(-g.settings.grid_size / 4 + 2, 3));
+        renderer.translate(new Position(-cg.settings.grid_size / 4 + 2, 3));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.spear();
     }
@@ -302,7 +307,7 @@ class CanvasSwordsman extends CanvasHaloUnit
     paint_unit(renderer: Renderer): void 
     {
         renderer.soldier(this.color, this.unit.is_perfect());
-        renderer.translate(new Position(-g.settings.grid_size / 4, -3));
+        renderer.translate(new Position(-cg.settings.grid_size / 4, -3));
         renderer.rotate(new Direction(-30).to_radian().value);
         renderer.sword();
     }
@@ -333,3 +338,5 @@ class CanvasKing extends CanvasUnit
         renderer.crown();
     }
 }
+
+export { CanvasUnitFactory, CanvasUnit };

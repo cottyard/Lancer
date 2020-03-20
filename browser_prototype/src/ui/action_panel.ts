@@ -1,4 +1,13 @@
-class ActionPanel implements IComponent
+import { IComponent } from '../ui/ui';
+import { IRenderController, DisplayAction, DisplayPlayerAction, DisplayActionType } from '../ui/render_controller';
+import { IGameContext } from '../client/game_context';
+import { Player, Unit, Move } from '../core/entity';
+import { cg } from '../client/client_global';
+import { Renderer } from '../ui/renderer';
+import { CanvasUnitFactory } from '../ui/canvas_entity';
+import { Position } from '../ui/canvas';
+
+export class ActionPanel implements IComponent
 {
     dragging: null | {
         action: DisplayAction,
@@ -13,7 +22,7 @@ class ActionPanel implements IComponent
     static margin = 5;
     static scale = 0.75;
     static item_height = (
-        g.settings.grid_size * ActionPanel.scale +
+        cg.settings.grid_size * ActionPanel.scale +
         (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
@@ -51,7 +60,7 @@ class ActionPanel implements IComponent
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: g.const.STYLE_GREY,
+            backgroundColor: cg.const.STYLE_GREY,
             borderRadius: "5px",
             margin: ActionPanel.margin.toString() + "px",
             padding: ActionPanel.padding.toString() + "px",
@@ -67,7 +76,7 @@ class ActionPanel implements IComponent
         div.appendChild(DomHelper.createText(
             this.getActionTypeText(action.type),
             {
-                color: g.display_action_style.get(action.type) || "black",
+                color: cg.display_action_style.get(action.type) || "black",
                 'font-weight': 'bold',
                 padding: "10px"
             }
@@ -220,7 +229,7 @@ class ActionPanel implements IComponent
         div.addEventListener("mouseleave", () =>
         {
             DomHelper.applyStyle(div, {
-                backgroundColor: g.const.STYLE_GREY,
+                backgroundColor: cg.const.STYLE_GREY,
             });
             mouseup();
             this.render_ctrl.refresh();
@@ -259,8 +268,8 @@ class ActionPanel implements IComponent
         const canvas = DomHelper.createCanvas({
             zoom: "0.7",
         });
-        canvas.width = g.settings.grid_size + 10;
-        canvas.height = g.settings.grid_size + 10;
+        canvas.width = cg.settings.grid_size + 10;
+        canvas.height = cg.settings.grid_size + 10;
         const context = canvas.getContext("2d");
         if (context == null)
         {
@@ -270,7 +279,7 @@ class ActionPanel implements IComponent
 
         using(new Renderer(context), (renderer) =>
         {
-            renderer.translate(new Position(g.settings.grid_size / 2 + 5, g.settings.grid_size / 2 + 5));
+            renderer.translate(new Position(cg.settings.grid_size / 2 + 5, cg.settings.grid_size / 2 + 5));
             canvas_unit.paint(renderer);
         });
 

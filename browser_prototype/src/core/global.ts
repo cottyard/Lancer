@@ -1,13 +1,11 @@
-class Module
-{
-    online_control: IOnlineController | null = null;
-    render_control: IRenderController | null = null;
-    audio_context = new AudioContext();
+import { UnitConstructor, King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior, SkillSet } from '../core/entity';
 
-    readonly cvs_size: number = 720;
+class Global
+{
     readonly board_size_x: number = 9;
     readonly board_size_y: number = 9;
     readonly grid_count: number = 9;
+
     readonly skill_range: number = 2;
     readonly skillset_size: number = this.skill_range * 2 + 1;
     readonly max_unit_count: number = 28;
@@ -18,33 +16,6 @@ class Module
     ];
     spawning_skills: SkillSet | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
-    readonly const = {
-        'STYLE_GREY': "rgb(228, 228, 228)",
-        'STYLE_BLACK': "#000",
-        'STYLE_WHITE': "#FFF",
-        'STYLE_CYAN': '#01cdfe',
-        'STYLE_RED_LIGHT': '#ff8080',
-        'STYLE_RED': '#ff0000',
-        'STYLE_GOLD': '#ffd700',
-        'STYLE_BLUE_LIGHT': '#80ccff',
-        'STYLE_GREEN_LIGHT': '#80e080',
-        'STYLE_GREEN': '#079400',
-        'STYLE_TEAL': '#0292B7',
-        'STYLE_TERQUOISE': '#1AC8DB'
-    };
-    settings = {
-        'cvs_size': this.cvs_size,
-        'cvs_border_width': 3,
-        'grid_size': this.cvs_size / 9,
-        'piece_font': "40px Courier New",
-        'server_url': window.location.href,
-        'player_color_map': {
-            [Player.P1]: this.const.STYLE_RED_LIGHT,
-            [Player.P2]: this.const.STYLE_BLUE_LIGHT
-        }
-    };
-    display_action_style = new Map<DisplayActionType, string>();
-    action_style = new Map<ActionType, string>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
         {
@@ -188,27 +159,9 @@ class Module
         });
 
         this.spawning_skills = SkillSet.from_literal(this.spawning_skills_literal);
-
-        this.display_action_style = new Map<DisplayActionType, string>([
-            [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
-            [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-            [DisplayActionType.Move, g.const.STYLE_BLACK],
-            [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
-            [DisplayActionType.Recruit, g.const.STYLE_CYAN],
-            [DisplayActionType.Recall, g.const.STYLE_GOLD],
-            [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
-            [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
-        ]);
-
-        this.action_style = new Map<ActionType, string>([
-            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
-            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-            [ActionType.Move, g.const.STYLE_BLACK],
-            [ActionType.Upgrade, g.const.STYLE_CYAN],
-            [ActionType.Recruit, g.const.STYLE_CYAN],
-            [ActionType.Recall, g.const.STYLE_GOLD]
-        ]);
     }
 }
 
-let g: Module = new Module();
+let g: Global = new Global();
+
+export { g };

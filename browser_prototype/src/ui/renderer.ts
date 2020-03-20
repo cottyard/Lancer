@@ -1,4 +1,7 @@
-﻿class Renderer implements IDisposable
+﻿import { cg } from '../client/client_global';
+import { Position, Angle, PositionDelta, Direction } from '../ui/canvas';
+
+export class Renderer implements IDisposable
 {
     transform_matrix: DOMMatrix | null = null;
     alpha: number = 1;
@@ -77,7 +80,7 @@
         this.ctx.moveTo(point_1.x, point_1.y);
         this.ctx.lineTo(point_2.x, point_2.y);
         this.ctx.lineTo(point_3.x, point_3.y);
-        
+
         this.ctx.closePath();
         if (fill_style != null)
         {
@@ -108,20 +111,20 @@
         let jewel_height = height + 8;
         let control_left = new Position(-size / 3, -height);
         let control_right = new Position(+size / 3, -height);
-        let left = new Position(-size, -height); 
-        let right = new Position(size, -height); 
+        let left = new Position(-size, -height);
+        let right = new Position(size, -height);
         let pointy_1 = new Position(-size - 2, -jewel_height);
         let pointy_2 = new Position(0, -jewel_height * 1.1);
         let pointy_3 = new Position(size + 2, -jewel_height);
 
         this.ctx.lineWidth = 2;
-        this.set_fill_color(g.const.STYLE_GOLD);
+        this.set_fill_color(cg.const.STYLE_GOLD);
 
         this.ctx.beginPath();
         this.ctx.moveTo(left.x, left.y);
         this.ctx.lineTo(right.x, right.y);
         this.ctx.lineTo(pointy_3.x, pointy_3.y);
-        
+
         this.ctx.quadraticCurveTo(control_right.x, control_right.y, pointy_2.x, pointy_2.y);
         this.ctx.quadraticCurveTo(control_left.x, control_left.y, pointy_1.x, pointy_1.y);
         this.ctx.closePath();
@@ -132,8 +135,8 @@
 
     soldier(color: string, with_ribbon: boolean = false)
     {
-        this.set_color(g.const.STYLE_BLACK);
-        
+        this.set_color(cg.const.STYLE_BLACK);
+
         let head_center = new Position(0, -10);
         let head_size = 13;
         let size_x = 17;
@@ -155,7 +158,7 @@
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.circle(head_center, head_size, width, g.const.STYLE_WHITE);
+        this.circle(head_center, head_size, width, cg.const.STYLE_WHITE);
         if (with_ribbon)
         {
             this.ctx.save();
@@ -168,7 +171,7 @@
 
     spear()
     {
-        this.set_color(g.const.STYLE_BLACK);
+        this.set_color(cg.const.STYLE_BLACK);
         let head_size = 9;
         let body_size = 5;
         let width = 2;
@@ -178,25 +181,25 @@
             body_size,
             body_size * 5,
             width,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
 
         this.triangle(
-            new Position(0,  -head_size), 
-            new Position(-head_size / 2, 0), 
-            new Position(head_size / 2, 0), 
-            width, g.const.STYLE_WHITE);
+            new Position(0, -head_size),
+            new Position(-head_size / 2, 0),
+            new Position(head_size / 2, 0),
+            width, cg.const.STYLE_WHITE);
 
         this.rectangle(
             new Position(-overlay_size / 2, -width),
             overlay_size,
             width * 2,
             0,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
     }
 
     sword()
     {
-        this.set_color(g.const.STYLE_BLACK);
+        this.set_color(cg.const.STYLE_BLACK);
         let size = 6;
         let guard_size = 5;
         let handle_size = 2;
@@ -207,39 +210,39 @@
             size,
             size * 3,
             width,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
 
         this.triangle(
-            new Position(0,  -size), 
-            new Position(-size / 2, 0), 
-            new Position(size / 2, 0), 
-            width, g.const.STYLE_WHITE);
+            new Position(0, -size),
+            new Position(-size / 2, 0),
+            new Position(size / 2, 0),
+            width, cg.const.STYLE_WHITE);
 
         this.rectangle(
             new Position(-overlay_size / 2, -width / 2),
             overlay_size,
             width * 1.5,
             0,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
 
         this.rectangle(
             new Position(-guard_size, size * 3 - guard_size * 0.8),
             guard_size * 2,
             guard_size * 0.8,
             width,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
 
         this.rectangle(
             new Position(-handle_size, size * 3),
             handle_size * 2,
             handle_size * 2,
             width,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
     }
 
     axe()
     {
-        this.set_color(g.const.STYLE_BLACK);
+        this.set_color(cg.const.STYLE_BLACK);
         let size = 5;
         let width = 2;
 
@@ -257,7 +260,7 @@
             size,
             mid * 2,
             width,
-            g.const.STYLE_WHITE);
+            cg.const.STYLE_WHITE);
 
         this.ctx.lineWidth = width;
         this.ctx.beginPath();
@@ -267,7 +270,7 @@
         this.ctx.quadraticCurveTo(control_1.x, control_1.y, handle_mid.x, handle_mid.y);
         this.ctx.stroke();
         this.ctx.closePath();
-        
+
         this.ctx.save();
         this.ctx.clip();
         this.ctx.translate(4, 0);
@@ -277,8 +280,8 @@
 
     rider(color: string, with_muzzle: boolean = false)
     {
-        this.set_color(g.const.STYLE_BLACK);
-        
+        this.set_color(cg.const.STYLE_BLACK);
+
         let head_height = 0;
         let head_size = 13;
         let ear_size = 10;
@@ -289,7 +292,7 @@
         let body_left = new Position(-body_size_x, body_size_y);
         let body_right = new Position(body_size_x, body_size_y);
         let body_top = new Position(body_size_x, -12);
-        
+
         let head_left_down = new Position(-body_size_x + 3, -head_height);
         let head_left_up = new Position(-body_size_x, -head_height - head_size);
         let head_right_down = new Position(body_size_x, -head_height);
@@ -310,10 +313,10 @@
         this.ctx.quadraticCurveTo(0, body_size_y + 10, body_left.x, body_left.y);
         this.ctx.fill();
         this.ctx.stroke();
-        
+
         this.triangle(ear_left, ear_right, ear_top, width);
 
-        this.set_fill_color(g.const.STYLE_WHITE);
+        this.set_fill_color(cg.const.STYLE_WHITE);
 
         this.ctx.beginPath();
         this.ctx.moveTo(head_right_down.x, head_right_down.y);
@@ -340,8 +343,8 @@
             this.ctx.closePath();
             this.ctx.stroke();
         }
-        
-        this.circle(new Position(4, -13), 1, width, g.const.STYLE_BLACK);
+
+        this.circle(new Position(4, -13), 1, width, cg.const.STYLE_BLACK);
     }
 
     wagon(color: string, with_gold: boolean)
@@ -351,13 +354,13 @@
         let width = 2;
         let tyre_size = 7;
         this.ctx.lineWidth = width;
-        this.set_color(g.const.STYLE_BLACK);
+        this.set_color(cg.const.STYLE_BLACK);
 
         let upleft = new Position(-size_x * 1.3 / 2, -size_y / 2 + 4);
         let upright = new Position(size_x * 1.3 / 2, -size_y / 2 + 4);
         let downleft = new Position(-size_x / 2, size_y / 2);
         let downright = new Position(size_x / 2, size_y / 2);
-        
+
         if (with_gold)
         {
             let gold_left = new Position(-size_x * 1.1 / 2, -size_y / 2 + 4);
@@ -373,7 +376,7 @@
             this.ctx.lineTo(gold_3.x, gold_3.y);
             this.ctx.lineTo(gold_right.x, gold_right.y);
             this.ctx.closePath();
-            this.set_fill_color(g.const.STYLE_GOLD);
+            this.set_fill_color(cg.const.STYLE_GOLD);
             this.ctx.fill();
             this.ctx.stroke();
         }
@@ -388,8 +391,8 @@
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.circle(new Position(-size_x / 2 * 0.8, size_y / 2), tyre_size, width, g.const.STYLE_WHITE);
-        this.circle(new Position(size_x / 2 * 0.8, size_y / 2), tyre_size, width, g.const.STYLE_WHITE);
+        this.circle(new Position(-size_x / 2 * 0.8, size_y / 2), tyre_size, width, cg.const.STYLE_WHITE);
+        this.circle(new Position(size_x / 2 * 0.8, size_y / 2), tyre_size, width, cg.const.STYLE_WHITE);
     }
 
     halo(angle: Angle, color: string, radius: number)
@@ -406,13 +409,13 @@
 
     hat(ribbon_color: string | null = null)
     {
-        this.set_color(g.const.STYLE_BLACK);
-        let hat_size = 18
+        this.set_color(cg.const.STYLE_BLACK);
+        let hat_size = 18;
         this.triangle(
-            new Position(0, 0), 
+            new Position(0, 0),
             new Position(-hat_size * 1.2, hat_size),
             new Position(hat_size * 0.8, hat_size),
-            2, g.const.STYLE_WHITE);
+            2, cg.const.STYLE_WHITE);
 
         if (ribbon_color)
         {
@@ -420,7 +423,7 @@
             this.ctx.clip();
             this.rectangle(new Position(-15, 7), 30, 5, 2, ribbon_color);
             this.triangle(
-                new Position(0, 0), 
+                new Position(0, 0),
                 new Position(-hat_size * 1.2, hat_size),
                 new Position(hat_size * 0.8, hat_size),
                 2);
@@ -430,31 +433,31 @@
 
     horns()
     {
-        this.set_color(g.const.STYLE_BLACK);
+        this.set_color(cg.const.STYLE_BLACK);
         let width = 2;
         let horn_size = 10;
 
         let center = new Position(0, 0);
         this.curve(
-            center, 
+            center,
             new Position(-horn_size, 0),
             new Position(-horn_size * 1.5, -horn_size),
             width);
-        
+
         this.curve(
-            center, 
+            center,
             new Position(-horn_size - horn_size, horn_size),
             new Position(-horn_size * 1.5, -horn_size),
             width);
-        
+
         this.curve(
-            center, 
+            center,
             new Position(horn_size, 0),
             new Position(horn_size * 1.5, -horn_size),
             width);
-        
+
         this.curve(
-            center, 
+            center,
             new Position(horn_size + horn_size, horn_size),
             new Position(horn_size * 1.5, -horn_size),
             width);
@@ -472,7 +475,7 @@
         this.ctx.translate(to.x, to.y);
         this.ctx.rotate(direction.add(90).to_radian().value);
         this.triangle(
-            new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size), 
+            new Position(0, 0), new Position(-size / 1.5, size), new Position(size / 1.5, size),
             width, style);
         this.ctx.restore();
     }
@@ -493,7 +496,7 @@
         this.ctx.translate(to.x, to.y);
         this.ctx.rotate(direction.add(90).to_radian().value);
         this.triangle(
-            new Position(0, 0), new Position(-head_size, size), new Position(head_size, size), 
+            new Position(0, 0), new Position(-head_size, size), new Position(head_size, size),
             width, style);
         this.ctx.restore();
     }
@@ -509,7 +512,7 @@
     get_direction(from: Position, to: Position): Direction
     {
         let delta = from.delta(to);
-        
+
         if (delta.dx == 0)
         {
             if (delta.dy > 0)
@@ -528,7 +531,7 @@
         else
         {
             let direction = Direction.from_radian(Math.atan(delta.dy / delta.dx));
-            
+
             if (delta.dx < 0)
             {
                 return direction.opposite();

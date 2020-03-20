@@ -1,3 +1,13 @@
+import { Player } from '../core/entity';
+import { GameStatus } from '../core/game';
+import { cg } from '../client/client_global';
+import { IOnlineGameContext, OnlineGameContext } from '../client/game_context';
+import { IRenderController, RenderController } from '../ui/render_controller';
+import { IComponent } from '../ui/ui';
+import { IButtonBar, ButtonBar } from '../ui/button_bar';
+import { ActionPanel } from '../ui/action_panel';
+import { StatusBar } from '../ui/status_bar';
+
 interface IOnlineController
 {
     status: OnlineGameStatus;
@@ -172,7 +182,7 @@ class OnlineController implements IOnlineController
         this.stop_count_down();
         this.seconds_before_submit = this.round_time;
         this.render_ctrl.components.button_bar.render_text();
-        this.timer_handle = setInterval(this.timer.bind(this), 1000);
+        this.timer_handle = window.setInterval(this.timer.bind(this), 1000);
     }
 
     stop_count_down()
@@ -255,13 +265,15 @@ class OnlineController implements IOnlineController
 
 function beep()
 {
-    let v = g.audio_context.createOscillator();
-    let u = g.audio_context.createGain();
+    let v = cg.audio_context.createOscillator();
+    let u = cg.audio_context.createGain();
     v.connect(u);
     v.frequency.value = 880;
     u.gain.value = 0.01;
     v.type = "square";
-    u.connect(g.audio_context.destination);
-    v.start(g.audio_context.currentTime);
-    v.stop(g.audio_context.currentTime + 0.05);
+    u.connect(cg.audio_context.destination);
+    v.start(cg.audio_context.currentTime);
+    v.stop(cg.audio_context.currentTime + 0.05);
 }
+
+export { OnlineController, IOnlineController, OnlineGameStatus };

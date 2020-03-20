@@ -1,7 +1,19 @@
+import { cg } from '../client/client_global';
+import { g } from '../core/global';
+import { OnlineController } from '../client/online_controller';
+import { RenderController } from '../ui/render_controller';
+import { GameContext } from '../client/game_context';
+import { Player } from '../core/entity';
+import { Game } from '../core/game';
+import { IButtonBar, SolitudeButtonBar } from '../ui/button_bar';
+import { SolitudeStatusBar } from '../ui/status_bar';
+import { ActionPanel } from '../ui/action_panel';
+
 function ui_solitude()
 {
     clear_intervals();
     g.initialize();
+    cg.initialize();
     let context = new GameContext(
         {
             [Player.P1]: 'player1',
@@ -24,20 +36,21 @@ function ui_solitude()
 
     ctrl.refresh_all();
 
-    g.render_control = ctrl;
+    cg.render_control = ctrl;
 }
 
 function ui_online()
 {
     clear_intervals();
     g.initialize();
-    g.online_control = new OnlineController();
-    g.render_control = (<OnlineController> g.online_control).render_ctrl;
+    cg.initialize();
+    cg.online_control = new OnlineController();
+    cg.render_control = (<OnlineController> cg.online_control).render_ctrl;
 }
 
 function clear_intervals()
 {
-    let interval_id = setInterval(() => { }, 10000);
+    let interval_id = window.setInterval(() => { }, 10000);
     for (let i = 1; i <= interval_id; i++)
     {
         clearInterval(i);
@@ -48,3 +61,5 @@ interface IComponent
 {
     render(): void;
 }
+
+export { ui_solitude, ui_online, clear_intervals, IComponent };

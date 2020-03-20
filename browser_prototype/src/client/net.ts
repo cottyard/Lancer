@@ -1,3 +1,6 @@
+import { PlayerMove } from '../core/entity';
+import { cg } from '../client/client_global';
+
 type callback = (res: string) => void;
 
 function remote_post(url: string, next: callback, data: string | null = null): void
@@ -5,7 +8,7 @@ function remote_post(url: string, next: callback, data: string | null = null): v
     (function try_post()
     {
         let req = new XMLHttpRequest();
-        req.open('POST', `${ g.settings.server_url }${ url }`);
+        req.open('POST', `${ cg.settings.server_url }${ url }`);
         req.timeout = 8000;
 
         req.onreadystatechange = () =>
@@ -38,7 +41,7 @@ function remote_post(url: string, next: callback, data: string | null = null): v
 function remote_get(url: string, next: callback): void
 {
     let req = new XMLHttpRequest();
-    req.open('GET', `${ g.settings.server_url }${ url }`);
+    req.open('GET', `${ cg.settings.server_url }${ url }`);
     req.timeout = 8000;
 
     req.onreadystatechange = () =>
@@ -84,3 +87,5 @@ function fetch_game(game_id: string, next: callback)
 {
     remote_get(`game/${ game_id }`, next);
 }
+
+export { new_game, submit_move, query_match, fetch_game };

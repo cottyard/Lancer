@@ -1,4 +1,10 @@
-class StatusBar implements IComponent
+import { IComponent } from '../ui/ui';
+import { IRenderController } from '../ui/render_controller';
+import { IGameContext, IOnlineGameContext } from '../client/game_context';
+import { Player } from '../core/entity';
+import { cg } from '../client/client_global';
+
+export class StatusBar implements IComponent
 {
     constructor(
         public dom_element: HTMLDivElement,
@@ -82,7 +88,7 @@ class StatusBar implements IComponent
             fontWeight: is_me ? "bold" : "normal",
         });
         div.appendChild(DomHelper.createText(name, {
-            color: g.settings.player_color_map[player]
+            color: cg.settings.player_color_map[player]
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));
@@ -127,7 +133,7 @@ class StatusBar implements IComponent
     }
 }
 
-class SolitudeStatusBar implements IComponent
+export class SolitudeStatusBar implements IComponent
 {
     constructor(public dom_element: HTMLDivElement, public context: IGameContext)
     {
@@ -184,7 +190,7 @@ class SolitudeStatusBar implements IComponent
             fontWeight: "normal",
         });
         div.appendChild(DomHelper.createText(name, {
-            color: g.settings.player_color_map[player]
+            color: cg.settings.player_color_map[player]
         }));
         div.appendChild(DomHelper.createText("🍞", {
         }));

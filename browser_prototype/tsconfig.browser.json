@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "outFile": "browser/lancer.js",
+        "sourceMap": true,
+        "module": "amd"
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "src/server"
+    ]
+}
