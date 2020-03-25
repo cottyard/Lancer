@@ -1,5 +1,3 @@
-import { Coordinate, Move } from '../core/entity';
-import { g } from '../core/global';
 class FullBoard<T>
 {
     protected board: (T)[][];
@@ -178,5 +176,3 @@ function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
         }
     };
 }
-
-export { create_serializable_board_ctor, FullBoard, Board, SerializableBoard };

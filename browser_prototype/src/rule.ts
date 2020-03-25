@@ -1,15 +1,8 @@
-import
-{
-    Player, PlayerData, PlayerAction, PlayerMove, King, UnitConstructor, Unit, Coordinate,
-    Move, Action, ActionType, Lancer, Knight, Warrior, Swordsman, Spearman, Skill, opponent
-} from '../core/entity';
-import { Board, FullBoard } from '../core/board';
-import { g } from '../core/global';
 class InvalidMove extends Error { }
 
 class Rule
 {
-    static spawn_row: PlayerData<number> = {
+    static spawn_row: Players<number> = {
         [Player.P1]: g.board_size_y - 1,
         [Player.P2]: 0
     };
@@ -411,9 +404,9 @@ class Rule
         return all;
     }
 
-    static make_move(board: BoardContext, moves: PlayerData<PlayerMove>): [BoardContext, Martyr[]]
+    static make_move(board: BoardContext, moves: Players<PlayerMove>): [BoardContext, Martyr[]]
     {
-        let actions: PlayerData<PlayerAction> = {
+        let actions: Players<PlayerAction> = {
             [Player.P1]: this.validate_player_move(board, moves[Player.P1]),
             [Player.P2]: this.validate_player_move(board, moves[Player.P2])
         };
@@ -432,7 +425,7 @@ class Rule
         return [new BoardContext(next_board), martyrs];
     }
 
-    static process_upgrade_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>)
+    static process_upgrade_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
         for (let player_action of Player.values(player_actions))
         {
@@ -460,7 +453,7 @@ class Rule
         }
     }
 
-    static process_defend_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>, force_board: FullBoard<Force>)
+    static process_defend_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>)
     {
         for (let player_action of Player.values(player_actions))
         {
@@ -472,7 +465,7 @@ class Rule
         }
     }
 
-    static process_clash_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>): Martyr[]
+    static process_clash_phase(board: Board<Unit>, player_actions: Players<PlayerAction>): Martyr[]
     {
         let clash_board = new Board<Action>();
         let martyrs: Martyr[] = [];
@@ -536,7 +529,7 @@ class Rule
         return martyrs;
     }
 
-    static process_battle_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>, force_board: FullBoard<Force>): Martyr[]
+    static process_battle_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>): Martyr[]
     {
         for (let player_action of Player.values(player_actions))
         {
@@ -641,7 +634,7 @@ class Rule
         return martyrs;
     }
 
-    static process_recall_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>)
+    static process_recall_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
         for (let player_action of Player.values(player_actions))
         {
@@ -660,7 +653,7 @@ class Rule
         }
     }
 
-    static process_recruit_phase(board: Board<Unit>, player_actions: PlayerData<PlayerAction>)
+    static process_recruit_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
         for (let player_action of Player.values(player_actions))
         {
@@ -746,5 +739,3 @@ class Quester
     {
     }
 }
-
-export { Rule, Buff, Heat, BoardContext, Martyr, Quester };

@@ -1,11 +1,3 @@
-import { IComponent } from '../ui/ui';
-import { IOnlineController, OnlineGameStatus } from '../client/online_controller';
-import { IRenderController } from '../ui/render_controller';
-import { IGameContext } from '../client/game_context';
-import { GameStatus } from '../core/game';
-import { Player } from '../core/entity';
-import { AI } from '../ai/benchmark';
-
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
@@ -245,7 +237,7 @@ class ButtonBar implements IButtonBar
             {
                 if (!this.view_last_round && this._view_last_round_on_hover)
                 {
-                    this.view_last_round_handle = window.setTimeout(() =>
+                    this.view_last_round_handle = setTimeout(() =>
                     {
                         this.render_ctrl.show_last();
                     }, 200);
@@ -437,8 +429,35 @@ class SolitudeButtonBar implements IButtonBar
         {
             for (let player of Player.both())
             {
-                let player_move = AI.pick_moves_for_player(this.context.present, player);
-                this.context.prepare_moves(player, player_move.moves);
+                let supply = this.context.present.supply(player);
+                let cost = this.context.action_cost(player);
+
+                while (cost < supply)
+                {
+                    let all = Rule.valid_moves(this.context.present.board, player);
+                    if (!all)
+                    {
+                        break;
+                    }
+                    let random_move = all[Math.floor(Math.random() * all.length)];
+                    let res = this.context.prepare_move(player, random_move);
+                    if (res == "invalid")
+                    {
+                        // should be unit limit exceeded
+                        break;
+                    }
+                    else if (res == "overridden")
+                    {
+                        break;
+                    }
+                    cost = this.context.action_cost(player);
+                }
+
+                while (cost > supply)
+                {
+                    this.context.pop_move(player);
+                    cost = this.context.action_cost(player);
+                }
             }
             this.render_ctrl.refresh();
         };
@@ -491,7 +510,7 @@ class SolitudeButtonBar implements IButtonBar
             {
                 return;
             }
-            this.view_last_round_handle = window.setTimeout(() =>
+            this.view_last_round_handle = setTimeout(() =>
             {
                 this.render_ctrl.show_last();
             }, 200);
@@ -542,5 +561,3 @@ class SolitudeButtonBar implements IButtonBar
         this.render_text();
     }
 }
-
-export { ButtonBar, SolitudeButtonBar, IButtonBar };

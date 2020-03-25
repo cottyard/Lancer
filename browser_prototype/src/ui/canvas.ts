@@ -1,12 +1,3 @@
-import { Player, Coordinate, ActionType, Unit } from '../core/entity';
-import { cg } from '../client/client_global';
-import { g } from '../core/global';
-import { Renderer } from '../ui/renderer';
-import { Heat, Buff } from '../core/rule';
-import { DisplayAction, DisplayPlayerAction, DisplayActionType } from '../ui/render_controller';
-import { Board } from '../core/board';
-import { CanvasUnitFactory, CanvasUnit } from '../ui/canvas_entity';
-
 class GameCanvas 
 {
     background: HTMLCanvasElement;
@@ -26,10 +17,10 @@ class GameCanvas
         this.animate = animate;
         this.animate_transparent = animate_transparent;
 
-        this.bg_ctx = this.set_canvas_attr(this.background, 1, cg.settings.cvs_size, cg.settings.cvs_border_width, false);
-        this.st_ctx = this.set_canvas_attr(this.static, 2, cg.settings.cvs_size, cg.settings.cvs_border_width, true);
-        this.am_ctx_t = this.set_canvas_attr(this.animate_transparent, 3, cg.settings.cvs_size, cg.settings.cvs_border_width, true);
-        this.am_ctx = this.set_canvas_attr(this.animate, 4, cg.settings.cvs_size, cg.settings.cvs_border_width, true);
+        this.bg_ctx = this.set_canvas_attr(this.background, 1, g.settings.cvs_size, g.settings.cvs_border_width, false);
+        this.st_ctx = this.set_canvas_attr(this.static, 2, g.settings.cvs_size, g.settings.cvs_border_width, true);
+        this.am_ctx_t = this.set_canvas_attr(this.animate_transparent, 3, g.settings.cvs_size, g.settings.cvs_border_width, true);
+        this.am_ctx = this.set_canvas_attr(this.animate, 4, g.settings.cvs_size, g.settings.cvs_border_width, true);
     }
 
     set_canvas_attr(cvs: HTMLCanvasElement, z_index: number, size: number, border_width: number, absolute: boolean): CanvasRenderingContext2D
@@ -52,22 +43,22 @@ class GameCanvas
     static get_grid_center(coord: Coordinate): Position
     {
         return new Position(
-            coord.x * cg.settings.grid_size + cg.settings.grid_size / 2,
-            coord.y * cg.settings.grid_size + cg.settings.grid_size / 2);
+            coord.x * g.settings.grid_size + g.settings.grid_size / 2,
+            coord.y * g.settings.grid_size + g.settings.grid_size / 2);
     }
 
     static get_grid_position(coord: Coordinate): Position
     {
         return new Position(
-            coord.x * cg.settings.grid_size,
-            coord.y * cg.settings.grid_size);
+            coord.x * g.settings.grid_size,
+            coord.y * g.settings.grid_size);
     }
 
     static to_coordinate(pixel_x: number, pixel_y: number): Coordinate
     {
         function gridify(pixel: number)
         {
-            let i = Math.floor(pixel / cg.settings.grid_size);
+            let i = Math.floor(pixel / g.settings.grid_size);
             if (i < 0) { return 0; };
             if (i >= g.grid_count) { return g.grid_count - 1; };
             return i;
@@ -78,12 +69,12 @@ class GameCanvas
 
     paint_background()
     {
-        let grid_size = cg.settings.grid_size;
+        let grid_size = g.settings.grid_size;
         let grids = g.grid_count;
 
         using(new Renderer(this.bg_ctx), (renderer) =>
         {
-            renderer.set_color(cg.const.STYLE_GREY);
+            renderer.set_color(g.const.STYLE_GREY);
 
             for (let i = 0; i < grids; ++i)
             {
@@ -93,7 +84,7 @@ class GameCanvas
                     {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size),
-                            grid_size, grid_size, 0, cg.const.STYLE_GREY);
+                            grid_size, grid_size, 0, g.const.STYLE_GREY);
                     }
                 }
             }
@@ -105,10 +96,10 @@ class GameCanvas
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 15;
         let p: number, q: number;
-        let half_grid = cg.settings.grid_size / 2;
+        let half_grid = g.settings.grid_size / 2;
         if (!style)
         {
-            style = cg.const.STYLE_BLACK;
+            style = g.const.STYLE_BLACK;
         }
         let style_ = style;
         for ([p, q] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
@@ -137,10 +128,10 @@ class GameCanvas
         let width = 6;
         using(new Renderer(this.am_ctx), (renderer) =>
         {
-            renderer.set_color(cg.const.STYLE_RED);
+            renderer.set_color(g.const.STYLE_RED);
             renderer.translate(center.add(new PositionDelta(
-                cg.settings.grid_size / 2 - 10,
-                -cg.settings.grid_size / 2 + 10)));
+                g.settings.grid_size / 2 - 10,
+                -g.settings.grid_size / 2 + 10)));
 
             renderer.line(
                 new Position(-size, -size),
@@ -151,7 +142,7 @@ class GameCanvas
                 new Position(size, -size),
                 width);
 
-            renderer.set_color(cg.const.STYLE_GREEN);
+            renderer.set_color(g.const.STYLE_GREEN);
             renderer.ctx.font = "Bold 14px Sans-Serif";
             renderer.ctx.fillText(trophy.toString(), -size, size * 3.5);
         });
@@ -174,7 +165,7 @@ class GameCanvas
                 {
                     repeat = 1;
                     renderer.ctx.font = "Bold 11px Sans-Serif";
-                    renderer.set_color(cg.const.STYLE_BLACK);
+                    renderer.set_color(g.const.STYLE_BLACK);
                     renderer.ctx.fillText(h.toString(), offset - 3, size * 5 + 5);
                 }
 
@@ -182,7 +173,7 @@ class GameCanvas
                 {
                     renderer.circle(
                         new Position(offset, size * 2.5 * i),
-                        size, 1, cg.settings.player_color_map[player]);
+                        size, 1, g.settings.player_color_map[player]);
                 }
                 offset += 8;
             }
@@ -196,7 +187,7 @@ class GameCanvas
         let space = 10;
         let small_space = 8;
         let begin = GameCanvas.get_grid_position(coordinate).add(
-            new PositionDelta(cg.settings.grid_size - size_x - 2, 3));
+            new PositionDelta(g.settings.grid_size - size_x - 2, 3));
 
         using(new Renderer(this.am_ctx), (renderer) =>
         {
@@ -225,7 +216,7 @@ class GameCanvas
                     offset += last_upwards == upwards ? space : small_space;
                 }
 
-                let style = cg.action_style.get(type)!;
+                let style = g.action_style.get(type)!;
                 renderer.set_color(style);
                 renderer.triangle(
                     new Position(-offset, top),
@@ -240,7 +231,7 @@ class GameCanvas
 
     mark_this_grid(center: Position, color: string, reverse: boolean = false)
     {
-        let pos = new Position(center.x, center.y - cg.settings.grid_size / 4 - 10);
+        let pos = new Position(center.x, center.y - g.settings.grid_size / 4 - 10);
         let size = 7;
         let tip_y = 0;
         let bottom_y = -size;
@@ -267,7 +258,7 @@ class GameCanvas
         {
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
-            const color = cg.display_action_style.get(a.type)!;
+            const color = g.display_action_style.get(a.type)!;
 
             if (a.type == DisplayActionType.Recall)
             {
@@ -288,7 +279,7 @@ class GameCanvas
             }
 
             const skill = a.action.move.which_skill()!;
-            const shrink = cg.settings.grid_size / 2 - 5;
+            const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;
             let rider_move = false;
@@ -325,7 +316,7 @@ class GameCanvas
 
             if (go_around)
             {
-                const control_distance = cg.settings.grid_size * 0.75;
+                const control_distance = g.settings.grid_size * 0.75;
                 let sx = Math.sign(skill.x);
                 let sy = Math.sign(skill.y);
                 let control = new Position(
@@ -545,5 +536,3 @@ class RadianAngle
         this.end = end;
     }
 }
-
-export { GameCanvas, Position, PositionDelta, Direction, RadianDirection, HaloDirection, Angle, RadianAngle };

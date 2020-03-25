@@ -1,15 +1,8 @@
-import { Player, Move, Action, Coordinate, PlayerMove } from '../core/entity';
-import { Game } from '../core/game';
-import { Rule, Buff } from '../core/rule';
-import { FullBoard } from '../core/board';
-import { g } from '../core/global';
-
-export class AI
+class AI
 {
     static core_benchmark()
     {
         g.initialize();
-
         let game = Game.new_game();
 
         let begin = new Date().getTime();
@@ -39,17 +32,6 @@ export class AI
         }
         let end = new Date().getTime();
         console.log("total:", (end - begin) / 1000);
-    }
-
-    static pick_moves_for_player(game: Game, player: Player): PlayerMove
-    {
-        let supply = game.supply(player);
-        let moves = Rule.valid_moves(game.board, player);
-        let actions = moves.map((m) =>
-        {
-            return Rule.validate_move(game.board, m, player);
-        });;
-        return new PlayerMove(player, AI.pick_moves(actions, game.board.buff, supply));
     }
 
     static pick_moves(actions: Action[], buff: FullBoard<Buff>, supply: number): Move[]

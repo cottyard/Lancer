@@ -1,12 +1,3 @@
-import { Player, Move, Action, PlayerAction, ActionType, Coordinate, PlayerData } from '../core/entity';
-import { IGameContext } from '../client/game_context';
-import { Rule, BoardContext } from '../core/rule';
-import { cg } from '../client/client_global';
-import { IComponent } from '../ui/ui';
-import { IButtonBar } from '../ui/button_bar';
-import { GameCanvas } from '../ui/canvas';
-import { CanvasUnitFactory } from '../ui/canvas_entity';
-
 interface IRenderController
 {
     displaying_board: BoardContext;
@@ -43,7 +34,7 @@ class RenderController implements IRenderController
     _displaying_board: BoardContext;
     private _show_last_round: boolean = false;
 
-    displaying_actions: PlayerData<PlayerAction>;
+    displaying_actions: Players<PlayerAction>;
 
     constructor(
         public context: IGameContext,
@@ -68,7 +59,7 @@ class RenderController implements IRenderController
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        this.displaying_actions = PlayerData.empty((p) => new PlayerAction(p));
+        this.displaying_actions = Players.empty((p) => new PlayerAction(p));
 
         this.canvas.paint_background();
 
@@ -163,7 +154,7 @@ class RenderController implements IRenderController
 
         for (let option of this.options_upgrade)
         {
-            this.canvas.paint_grid_indicator(option, cg.const.STYLE_TERQUOISE, 2);
+            this.canvas.paint_grid_indicator(option, g.const.STYLE_TERQUOISE, 2);
         }
         for (let option of this.options_capable)
         {
@@ -171,7 +162,7 @@ class RenderController implements IRenderController
         }
         for (let option of this.options_recall)
         {
-            this.canvas.paint_grid_indicator(option, cg.const.STYLE_GOLD, 3);
+            this.canvas.paint_grid_indicator(option, g.const.STYLE_GOLD, 3);
         }
 
         if (this.current)
@@ -245,8 +236,8 @@ class RenderController implements IRenderController
     get_coordinate(event: MouseEvent): Coordinate
     {
         let rect = this.canvas.background.getBoundingClientRect();
-        let mouse_x = event.clientX - rect.left - cg.settings.cvs_border_width;
-        let mouse_y = event.clientY - rect.top - cg.settings.cvs_border_width;
+        let mouse_x = event.clientX - rect.left - g.settings.cvs_border_width;
+        let mouse_y = event.clientY - rect.top - g.settings.cvs_border_width;
 
         return GameCanvas.to_coordinate(mouse_x, mouse_y);
     }
@@ -440,5 +431,3 @@ class DisplayPlayerAction
         });
     }
 }
-
-export { RenderController, IRenderController, DisplayAction, DisplayActionType, DisplayPlayerAction };
