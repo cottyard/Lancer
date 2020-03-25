@@ -1,8 +1,4 @@
-import
-{
-    UnitConstructor, King, Rider, Soldier, Archer, Barbarian, Wagon,
-    Lancer, Knight, Spearman, Swordsman, Warrior, SkillSet, PlayerData, Player
-} from '../core/entity';
+import { UnitConstructor, King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior, SkillSet } from '../core/entity';
 
 class Global
 {
@@ -19,7 +15,6 @@ class Global
         King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
     spawning_skills: SkillSet | null = null;
-    spawn_row: PlayerData<number> | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
@@ -164,10 +159,6 @@ class Global
         });
 
         this.spawning_skills = SkillSet.from_literal(this.spawning_skills_literal);
-        this.spawn_row = {
-            [Player.P1]: g.board_size_y - 1,
-            [Player.P2]: 0
-        };
     }
 }
 

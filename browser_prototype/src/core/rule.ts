@@ -9,6 +9,11 @@ class InvalidMove extends Error { }
 
 class Rule
 {
+    static spawn_row: PlayerData<number> = {
+        [Player.P1]: g.board_size_y - 1,
+        [Player.P2]: 0
+    };
+
     static validate_player_move(board: BoardContext, player_move: PlayerMove): PlayerAction
     {
         let moves = player_move.moves;
@@ -56,7 +61,7 @@ class Rule
 
     static validate_spawn(board: BoardContext, move: Move, player: Player): Action | InvalidMove
     {
-        if (move.from.y != g.spawn_row![player])
+        if (move.from.y != this.spawn_row[player])
         {
             return new InvalidMove("grid is empty");
         }
@@ -321,7 +326,7 @@ class Rule
         {
             return [];
         }
-        for (let row of Player.values(g.spawn_row!))
+        for (let row of Player.values(this.spawn_row))
         {
             if (coord.y == row)
             {
@@ -385,7 +390,7 @@ class Rule
             }
             else
             {
-                if (c.y == g.spawn_row![player] && this.count_unit(board.unit, player) < g.max_unit_count)
+                if (c.y == this.spawn_row[player] && this.count_unit(board.unit, player) < g.max_unit_count)
                 {
                     for (let dest of this.spawnable_by(board.unit, c))
                     {

@@ -18,12 +18,12 @@ export class ActionPanel implements IComponent
         placeholder: HTMLElement,
     };
 
-    padding = 5;
-    margin = 5;
-    scale = 0.75;
-    item_height = (
-        cg.settings.grid_size * this.scale +
-        (this.padding + this.margin) * 2
+    static padding = 5;
+    static margin = 5;
+    static scale = 0.75;
+    static item_height = (
+        cg.settings.grid_size * ActionPanel.scale +
+        (ActionPanel.padding + ActionPanel.margin) * 2
     );
 
     constructor(
@@ -62,8 +62,8 @@ export class ActionPanel implements IComponent
             alignItems: "center",
             backgroundColor: cg.const.STYLE_GREY,
             borderRadius: "5px",
-            margin: this.margin.toString() + "px",
-            padding: this.padding.toString() + "px",
+            margin: ActionPanel.margin.toString() + "px",
+            padding: ActionPanel.padding.toString() + "px",
             cursor: "pointer",
             boxSizing: "border-box",
             order: index * 2,
@@ -130,13 +130,13 @@ export class ActionPanel implements IComponent
         {
             this.dragging = {
                 action,
-                offsetX: e.clientX - div.getBoundingClientRect().left + this.margin,
-                offsetY: e.clientY - div.getBoundingClientRect().top + this.margin,
+                offsetX: e.clientX - div.getBoundingClientRect().left + ActionPanel.margin,
+                offsetY: e.clientY - div.getBoundingClientRect().top + ActionPanel.margin,
                 clientY: e.clientY,
                 pos_offset: 0,
                 placeholder: this.dom_element.insertBefore(
                     DomHelper.createDiv({
-                        height: this.item_height.toString() + "px",
+                        height: ActionPanel.item_height.toString() + "px",
                         order: (index * 2).toString(),
                     }),
                     div,
@@ -206,7 +206,7 @@ export class ActionPanel implements IComponent
 
             // Update state and display. Not yet passed to game model.
             this.dragging.pos_offset = Math.round(
-                (e.clientY - this.dragging.clientY) / this.item_height
+                (e.clientY - this.dragging.clientY) / ActionPanel.item_height
             );
             this.dragging.placeholder.style.order = get_dragging_order().toString();
 
