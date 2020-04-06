@@ -359,11 +359,10 @@ class SkillSet:
         ]
     
     def serialize(self):
-        m = [[0] * skillset_size for i in range(skillset_size)]
+        m = []
         for i in range(skillset_size):
             for j in range(skillset_size):
-                if self.map[i][j]:
-                    m[i][j] = 1
+                m.append(1 if self.map[i][j] else 0)
         return json.dumps(m)
 
     @classmethod
