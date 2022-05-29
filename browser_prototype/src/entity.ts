@@ -663,11 +663,13 @@ interface UnitConstructor extends IDeserializable<Unit>
     new(owner: Player, current: SkillSet | null): Unit;
     deserialize(payload: string): Unit;
     readonly id: number;
+    discriminator: string;
 }
 
 const UnitConstructor: UnitConstructor = class _ extends Unit
 {
     static readonly id = 0;
+    static discriminator = '';
 
     static deserialize(payload: string): Unit
     {
