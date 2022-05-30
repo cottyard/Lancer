@@ -163,67 +163,6 @@ class Rule
         return heat;
     }
 
-    static get_buff(board: Board<Unit>, heat: FullBoard<Heat>): FullBoard<Buff>
-    {
-        let buff = new FullBoard<Buff>(() => new Buff());
-        board.iterate_units((unit, coord) =>
-        {
-            if (unit instanceof Lancer)
-            {
-                for (let c of this.reachable_by(board, coord))
-                {
-                    if (board.at(c)?.owner == unit.owner)
-                    {
-                        let b = buff.at(c);
-                        b.add(ActionType.Move, -1);
-                        b.add(ActionType.Attack, -1);
-                    }
-                }
-            }
-            else if (unit instanceof Knight)
-            {
-                for (let c of this.reachable_by(board, coord))
-                {
-                    if (board.at(c)?.owner == unit.owner)
-                    {
-                        let b = buff.at(c);
-                        b.add(ActionType.Defend, -1);
-                    }
-                }
-            }
-            else if (unit instanceof Warrior)
-            {
-                for (let c of this.reachable_by(board, coord))
-                {
-                    let other = board.at(c);
-                    if (other && other.owner != unit.owner)
-                    {
-                        let b = buff.at(c);
-                        b.add(ActionType.Move, 1);
-                    }
-                }
-            }
-            else if (unit instanceof Swordsman)
-            {
-                if (unit.is_perfect())
-                {
-                    return;
-                }
-                if (heat.at(coord).hostile(unit.owner) > 0)
-                {
-                    let b = buff.at(coord);
-                    b.add(ActionType.Upgrade, -2);
-                }
-            }
-            else if (unit instanceof Spearman)
-            {
-                let b = buff.at(coord);
-                b.add(ActionType.Attack, -1);
-            }
-        });
-        return buff;
-    }
-
     static count_unit(board: Board<Unit>, player: Player, unit_type: UnitConstructor | null = null): number
     {
         let count = 0;
@@ -677,26 +616,9 @@ class Rule
 class BoardContext
 {
     heat: FullBoard<Heat>;
-    buff: FullBoard<Buff>;
     constructor(public unit: Board<Unit>)
     {
         this.heat = Rule.get_heat(unit);
-        this.buff = Rule.get_buff(unit, this.heat);
-    }
-}
-
-class Buff
-{
-    map = [0, 0, 0, 0, 0];
-
-    add(type: ActionType, amount: number)
-    {
-        this.map[type] += amount;
-    }
-
-    get(type: ActionType): number
-    {
-        return this.map[type];
     }
 }
 

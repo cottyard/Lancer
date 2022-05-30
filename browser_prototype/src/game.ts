@@ -36,7 +36,7 @@ class Game
         for (let player of Player.both())
         {
             let supply = this.supplies[player];
-            supply -= actions[player].cost(this.board.buff);
+            supply -= actions[player].cost();
             supply += this.supply_income(player);
             supply += martyrs.reduce<number>((total: number, martyr: Martyr) =>
             {
@@ -79,7 +79,7 @@ class Game
     validate_move(move: PlayerMove): PlayerAction
     {
         let action = Rule.validate_player_move(this.board, move);
-        if (action.cost(this.board.buff) > this.supplies[action.player])
+        if (action.cost() > this.supplies[action.player])
         {
             throw new InsufficientSupply();
         }
@@ -293,7 +293,7 @@ class GameContext implements IGameContext
 
     action_cost(player: Player): number
     {
-        return this.player_actions[player].cost(this._present.board.buff);
+        return this.player_actions[player].cost();
     }
 
     delete_moves(player: Player, which: (move: Move) => move is Move): Move[]

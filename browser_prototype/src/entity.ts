@@ -379,18 +379,7 @@ class Action implements ICopyable<Action>
         return new Action(this.move.copy(), this.type, this.unit_type);
     }
 
-    cost(buff: FullBoard<Buff>): number
-    {
-        let buff_cost = buff.at(this.move.from).get(this.type);
-        let cost = this.standard_cost() + (buff_cost || 0);
-        if (cost < 1)
-        {
-            return 1;
-        }
-        return cost;
-    }
-
-    standard_cost(): number
+    cost(): number
     {
         switch (this.type)
         {
@@ -467,11 +456,11 @@ class PlayerAction
     {
     }
 
-    cost(buff: FullBoard<Buff>): number
+    cost(): number
     {
         return this.actions.map((a) =>
         {
-            return a.cost(buff);
+            return a.cost();
         }).reduce((a, b) => a + b, 0);
     }
 
