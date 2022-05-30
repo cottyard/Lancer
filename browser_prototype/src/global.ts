@@ -47,114 +47,115 @@ class Module
     action_style = new Map<ActionType, string>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
-        {
-            'King':
-                `-----
-            --x--
-            -x-x-
-            --x--
-            -----`,
-            'Rider':
-                `-x-x-
-            x---x
-            -----
-            x---x
-            -x-x-`,
-            'Lancer':
-                `-xxx-
-            x---x
-            x---x
-            x---x
-            -xxx-`,
-            'Knight':
-                `-x-x-
-            xx-xx
-            -----
-            xx-xx
-            -x-x-`,
-            'Soldier':
-                `-----
-            --x--
-            -x-x-
-            --x--
-            -----`,
-            'Swordsman':
-                `-----
-            -xxx-
-            -x-x-
-            -xxx-
-            -----`,
-            'Spearman':
-                `--x--
-            --x--
-            xx-xx
-            --x--
-            --x--`,
-            'Archer':
-                `--x--
-            -----
-            x---x
-            -----
-            --x--`,
-            'Barbarian':
-                `-----
-            -x-x-
-            -----
-            -x-x-
-            -----`,
-            'Warrior':
-                `--x--
-            -x-x-
-            x---x
-            -x-x-
-            --x--`,
-            'Wagon':
-                `-----
-            --x--
-            -x-x-
-            --x--
-            -----`
-        };
+    {
+        'King':
+        `-----
+        --x--
+        -x-x-
+        --x--
+        -----`,
+
+        'Rider':
+        `-x-x-
+        x---x
+        -----
+        x---x
+        -x-x-`,
+
+        'Lancer':
+        `-xxx-
+        x---x
+        x---x
+        x---x
+        -xxx-`,
+
+        'Knight':
+        `-x-x-
+        xx-xx
+        -----
+        xx-xx
+        -x-x-`,
+        
+        'Soldier':
+        `-----
+        --x--
+        -x-x-
+        --x--
+        -----`,
+        
+        'Swordsman':
+        `-----
+        -xxx-
+        -x-x-
+        -xxx-
+        -----`,
+        
+        'Spearman':
+        `--x--
+        --x--
+        xx-xx
+        --x--
+        --x--`,
+        
+        'Archer':
+        `--x--
+        -----
+        x---x
+        -----
+        --x--`,
+        
+        'Barbarian':
+        `-----
+        -x-x-
+        -----
+        -x-x-
+        -----`,
+        
+        'Warrior':
+        `--x--
+        -x-x-
+        x---x
+        -x-x-
+        --x--`,
+    };
 
     readonly inborn_skills_literal: { [unit_name: string]: string | undefined; } =
-        {
-            'King':
-                `-----
-            --x--
-            -x-x-
-            --x--
-            -----`,
-            'Rider':
-                `-x-x-
-            -----
-            -----
-            -----
-            -----`,
-            'Soldier':
-                `-----
-            --x--
-            -----
-            --x--
-            -----`,
-            'Archer':
-                `--x--
-            -----
-            -----
-            -----
-            --x--`,
-            'Barbarian':
-                `-----
-            -x-x-
-            -----
-            -----
-            -----`,
-            'Wagon':
-                `-----
-            -----
-            -----
-            -----
-            -----`
-        };
+    {
+        'King':
+        `-----
+        --x--
+        -x-x-
+        --x--
+        -----`,
+        
+        'Rider':
+        `-x-x-
+        -----
+        -----
+        -----
+        -----`,
+        
+        'Soldier':
+        `-----
+        --x--
+        -----
+        --x--
+        -----`,
+        
+        'Archer':
+        `--x--
+        -----
+        -----
+        -----
+        --x--`,
+        
+        'Barbarian':
+        `-----
+        -x-x-
+        -----
+        -----
+        -----`
+    };
 
     readonly spawning_skills_literal: string =
         `-xxx-
