@@ -87,7 +87,7 @@ class ActionPanel implements IComponent
 
         // cost.
         div.appendChild(DomHelper.createText(
-            "🍞" + action.action.cost(this.context.present.board.buff).toString(),
+            "🍞" + action.action.cost().toString(),
             { 'font-weight': 'bold' }
         ));
 
@@ -231,18 +231,20 @@ class ActionPanel implements IComponent
 
     getMainUnit(action: DisplayAction): Unit 
     {
-        if (action.type === DisplayActionType.Recruit)
-        {
-            return new action.action.unit_type(action.player, null);
-        }
-        else if (action.type === DisplayActionType.Recall)
-        {
-            return this.context.present.board.unit.at(action.action.move.to)!;
-        }
-        else
-        {
-            return this.context.present.board.unit.at(action.action.move.from)!;
-        }
+        // if (action.type === DisplayActionType.Recruit)
+        // {
+        //     return new action.action.unit_type(action.player, null);
+        // }
+        // else if (action.type === DisplayActionType.Recall)
+        // {
+        //     return this.context.present.board.unit.at(action.action.move.to)!;
+        // }
+        // else
+        // {
+        //     return this.context.present.board.unit.at(action.action.move.from)!;
+        // }
+
+        return this.context.present.board.unit.at(action.action.move.from)!;
     }
 
     getTargetUnit(action: DisplayAction): Unit | null
@@ -289,10 +291,10 @@ class ActionPanel implements IComponent
                 return "moving";
             case DisplayActionType.Attack:
                 return "attacks";
-            case DisplayActionType.Recruit:
-                return "recruited";
-            case DisplayActionType.Recall:
-                return "recalled";
+            // case DisplayActionType.Recruit:
+            //     return "recruited";
+            // case DisplayActionType.Recall:
+            //     return "recalled";
             case DisplayActionType.MoveAssist:
                 return "assisting";
             case DisplayActionType.AttackAssist:

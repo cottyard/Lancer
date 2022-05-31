@@ -344,54 +344,6 @@
         this.circle(new Position(4, -13), 1, width, g.const.STYLE_BLACK);
     }
 
-    wagon(color: string, with_gold: boolean)
-    {
-        let size_x = 30;
-        let size_y = 22;
-        let width = 2;
-        let tyre_size = 7;
-        this.ctx.lineWidth = width;
-        this.set_color(g.const.STYLE_BLACK);
-
-        let upleft = new Position(-size_x * 1.3 / 2, -size_y / 2 + 4);
-        let upright = new Position(size_x * 1.3 / 2, -size_y / 2 + 4);
-        let downleft = new Position(-size_x / 2, size_y / 2);
-        let downright = new Position(size_x / 2, size_y / 2);
-        
-        if (with_gold)
-        {
-            let gold_left = new Position(-size_x * 1.1 / 2, -size_y / 2 + 4);
-            let gold_right = new Position(size_x * 1.1 / 2, -size_y / 2 + 4);
-            let gold_1 = new Position(-size_x * 0.7 / 2, -size_y / 2 - 4);
-            let gold_2 = new Position(size_x * 0.3 / 2, -size_y / 2 - 8);
-            let gold_3 = new Position(size_x * 0.7 / 2, -size_y / 2 - 5);
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(gold_left.x, gold_left.y);
-            this.ctx.lineTo(gold_1.x, gold_1.y);
-            this.ctx.lineTo(gold_2.x, gold_2.y);
-            this.ctx.lineTo(gold_3.x, gold_3.y);
-            this.ctx.lineTo(gold_right.x, gold_right.y);
-            this.ctx.closePath();
-            this.set_fill_color(g.const.STYLE_GOLD);
-            this.ctx.fill();
-            this.ctx.stroke();
-        }
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(upleft.x, upleft.y);
-        this.ctx.lineTo(upright.x, upright.y);
-        this.ctx.lineTo(downright.x, downright.y);
-        this.ctx.lineTo(downleft.x, downleft.y);
-        this.ctx.closePath();
-        this.set_fill_color(color);
-        this.ctx.fill();
-        this.ctx.stroke();
-
-        this.circle(new Position(-size_x / 2 * 0.8, size_y / 2), tyre_size, width, g.const.STYLE_WHITE);
-        this.circle(new Position(size_x / 2 * 0.8, size_y / 2), tyre_size, width, g.const.STYLE_WHITE);
-    }
-
     halo(angle: Angle, color: string, radius: number)
     {
         let width = 4;

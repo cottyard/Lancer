@@ -11,10 +11,10 @@ class Module
     readonly skill_range: number = 2;
     readonly skillset_size: number = this.skill_range * 2 + 1;
     readonly max_unit_count: number = 28;
-    readonly layout_1st: UnitConstructor[] = [Archer, Wagon, Archer, Rider, King, Rider, Archer, Wagon, Archer];
+    readonly layout_1st: UnitConstructor[] = [Archer, Rider, Archer, Rider, King, Rider, Archer, Rider, Archer];
     readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
     readonly all_unit_types: UnitConstructor[] = [
-        King, Rider, Soldier, Archer, Barbarian, Wagon, Lancer, Knight, Spearman, Swordsman, Warrior
+        King, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
     spawning_skills: SkillSet | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
@@ -195,8 +195,8 @@ class Module
             [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
             [DisplayActionType.Move, g.const.STYLE_BLACK],
             [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
-            [DisplayActionType.Recruit, g.const.STYLE_CYAN],
-            [DisplayActionType.Recall, g.const.STYLE_GOLD],
+            // [DisplayActionType.Recruit, g.const.STYLE_CYAN],
+            // [DisplayActionType.Recall, g.const.STYLE_GOLD],
             [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
         ]);
@@ -206,8 +206,8 @@ class Module
             [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
             [ActionType.Move, g.const.STYLE_BLACK],
             [ActionType.Upgrade, g.const.STYLE_CYAN],
-            [ActionType.Recruit, g.const.STYLE_CYAN],
-            [ActionType.Recall, g.const.STYLE_GOLD]
+            // [ActionType.Recruit, g.const.STYLE_CYAN],
+            // [ActionType.Recall, g.const.STYLE_GOLD]
         ]);
     }
 }

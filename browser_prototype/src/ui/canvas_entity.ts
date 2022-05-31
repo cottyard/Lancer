@@ -8,7 +8,6 @@ let CanvasUnitFactory = function (unit: Unit): CanvasUnit
         [Archer, CanvasArcher],
         [Barbarian, CanvasBarbarian],
         [King, CanvasKing],
-        [Wagon, CanvasWagon],
         [Warrior, CanvasWarrior],
         [Spearman, CanvasSpearman],
         [Swordsman, CanvasSwordsman],
@@ -308,22 +307,6 @@ class CanvasSwordsman extends CanvasHaloUnit
     }
 }
 
-class CanvasWagon extends CanvasHaloUnit
-{
-    skill_direction = new HashMap([
-        [new Skill(0, -1), HaloDirection.Up],
-        [new Skill(0, 1), HaloDirection.Down],
-        [new Skill(-1, 0), HaloDirection.Left],
-        [new Skill(1, 0), HaloDirection.Right]
-    ]);
-    halo_size = CanvasUnit.halo_size_large;
-    halo_radius = CanvasUnit.halo_radius_small;
-
-    paint_unit(renderer: Renderer): void
-    {
-        renderer.wagon(this.color, this.unit.is_perfect());
-    }
-}
 
 class CanvasKing extends CanvasUnit
 {

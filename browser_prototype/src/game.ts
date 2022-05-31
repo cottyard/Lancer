@@ -91,17 +91,9 @@ class Game
         return this.supplies[player];
     }
 
-    supply_income(player: Player): number 
+    supply_income(_player: Player): number 
     {
-        let wagon_revenue = 0;
-        this.board.unit.iterate_units((unit: Unit, _) =>
-        {
-            if (unit.owner == player && is_wagon(unit))
-            {
-                wagon_revenue += unit.revenue();
-            }
-        });
-        return wagon_revenue + Game.supply_basic_incremental;
+        return Game.supply_basic_incremental;
     }
 
     static set_out(board: Board<Unit>): void
@@ -183,8 +175,8 @@ class Game
         {
             let coord = Coordinate.deserialize(victim);
 
-            // TODO: temporarily stub all deserialized martyr as wagon
-            martyrs.push(new Martyr(new Quester(new Wagon(Player.P1, null), coord), trophy));
+            // TODO: temporarily stub all deserialized martyr as Soldier
+            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord), trophy));
         }
 
         let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);

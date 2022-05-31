@@ -180,54 +180,54 @@ class GameCanvas
         });
     }
 
-    paint_buff(coordinate: Coordinate, buff: Buff)
-    {
-        let size_y = 5;
-        let size_x = 4;
-        let space = 10;
-        let small_space = 8;
-        let begin = GameCanvas.get_grid_position(coordinate).add(
-            new PositionDelta(g.settings.grid_size - size_x - 2, 3));
+    // paint_buff(coordinate: Coordinate, buff: Buff)
+    // {
+    //     let size_y = 5;
+    //     let size_x = 4;
+    //     let space = 10;
+    //     let small_space = 8;
+    //     let begin = GameCanvas.get_grid_position(coordinate).add(
+    //         new PositionDelta(g.settings.grid_size - size_x - 2, 3));
 
-        using(new Renderer(this.am_ctx), (renderer) =>
-        {
-            renderer.translate(begin);
-            let offset = 0;
-            let last_upwards: boolean | null = null;
-            for (let type of [ActionType.Move, ActionType.Attack, ActionType.Defend, ActionType.Upgrade])
-            {
-                let b = buff.get(type);
-                if (b == 0)
-                {
-                    continue;
-                }
+    //     using(new Renderer(this.am_ctx), (renderer) =>
+    //     {
+    //         renderer.translate(begin);
+    //         let offset = 0;
+    //         let last_upwards: boolean | null = null;
+    //         for (let type of [ActionType.Move, ActionType.Attack, ActionType.Defend, ActionType.Upgrade])
+    //         {
+    //             let b = buff.get(type);
+    //             if (b == 0)
+    //             {
+    //                 continue;
+    //             }
 
-                let top = 0;
-                let bottom = size_y;
-                let upwards = b < 0;
-                if (!upwards)
-                {
-                    [top, bottom] = [bottom, top];
+    //             let top = 0;
+    //             let bottom = size_y;
+    //             let upwards = b < 0;
+    //             if (!upwards)
+    //             {
+    //                 [top, bottom] = [bottom, top];
 
-                }
+    //             }
 
-                if (last_upwards != null)
-                {
-                    offset += last_upwards == upwards ? space : small_space;
-                }
+    //             if (last_upwards != null)
+    //             {
+    //                 offset += last_upwards == upwards ? space : small_space;
+    //             }
 
-                let style = g.action_style.get(type)!;
-                renderer.set_color(style);
-                renderer.triangle(
-                    new Position(-offset, top),
-                    new Position(-offset - size_x, bottom),
-                    new Position(-offset + size_x, bottom),
-                    1, style);
+    //             let style = g.action_style.get(type)!;
+    //             renderer.set_color(style);
+    //             renderer.triangle(
+    //                 new Position(-offset, top),
+    //                 new Position(-offset - size_x, bottom),
+    //                 new Position(-offset + size_x, bottom),
+    //                 1, style);
 
-                last_upwards = upwards;
-            }
-        });
-    }
+    //             last_upwards = upwards;
+    //         }
+    //     });
+    // }
 
     mark_this_grid(center: Position, color: string, reverse: boolean = false)
     {
@@ -260,23 +260,23 @@ class GameCanvas
             const to = GameCanvas.get_grid_center(a.action.move.to);
             const color = g.display_action_style.get(a.type)!;
 
-            if (a.type == DisplayActionType.Recall)
-            {
-                let recalled = board.at(a.action.move.to)!;
-                this.mark_this_grid(from, color);
-                this.mark_this_grid(to, color, true);
-                this.paint_unit(CanvasUnitFactory(recalled), a.action.move.from, true);
-                continue;
-            }
-            else if (a.type == DisplayActionType.Recruit)
-            {
-                this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player, null)), a.action.move.from, true);
-                if (a.action.move.from.equals(a.action.move.to))
-                {
-                    this.mark_this_grid(to, color);
-                    continue;
-                }
-            }
+            // if (a.type == DisplayActionType.Recall)
+            // {
+            //     let recalled = board.at(a.action.move.to)!;
+            //     this.mark_this_grid(from, color);
+            //     this.mark_this_grid(to, color, true);
+            //     this.paint_unit(CanvasUnitFactory(recalled), a.action.move.from, true);
+            //     continue;
+            // }
+            // else if (a.type == DisplayActionType.Recruit)
+            // {
+            //     this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player, null)), a.action.move.from, true);
+            //     if (a.action.move.from.equals(a.action.move.to))
+            //     {
+            //         this.mark_this_grid(to, color);
+            //         continue;
+            //     }
+            // }
 
             const skill = a.action.move.which_skill()!;
             const shrink = g.settings.grid_size / 2 - 5;

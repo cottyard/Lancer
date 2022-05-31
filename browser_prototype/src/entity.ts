@@ -412,21 +412,19 @@ class Action implements ICopyable<Action>
                 {
                     return 4;
                 }
-            case ActionType.Recruit:
-                switch (this.unit_type)
-                {
-                    case Barbarian:
-                    case Archer:
-                    case Soldier:
-                        return 8;
-                    case Rider:
-                        return 12;
-                    case Wagon:
-                        return 8;
-                }
-                throw new Error("Action.cost");
-            case ActionType.Recall:
-                return 8;
+            // case ActionType.Recruit:
+            //     switch (this.unit_type)
+            //     {
+            //         case Barbarian:
+            //         case Archer:
+            //         case Soldier:
+            //             return 8;
+            //         case Rider:
+            //             return 12;
+            //     }
+            //     throw new Error("Action.cost");
+            // case ActionType.Recall:
+            //     return 8;
         }
     }
 
@@ -446,8 +444,8 @@ enum ActionType
     Defend = 2,
     Move = 3,
     Attack = 4,
-    Recruit = 5,
-    Recall = 6
+    // Recruit = 5,
+    // Recall = 6
 }
 
 class PlayerAction
@@ -605,34 +603,34 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
         return unit;
     }
 
-    static spawn_from_skill(player: Player, skill: Skill): Unit | null
-    {
-        let ctor = Unit.which_to_spawn(skill);
-        if (ctor == null)
-        {
-            return null;
-        }
-        let unit = new ctor(player, null);
-        unit.endow_inborn();
-        return unit;
-    }
+    // static spawn_from_skill(player: Player, skill: Skill): Unit | null
+    // {
+    //     let ctor = Unit.which_to_spawn(skill);
+    //     if (ctor == null)
+    //     {
+    //         return null;
+    //     }
+    //     let unit = new ctor(player, null);
+    //     unit.endow_inborn();
+    //     return unit;
+    // }
 
-    static which_to_spawn(skill: Skill): UnitConstructor | null
-    {
-        if (!g.spawning_skills!.has(skill))
-        {
-            return null;
-        }
+    // static which_to_spawn(skill: Skill): UnitConstructor | null
+    // {
+    //     if (!g.spawning_skills!.has(skill))
+    //     {
+    //         return null;
+    //     }
 
-        if (skill.equals(new Skill(0, 0)))
-        {
-            return Wagon;
-        }
-        else
-        {
-            return this.which_has_skill(skill, [Rider, Soldier, Barbarian, Archer]);
-        }
-    }
+    //     if (skill.equals(new Skill(0, 0)))
+    //     {
+    //         return Wagon;
+    //     }
+    //     else
+    //     {
+    //         return this.which_has_skill(skill, [Rider, Soldier, Barbarian, Archer]);
+    //     }
+    // }
 
     static which_has_skill(skill: Skill, ctors: UnitConstructor[]): UnitConstructor | null
     {
@@ -695,11 +693,6 @@ function is_basic_unit_ctor(ctor: UnitConstructor): ctor is BasicUnitConstructor
 function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor 
 {
     return 'discriminator' in ctor && ctor['discriminator'] == 'AdvancedUnitConstructor';
-}
-
-function is_wagon(unit: Unit): unit is Wagon 
-{
-    return unit.constructor == Wagon;
 }
 
 abstract class BasicUnit extends UnitConstructor
@@ -811,18 +804,4 @@ class King extends UnitConstructor
 {
     static readonly id = 10;
     readonly level = 1;
-}
-
-class Wagon extends UnitConstructor
-{
-    static readonly id = 11;
-    revenue(): number
-    {
-        return this.is_perfect() ? 2 : 1;
-    }
-
-    get_trophy(): number
-    {
-        return this.is_perfect() ? 20 : 8;
-    }
 }

@@ -28,73 +28,74 @@ class Rule
             }));
     }
 
-    static validate_recall(board: BoardContext, move: Move, player: Player): Action
-    {
-        let recalled = board.unit.at(move.to);
-        if (recalled == null)
-        {
-            throw new InvalidMove("recalled grid is empty");
-        }
-        if (recalled.owner != player)
-        {
-            throw new InvalidMove("recalled unit is enemy");
-        }
+    // static validate_recall(board: BoardContext, move: Move, player: Player): Action
+    // {
+    //     let recalled = board.unit.at(move.to);
+    //     if (recalled == null)
+    //     {
+    //         throw new InvalidMove("recalled grid is empty");
+    //     }
+    //     if (recalled.owner != player)
+    //     {
+    //         throw new InvalidMove("recalled unit is enemy");
+    //     }
 
-        if (board.heat.at(move.to).hostile(player) > 0)
-        {
-            throw new InvalidMove("recalled unit is under attack");
-        }
-        if (board.heat.at(move.from).hostile(player) > 0)
-        {
-            throw new InvalidMove("recall destination is under attack");
-        }
+    //     if (board.heat.at(move.to).hostile(player) > 0)
+    //     {
+    //         throw new InvalidMove("recalled unit is under attack");
+    //     }
+    //     if (board.heat.at(move.from).hostile(player) > 0)
+    //     {
+    //         throw new InvalidMove("recall destination is under attack");
+    //     }
 
-        return new Action(move, ActionType.Recall, recalled.type());
-    }
+    //     return new Action(move, ActionType.Recall, recalled.type());
+    // }
 
-    static validate_spawn(board: BoardContext, move: Move, player: Player): Action | InvalidMove
-    {
-        if (move.from.y != this.spawn_row[player])
-        {
-            return new InvalidMove("grid is empty");
-        }
+    // static validate_spawn(board: BoardContext, move: Move, player: Player): Action | InvalidMove
+    // {
+    //     if (move.from.y != this.spawn_row[player])
+    //     {
+    //         return new InvalidMove("grid is empty");
+    //     }
 
-        let skill = move.which_skill();
-        if (skill == null)
-        {
-            return new InvalidMove("not a valid skill");
-        }
+    //     let skill = move.which_skill();
+    //     if (skill == null)
+    //     {
+    //         return new InvalidMove("not a valid skill");
+    //     }
 
-        let type = Unit.which_to_spawn(skill);
-        if (type == null)
-        {
-            return new InvalidMove("this skill recruits nothing");
-        }
-        if (Rule.count_unit(board.unit, player) >= g.max_unit_count)
-        {
-            return new InvalidMove("units limit exceeded");
-        }
-        return new Action(move, ActionType.Recruit, type);
-    }
+    //     let type = Unit.which_to_spawn(skill);
+    //     if (type == null)
+    //     {
+    //         return new InvalidMove("this skill recruits nothing");
+    //     }
+    //     if (Rule.count_unit(board.unit, player) >= g.max_unit_count)
+    //     {
+    //         return new InvalidMove("units limit exceeded");
+    //     }
+    //     return new Action(move, ActionType.Recruit, type);
+    // }
 
     static validate_move(board: BoardContext, move: Move, player: Player): Action
     {
         let unit = board.unit.at(move.from);
         if (unit == null)
         {
-            let action_or_error = this.validate_spawn(board, move, player);
-            if (action_or_error instanceof Action)
-            {
-                return action_or_error;
-            }
-            else if (this.is_king_side(board.unit, player, move.from))
-            {
-                return this.validate_recall(board, move, player);
-            }
-            else
-            {
-                throw action_or_error;
-            }
+            // let action_or_error = this.validate_spawn(board, move, player);
+            // if (action_or_error instanceof Action)
+            // {
+            //     return action_or_error;
+            // }
+            // else if (this.is_king_side(board.unit, player, move.from))
+            // {
+            //     return this.validate_recall(board, move, player);
+            // }
+            // else
+            // {
+            //     throw action_or_error;
+            // }
+            throw new InvalidMove("unit is empty");
         }
 
         if (unit.owner != player)
@@ -268,39 +269,39 @@ class Rule
         return [];
     }
 
-    static recallable_by(board: BoardContext, player: Player, coord: Coordinate): Coordinate[]
-    {
-        let unit = board.unit.at(coord);
-        if (unit)
-        {
-            return [];
-        }
+    // static recallable_by(board: BoardContext, player: Player, coord: Coordinate): Coordinate[]
+    // {
+    //     let unit = board.unit.at(coord);
+    //     if (unit)
+    //     {
+    //         return [];
+    //     }
 
-        if (!this.is_king_side(board.unit, player, coord))
-        {
-            return [];
-        }
+    //     if (!this.is_king_side(board.unit, player, coord))
+    //     {
+    //         return [];
+    //     }
 
-        if (board.heat.at(coord).hostile(player) > 0)
-        {
-            return [];
-        }
+    //     if (board.heat.at(coord).hostile(player) > 0)
+    //     {
+    //         return [];
+    //     }
 
-        let all: Coordinate[] = [];
-        let spawnable = new HashSet<Coordinate>(this.spawnable_by(board.unit, coord));
-        board.unit.iterate_units((u, c) =>
-        {
-            if (u.owner == player && board.heat.at(c).hostile(player) == 0)
-            {
-                if (!spawnable.has(c))
-                {
-                    all.push(c);
-                }
-            }
-        });
+    //     let all: Coordinate[] = [];
+    //     let spawnable = new HashSet<Coordinate>(this.spawnable_by(board.unit, coord));
+    //     board.unit.iterate_units((u, c) =>
+    //     {
+    //         if (u.owner == player && board.heat.at(c).hostile(player) == 0)
+    //         {
+    //             if (!spawnable.has(c))
+    //             {
+    //                 all.push(c);
+    //             }
+    //         }
+    //     });
 
-        return all;
-    }
+    //     return all;
+    // }
 
     static valid_moves(board: BoardContext, player: Player): Move[]
     {
@@ -330,13 +331,13 @@ class Rule
                     }
                 }
 
-                if (this.is_king_side(board.unit, player, c))
-                {
-                    for (let dest of this.recallable_by(board, player, c))
-                    {
-                        all.push(new Move(c, dest));
-                    }
-                }
+                // if (this.is_king_side(board.unit, player, c))
+                // {
+                //     for (let dest of this.recallable_by(board, player, c))
+                //     {
+                //         all.push(new Move(c, dest));
+                //     }
+                // }
             }
         });
 
@@ -358,8 +359,8 @@ class Rule
         this.process_defend_phase(next_board, actions, force_board);
         martyrs = martyrs.concat(this.process_clash_phase(next_board, actions));
         martyrs = martyrs.concat(this.process_battle_phase(next_board, actions, force_board));
-        this.process_recall_phase(next_board, actions);
-        this.process_recruit_phase(next_board, actions);
+        // this.process_recall_phase(next_board, actions);
+        // this.process_recruit_phase(next_board, actions);
 
         return [new BoardContext(next_board), martyrs];
     }
@@ -573,44 +574,44 @@ class Rule
         return martyrs;
     }
 
-    static process_recall_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
-    {
-        for (let player_action of Player.values(player_actions))
-        {
-            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Recall))
-            {
-                if (board.at(action.move.from) == null)
-                {
-                    let recalled = board.at(action.move.to);
-                    if (recalled != null && recalled.owner == player_action.player)
-                    {
-                        board.remove(action.move.to);
-                        board.put(action.move.from, recalled);
-                    }
-                }
-            }
-        }
-    }
+    // static process_recall_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
+    // {
+    //     for (let player_action of Player.values(player_actions))
+    //     {
+    //         for (let action of player_action.extract((a): a is Action => a.type == ActionType.Recall))
+    //         {
+    //             if (board.at(action.move.from) == null)
+    //             {
+    //                 let recalled = board.at(action.move.to);
+    //                 if (recalled != null && recalled.owner == player_action.player)
+    //                 {
+    //                     board.remove(action.move.to);
+    //                     board.put(action.move.from, recalled);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
-    static process_recruit_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
-    {
-        for (let player_action of Player.values(player_actions))
-        {
-            for (let action of player_action.actions)
-            {
-                if (action.type != ActionType.Recruit)
-                {
-                    throw new Error("unprocessed action");
-                }
-                if (board.at(action.move.from) == null)
-                {
-                    let skill = action.move.which_skill()!;
-                    let recruited = Unit.spawn_from_skill(player_action.player, skill);
-                    board.put(action.move.from, recruited);
-                }
-            }
-        }
-    }
+    // static process_recruit_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
+    // {
+    //     for (let player_action of Player.values(player_actions))
+    //     {
+    //         for (let action of player_action.actions)
+    //         {
+    //             if (action.type != ActionType.Recruit)
+    //             {
+    //                 throw new Error("unprocessed action");
+    //             }
+    //             if (board.at(action.move.from) == null)
+    //             {
+    //                 let skill = action.move.which_skill()!;
+    //                 let recruited = Unit.spawn_from_skill(player_action.player, skill);
+    //                 board.put(action.move.from, recruited);
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 class BoardContext
