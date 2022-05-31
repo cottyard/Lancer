@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        "outFile": "target/lancer.js",
-        "rootDir": "src",
+        "outFile": "../target/lancer.js",
+        "rootDir": ".",
         "removeComments": true,
         "sourceMap": true,
         "noUnusedLocals": true,
