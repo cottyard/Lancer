@@ -395,11 +395,11 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
     session_listeners: ((session_id: string) => void)[] = [];
     move_listeners: (() => void)[] = [];
 
-    _consumed_milliseconds: Players<number> = Players.empty(() => 0);
+    _consumed_milliseconds: Players<number> = Players.map(() => 0);
 
     constructor()
     {
-        super(Players.empty(() => ''), Game.new_showcase());
+        super(Players.map(() => ''), Game.new_showcase());
         this.query_handle = setInterval(() =>
         {
             if (this.session_id)

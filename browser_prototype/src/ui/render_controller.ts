@@ -59,7 +59,7 @@ class RenderController implements IRenderController
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        this.displaying_actions = Players.empty((p) => new PlayerAction(p));
+        this.displaying_actions = Players.map((p) => new PlayerAction(p));
 
         this.canvas.paint_background();
 
