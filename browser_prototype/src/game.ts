@@ -1,5 +1,7 @@
 class InsufficientSupply extends Error { }
 
+const supply_basic_incremental: number = 9;
+
 enum GameStatus
 {
     Ongoing,
@@ -8,15 +10,44 @@ enum GameStatus
     Tied
 }
 
+class CapturingState
+{
+    constructor(public by: Player, public remaining_duration: number)
+    {
+    }
+}
+
+class CapturedState
+{
+    constructor(public by: Player)
+    {
+    }
+}
+
+class NeutralizingState
+{
+    constructor(public owner: Player, public remaining_duration: number)
+    {
+    }
+}
+
+class NeutralState
+{
+}
+
+type ResourceStatus = CapturingState | CapturedState 
+                    | NeutralizingState | NeutralState
+
 class GameRound
 {
-    static readonly supply_basic_incremental = 9;
     constructor(
         readonly round_count: number,
         readonly board: GameBoard,
         readonly supplies: Players<number>,
         readonly last_actions: Players<PlayerAction> | null,
-        readonly martyrs: Martyr[])
+        readonly martyrs: Martyr[],
+        readonly resources: ResourceStatus[]
+        )
     {
     }
 
@@ -36,7 +67,7 @@ class GameRound
         for (let player of Player.both())
         {
             supplies[player] = this.supplies[player] 
-                             + GameRound.supply_basic_incremental
+                             + this.supply_income(player)
                              - actions[player].cost();
         }
 
@@ -45,7 +76,16 @@ class GameRound
             next_board,
             supplies,
             actions,
-            martyrs);
+            martyrs,
+            this.resources_updated());
+    }
+
+    resources_updated(): ResourceStatus[]
+    {
+        for (let i = 0; i < this.resources.length; ++i)
+        {
+        }
+        return this.resources;
     }
 
     status(): GameStatus
@@ -85,6 +125,11 @@ class GameRound
         return this.supplies[player];
     }
 
+    supply_income(_player: Player): number 
+    {
+        return supply_basic_incremental;
+    }
+
     static set_out(board: Board<Unit>): void
     {
         let board_layout: [number, UnitConstructor[], Player][] = [
@@ -111,12 +156,19 @@ class GameRound
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         this.set_out(board);
+        let resources: ResourceStatus[] = [];
+        for (let i = 0; i < g.resource_grids.length; ++i)
+        {
+            resources.push(new NeutralState());
+        }
+
         return new GameRound(
             0, new GameBoard(board),
             {
-                [Player.P1]: GameRound.supply_basic_incremental,
-                [Player.P2]: GameRound.supply_basic_incremental
-            }, null, []);
+                [Player.P1]: supply_basic_incremental,
+                [Player.P2]: supply_basic_incremental
+            }, null, [],
+            resources);
     }
 
     static new_showcase(): GameRound
@@ -131,46 +183,46 @@ class GameRound
             {
                 [Player.P1]: 0,
                 [Player.P2]: 0
-            }, null, []);
+            }, null, [], []);
     }
 
-    static deserialize(payload: string): GameRound
-    {
-        let [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(payload);
+    // static deserialize(payload: string): GameRound
+    // {
+    //     let [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(payload);
 
-        let last_round_actions = {
-            [Player.P1]: new PlayerAction(Player.P1),
-            [Player.P2]: new PlayerAction(Player.P2)
-        };
+    //     let last_round_actions = {
+    //         [Player.P1]: new PlayerAction(Player.P1),
+    //         [Player.P2]: new PlayerAction(Player.P2)
+    //     };
 
-        for (let player_action_payload of player_actions)
-        {
-            let player_action = PlayerAction.deserialize(player_action_payload);
-            last_round_actions[player_action.player] = player_action;
-        }
+    //     for (let player_action_payload of player_actions)
+    //     {
+    //         let player_action = PlayerAction.deserialize(player_action_payload);
+    //         last_round_actions[player_action.player] = player_action;
+    //     }
 
-        let supplies = {
-            [Player.P1]: 0,
-            [Player.P2]: 0
-        };
+    //     let supplies = {
+    //         [Player.P1]: 0,
+    //         [Player.P2]: 0
+    //     };
 
-        for (let player in player_supply_map)
-        {
-            supplies[deserialize_player(player)] = player_supply_map[player];
-        }
+    //     for (let player in player_supply_map)
+    //     {
+    //         supplies[deserialize_player(player)] = player_supply_map[player];
+    //     }
 
-        let martyrs: Martyr[] = [];
-        for (let victim of victims)
-        {
-            let coord = Coordinate.deserialize(victim);
+    //     let martyrs: Martyr[] = [];
+    //     for (let victim of victims)
+    //     {
+    //         let coord = Coordinate.deserialize(victim);
 
-            // TODO: temporarily stub all deserialized martyr as Soldier
-            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
-        }
+    //         // TODO: temporarily stub all deserialized martyr as Soldier
+    //         martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
+    //     }
 
-        let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
-        return new GameRound(round_count, new GameBoard(board), supplies, last_round_actions, martyrs);
-    }
+    //     let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
+    //     return new GameRound(round_count, new GameBoard(board), supplies, last_round_actions, martyrs);
+    // }
 }
 
 interface IGameContext
@@ -377,7 +429,7 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
     session_id: string | null = null;
     latest_game_id: string | null = null;
     current_game_id: string | null = null;
-    query_handle: number;
+    // query_handle: number;
     _status: GameStatus = GameStatus.Ongoing;
     status_listeners: Function[] = [];
     loading_listeners: Function[] = [];
@@ -389,13 +441,13 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
     constructor()
     {
         super(Players.map(() => ''), GameRound.new_showcase());
-        this.query_handle = setInterval(() =>
-        {
-            if (this.session_id)
-            {
-                query_match(this.session_id, this.query_session.bind(this));
-            }
-        }, 2000);
+        // this.query_handle = setInterval(() =>
+        // {
+        //     if (this.session_id)
+        //     {
+        //         query_match(this.session_id, this.query_session.bind(this));
+        //     }
+        // }, 2000);
     }
 
     get status(): GameStatus
@@ -473,66 +525,66 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         }
     }
 
-    update_game()
-    {
-        if (!this.latest_game_id)
-        {
-            return;
-        }
+    // update_game()
+    // {
+    //     if (!this.latest_game_id)
+    //     {
+    //         return;
+    //     }
 
-        if (this.latest_game_id == this.current_game_id)
-        {
-            return;
-        }
+    //     if (this.latest_game_id == this.current_game_id)
+    //     {
+    //         return;
+    //     }
 
-        for (let listener of this.loading_listeners)
-        {
-            listener();
-        }
+    //     for (let listener of this.loading_listeners)
+    //     {
+    //         listener();
+    //     }
 
-        fetch_game(this.latest_game_id, (serialized_game) =>
-        {
-            let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
-            console.log('loading game', game_id);
+    //     fetch_game(this.latest_game_id, (serialized_game) =>
+    //     {
+    //         let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
+    //         console.log('loading game', game_id);
 
-            if (this.current_game_id == game_id)
-            {
-                return;
-            }
+    //         if (this.current_game_id == game_id)
+    //         {
+    //             return;
+    //         }
 
-            this.current_game_id = game_id;
+    //         this.current_game_id = game_id;
 
-            let name_valid = false;
-            for (let p in player_name_map)
-            {
-                let player = deserialize_player(p);
-                let name = player_name_map[p];
-                this.player_names[player] = name;
+    //         let name_valid = false;
+    //         for (let p in player_name_map)
+    //         {
+    //             let player = deserialize_player(p);
+    //             let name = player_name_map[p];
+    //             this.player_names[player] = name;
 
-                if (this.current_player_name == name)
-                {
-                    this.player = player;
-                    name_valid = true;
-                }
-            }
+    //             if (this.current_player_name == name)
+    //             {
+    //                 this.player = player;
+    //                 name_valid = true;
+    //             }
+    //         }
 
-            if (!name_valid)
-            {
-                throw new Error("player name not found in game");
-            }
+    //         if (!name_valid)
+    //         {
+    //             throw new Error("player name not found in game");
+    //         }
 
-            for (let p in player_time_map)
-            {
-                let player = deserialize_player(p);
-                let consumed = player_time_map[p];
-                this._consumed_milliseconds[player] = consumed;
-            }
+    //         for (let p in player_time_map)
+    //         {
+    //             let player = deserialize_player(p);
+    //             let consumed = player_time_map[p];
+    //             this._consumed_milliseconds[player] = consumed;
+    //         }
 
-            this._status = game_status;
-            let game = GameRound.deserialize(game_payload);
-            this.next(game);
-        });
-    }
+    //         this._status = game_status;
+    //         let game = GameRound.deserialize(game_payload);
+    //         this.next(game);
+    //     });
+    // }
 
     next(game: GameRound): void
     {
@@ -540,47 +592,47 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
         super.next(game);
     }
 
-    query_session(session_status: string)
-    {
-        let status = JSON.parse(session_status);
-        console.log('latest game:', status['latest']);
-        this.latest_game_id = status['latest'];
+    // query_session(session_status: string)
+    // {
+    //     let status = JSON.parse(session_status);
+    //     console.log('latest game:', status['latest']);
+    //     this.latest_game_id = status['latest'];
 
-        if (!this.latest_game_id)
-        {
-            return;
-        }
+    //     if (!this.latest_game_id)
+    //     {
+    //         return;
+    //     }
 
-        let updated = false;
+    //     let updated = false;
 
-        for (let player of Player.both())
-        {
-            let current_moved = this.player_moved[player];
-            let moved = status['player_moved'][player];
+    //     for (let player of Player.both())
+    //     {
+    //         let current_moved = this.player_moved[player];
+    //         let moved = status['player_moved'][player];
 
-            if (current_moved != moved)
-            {
-                this.player_moved[player] = moved;
-                updated = true;
-            }
+    //         if (current_moved != moved)
+    //         {
+    //             this.player_moved[player] = moved;
+    //             updated = true;
+    //         }
 
-            let current_time = this.consumed_milliseconds(player);
-            let time = status['player_time'][player];
-            if (current_time != time)
-            {
-                this._consumed_milliseconds[player] = time;
-                updated = true;
-            }
-        }
+    //         let current_time = this.consumed_milliseconds(player);
+    //         let time = status['player_time'][player];
+    //         if (current_time != time)
+    //         {
+    //             this._consumed_milliseconds[player] = time;
+    //             updated = true;
+    //         }
+    //     }
 
-        if (updated)
-        {
-            for (let listener of this.status_listeners)
-            {
-                listener();
-            }
-        }
+    //     if (updated)
+    //     {
+    //         for (let listener of this.status_listeners)
+    //         {
+    //             listener();
+    //         }
+    //     }
 
-        this.update_game();
-    }
+    //     this.update_game();
+    // }
 }

@@ -15,6 +15,10 @@ class Module
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
+    readonly resource_grids: Coordinate[] = [
+        new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4)
+    ];
+    readonly resource_grid_supplies: number[] = [1, 2, 1];
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
