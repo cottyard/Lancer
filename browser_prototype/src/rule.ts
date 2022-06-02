@@ -462,7 +462,7 @@ class Rule
             for (let action of ceased)
             {
                 let martyr = board.remove(action.move.from)!;
-                martyrs.push(new Martyr(new Quester(martyr, action.move.from), martyr.get_trophy()));
+                martyrs.push(new Martyr(new Quester(martyr, action.move.from)));
             }
         }
 
@@ -514,20 +514,20 @@ class Rule
                     if (conqueror)
                     {
                         let fallen = force.arriver[opponent(conqueror.owner)]!;
-                        martyrs.push(new Martyr(fallen, fallen.unit.get_trophy()));
+                        martyrs.push(new Martyr(fallen));
                     }
                     else
                     {
                         martyrs.push(
-                            new Martyr(q1, q1.unit.get_trophy()),
-                            new Martyr(q2, q2.unit.get_trophy()));
+                            new Martyr(q1),
+                            new Martyr(q2));
                     }
                 }
                 else
                 {
                     conqueror = r1 > r2 ? q1.unit : q2.unit;
                     let defeated = r1 > r2 ? q2 : q1;
-                    martyrs.push(new Martyr(defeated, defeated.unit.get_trophy()));
+                    martyrs.push(new Martyr(defeated));
                 }
             }
             else
@@ -554,13 +554,13 @@ class Rule
                     let resident = board.at(where);
                     if (resident)
                     {
-                        martyrs.push(new Martyr(new Quester(resident, where), resident.get_trophy()));
+                        martyrs.push(new Martyr(new Quester(resident, where)));
                     }
                 }
                 else
                 {
                     conqueror = null;
-                    martyrs.push(new Martyr(invader, 0));
+                    martyrs.push(new Martyr(invader));
                 }
             }
 
@@ -651,7 +651,7 @@ class Force
 
 class Martyr
 {
-    constructor(public quester: Quester, public relic: number)
+    constructor(public quester: Quester)
     {
     }
 }

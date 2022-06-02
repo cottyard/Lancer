@@ -184,7 +184,7 @@ class RenderController implements IRenderController
         {
             for (let martyr of this.context.present.martyrs)
             {
-                this.canvas.paint_victim_indicator(martyr.quester.hometown, martyr.relic);
+                this.canvas.paint_victim_indicator(martyr.quester.hometown);
             }
         }
         this.components.action_panel.render();

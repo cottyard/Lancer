@@ -38,11 +38,6 @@ class Game
             let supply = this.supplies[player];
             supply -= actions[player].cost();
             supply += this.supply_income(player);
-            supply += martyrs.reduce<number>((total: number, martyr: Martyr) =>
-            {
-                return total + martyr.quester.unit.owner != player ? martyr.relic : 0;
-            }, 0);
-
             supplies[player] = supply;
         }
 
@@ -171,12 +166,12 @@ class Game
         }
 
         let martyrs: Martyr[] = [];
-        for (let [victim, trophy] of victims)
+        for (let victim of victims)
         {
             let coord = Coordinate.deserialize(victim);
 
             // TODO: temporarily stub all deserialized martyr as Soldier
-            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord), trophy));
+            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
         }
 
         let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);

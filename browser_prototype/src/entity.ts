@@ -470,7 +470,6 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     current: SkillSet;
     readonly promotion_options: AdvancedUnitConstructor[] = [];
     readonly level: number = 0;
-    readonly trophy: number = 0;
 
     constructor(public owner: Player, current: SkillSet | null = null)
     {
@@ -528,11 +527,6 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     is_promotion_ready(): boolean
     {
         return false;
-    }
-
-    get_trophy(): number
-    {
-        return this.trophy;
     }
 
     is_perfect(): boolean
@@ -723,7 +717,6 @@ class Rider extends BasicUnitConstructor
     static readonly id = 1;
     readonly promotion_options = [Lancer, Knight];
     readonly level = 2;
-    readonly trophy = 5;
 }
 
 class Soldier extends BasicUnitConstructor
@@ -731,7 +724,6 @@ class Soldier extends BasicUnitConstructor
     static readonly id = 2;
     readonly promotion_options = [Swordsman, Spearman];
     readonly level = 1;
-    readonly trophy = 5;
 }
 
 class Archer extends BasicUnitConstructor
@@ -739,7 +731,6 @@ class Archer extends BasicUnitConstructor
     static readonly id = 3;
     readonly promotion_options = [Warrior, Spearman];
     readonly level = 1;
-    readonly trophy = 5;
 }
 
 class Barbarian extends BasicUnitConstructor
@@ -753,28 +744,24 @@ class Lancer extends AdvancedUnitConstructor
 {
     static readonly id = 5;
     readonly level = 3;
-    readonly trophy = 10;
 }
 
 class Knight extends AdvancedUnitConstructor
 {
     static readonly id = 6;
     readonly level = 3;
-    readonly trophy = 10;
 }
 
 class Swordsman extends AdvancedUnitConstructor
 {
     static readonly id = 7;
     readonly level = 2;
-    readonly trophy = 10;
 }
 
 class Spearman extends AdvancedUnitConstructor
 {
     static readonly id = 8;
     readonly level = 2;
-    readonly trophy = 10;
 }
 
 class Warrior extends AdvancedUnitConstructor

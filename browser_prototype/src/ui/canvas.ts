@@ -121,7 +121,7 @@ class GameCanvas
         }
     }
 
-    paint_victim_indicator(coordinate: Coordinate, trophy: number)
+    paint_victim_indicator(coordinate: Coordinate)
     {
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 7;
@@ -142,9 +142,9 @@ class GameCanvas
                 new Position(size, -size),
                 width);
 
-            renderer.set_color(g.const.STYLE_GREEN);
-            renderer.ctx.font = "Bold 14px Sans-Serif";
-            renderer.ctx.fillText(trophy.toString(), -size, size * 3.5);
+            //renderer.set_color(g.const.STYLE_GREEN);
+            //renderer.ctx.font = "Bold 14px Sans-Serif";
+            //renderer.ctx.fillText(trophy.toString(), -size, size * 3.5);
         });
     }
 
