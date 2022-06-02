@@ -1,6 +1,6 @@
 interface IRenderController
 {
-    displaying_board: BoardContext;
+    displaying_board: GameBoard;
     components: {
         action_panel: IComponent,
         status_bar: IComponent,
@@ -31,7 +31,7 @@ class RenderController implements IRenderController
     show_threats: boolean = true;
     _selection_frozen: boolean = false;
 
-    _displaying_board: BoardContext;
+    _displaying_board: GameBoard;
     private _show_last_round: boolean = false;
 
     displaying_actions: Players<PlayerAction>;
@@ -104,7 +104,7 @@ class RenderController implements IRenderController
         this.components.button_bar.render();
     }
 
-    set displaying_board(value: BoardContext)
+    set displaying_board(value: GameBoard)
     {
         this._displaying_board = value;
         this.render_board();
@@ -184,7 +184,7 @@ class RenderController implements IRenderController
         {
             for (let martyr of this.context.present.martyrs)
             {
-                this.canvas.paint_victim_indicator(martyr.quester.hometown);
+                this.canvas.paint_victim_indicator(martyr.quester.from_grid);
             }
         }
         this.components.action_panel.render();

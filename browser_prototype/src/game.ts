@@ -8,19 +8,19 @@ enum GameStatus
     Tied
 }
 
-class Game
+class GameRound
 {
-    static readonly supply_basic_incremental = 20;
+    static readonly supply_basic_incremental = 9;
     constructor(
         readonly round_count: number,
-        readonly board: BoardContext,
+        readonly board: GameBoard,
         readonly supplies: Players<number>,
         readonly last_actions: Players<PlayerAction> | null,
         readonly martyrs: Martyr[])
     {
     }
 
-    proceed(moves: Players<PlayerMove>): Game
+    proceed(moves: Players<PlayerMove>): GameRound
     {
         let actions = {
             [Player.P1]: this.validate_move(moves[Player.P1]),
@@ -35,13 +35,12 @@ class Game
 
         for (let player of Player.both())
         {
-            let supply = this.supplies[player];
-            supply -= actions[player].cost();
-            supply += this.supply_income(player);
-            supplies[player] = supply;
+            supplies[player] = this.supplies[player] 
+                             + GameRound.supply_basic_incremental
+                             - actions[player].cost();
         }
 
-        return new Game(
+        return new GameRound(
             this.round_count + 1,
             next_board,
             supplies,
@@ -86,11 +85,6 @@ class Game
         return this.supplies[player];
     }
 
-    supply_income(_player: Player): number 
-    {
-        return Game.supply_basic_incremental;
-    }
-
     static set_out(board: Board<Unit>): void
     {
         let board_layout: [number, UnitConstructor[], Player][] = [
@@ -112,35 +106,35 @@ class Game
         }
     }
 
-    static new_game(): Game
+    static new_game(): GameRound
     {
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         this.set_out(board);
-        return new Game(
-            0, new BoardContext(board),
+        return new GameRound(
+            0, new GameBoard(board),
             {
-                [Player.P1]: Game.supply_basic_incremental,
-                [Player.P2]: Game.supply_basic_incremental
+                [Player.P1]: GameRound.supply_basic_incremental,
+                [Player.P2]: GameRound.supply_basic_incremental
             }, null, []);
     }
 
-    static new_showcase(): Game
+    static new_showcase(): GameRound
     {
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         let random_unit = g.all_unit_types[Math.floor(Math.random() * g.all_unit_types.length)];
         let random_player = Math.floor(Math.random() * 2) + 1;
         board.put(new Coordinate(4, 4), Unit.spawn_perfect(random_player, random_unit));
-        return new Game(
-            0, new BoardContext(board),
+        return new GameRound(
+            0, new GameBoard(board),
             {
                 [Player.P1]: 0,
                 [Player.P2]: 0
             }, null, []);
     }
 
-    static deserialize(payload: string): Game
+    static deserialize(payload: string): GameRound
     {
         let [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(payload);
 
@@ -175,14 +169,14 @@ class Game
         }
 
         let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
-        return new Game(round_count, new BoardContext(board), supplies, last_round_actions, martyrs);
+        return new GameRound(round_count, new GameBoard(board), supplies, last_round_actions, martyrs);
     }
 }
 
 interface IGameContext
 {
-    last: Game | null;
-    present: Game;
+    last: GameRound | null;
+    present: GameRound;
     actions: Players<PlayerAction>;
     status: GameStatus;
     move(player: Player): PlayerMove;
@@ -212,7 +206,7 @@ interface IOnlineGameContext extends IGameContext
 
 class GameContext implements IGameContext
 {
-    protected history: Game[] = [];
+    protected history: GameRound[] = [];
     protected listeners: Function[] = [];
 
     readonly player_moved: Players<boolean> = {
@@ -230,7 +224,7 @@ class GameContext implements IGameContext
         [Player.P2]: new PlayerAction(Player.P2),
     };
 
-    constructor(protected player_names: Players<string>, protected _present: Game)
+    constructor(protected player_names: Players<string>, protected _present: GameRound)
     {
     }
 
@@ -239,7 +233,7 @@ class GameContext implements IGameContext
         return this.present.status();
     }
 
-    get last(): Game | null
+    get last(): GameRound | null
     {
         if (this.history.length > 0)
         {
@@ -248,7 +242,7 @@ class GameContext implements IGameContext
         return null;
     }
 
-    get present(): Game
+    get present(): GameRound
     {
         return this._present;
     }
@@ -351,7 +345,7 @@ class GameContext implements IGameContext
         }
     }
 
-    next(game: Game): void
+    next(game: GameRound): void
     {
         this.history.push(this._present);
         this._present = game;
@@ -394,7 +388,7 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
 
     constructor()
     {
-        super(Players.map(() => ''), Game.new_showcase());
+        super(Players.map(() => ''), GameRound.new_showcase());
         this.query_handle = setInterval(() =>
         {
             if (this.session_id)
@@ -535,12 +529,12 @@ class OnlineGameContext extends GameContext implements IOnlineGameContext
             }
 
             this._status = game_status;
-            let game = Game.deserialize(game_payload);
+            let game = GameRound.deserialize(game_payload);
             this.next(game);
         });
     }
 
-    next(game: Game): void
+    next(game: GameRound): void
     {
         this.round_begin_time = new Date();
         super.next(game);

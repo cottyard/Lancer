@@ -7,7 +7,7 @@ function ui_solitude()
             [Player.P1]: 'player1',
             [Player.P2]: 'player2'
         },
-        Game.new_game());
+        GameRound.new_game());
 
     let stub = class stub implements IComponent { render() { } };
     let components = {

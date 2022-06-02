@@ -7,7 +7,7 @@ class Rule
         [Player.P2]: 0
     };
 
-    static validate_player_move(board: BoardContext, player_move: PlayerMove): PlayerAction
+    static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction
     {
         let moves = player_move.moves;
         let move_set = new Set();
@@ -77,7 +77,7 @@ class Rule
     //     return new Action(move, ActionType.Recruit, type);
     // }
 
-    static validate_move(board: BoardContext, move: Move, player: Player): Action
+    static validate_move(board: GameBoard, move: Move, player: Player): Action
     {
         let unit = board.unit.at(move.from);
         if (unit == null)
@@ -303,7 +303,7 @@ class Rule
     //     return all;
     // }
 
-    static valid_moves(board: BoardContext, player: Player): Move[]
+    static valid_moves(board: GameBoard, player: Player): Move[]
     {
         let all: Move[] = [];
         board.unit.iterate_everything((unit, c) =>
@@ -344,7 +344,8 @@ class Rule
         return all;
     }
 
-    static proceed_board_with_moves(board: BoardContext, moves: Players<PlayerMove>): [BoardContext, Martyr[]]
+    static proceed_board_with_moves(board: GameBoard, moves: Players<PlayerMove>)
+        : [GameBoard, Martyr[]]
     {
         let actions: Players<PlayerAction> = {
             [Player.P1]: this.validate_player_move(board, moves[Player.P1]),
@@ -362,7 +363,7 @@ class Rule
         // this.process_recall_phase(next_board, actions);
         // this.process_recruit_phase(next_board, actions);
 
-        return [new BoardContext(next_board), martyrs];
+        return [new GameBoard(next_board), martyrs];
     }
 
     static process_upgrade_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
@@ -614,7 +615,7 @@ class Rule
     // }
 }
 
-class BoardContext
+class GameBoard
 {
     heat: FullBoard<Heat>;
     constructor(public unit: Board<Unit>)
@@ -658,7 +659,7 @@ class Martyr
 
 class Quester
 {
-    constructor(public unit: Unit, public hometown: Coordinate)
+    constructor(public unit: Unit, public from_grid: Coordinate)
     {
     }
 }
