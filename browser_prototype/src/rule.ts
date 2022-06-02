@@ -139,17 +139,17 @@ class Rule
         }
     }
 
-    static is_king_side(board: Board<Unit>, player: Player, coord: Coordinate): boolean
-    {
-        let king_coord = this.where(board, player, King);
-        if (king_coord.length != 1)
-        {
-            return false;
-        }
+    // static is_king_side(board: Board<Unit>, player: Player, coord: Coordinate): boolean
+    // {
+    //     let king_coord = this.where(board, player, King);
+    //     if (king_coord.length != 1)
+    //     {
+    //         return false;
+    //     }
 
-        let king_side: Coordinate[] = this.reachable_by(board, king_coord[0]);
-        return king_side.findIndex((c) => c.equals(coord)) > -1;
-    }
+    //     let king_side: Coordinate[] = this.reachable_by(board, king_coord[0]);
+    //     return king_side.findIndex((c) => c.equals(coord)) > -1;
+    // }
 
     static get_heat(board: Board<Unit>): FullBoard<Heat>
     {
@@ -344,7 +344,7 @@ class Rule
         return all;
     }
 
-    static make_move(board: BoardContext, moves: Players<PlayerMove>): [BoardContext, Martyr[]]
+    static proceed_board_with_moves(board: BoardContext, moves: Players<PlayerMove>): [BoardContext, Martyr[]]
     {
         let actions: Players<PlayerAction> = {
             [Player.P1]: this.validate_player_move(board, moves[Player.P1]),

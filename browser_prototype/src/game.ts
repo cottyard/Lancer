@@ -20,14 +20,14 @@ class Game
     {
     }
 
-    make_move(moves: Players<PlayerMove>): Game
+    proceed(moves: Players<PlayerMove>): Game
     {
         let actions = {
             [Player.P1]: this.validate_move(moves[Player.P1]),
             [Player.P2]: this.validate_move(moves[Player.P2])
         };
 
-        let [next_board, martyrs] = Rule.make_move(this.board, moves);
+        let [next_board, martyrs] = Rule.proceed_board_with_moves(this.board, moves);
         let supplies = {
             [Player.P1]: 0,
             [Player.P2]: 0
@@ -352,7 +352,7 @@ class GameContext implements IGameContext
 
         if (this.player_moved[opponent(player)])
         {
-            this.next(this._present.make_move(this.player_moves));
+            this.next(this._present.proceed(this.player_moves));
         }
     }
 
