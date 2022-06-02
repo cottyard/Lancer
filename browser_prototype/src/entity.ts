@@ -381,50 +381,33 @@ class Action implements ICopyable<Action>
 
     cost(): number
     {
+        function move_cost(unit_type: UnitConstructor, move: Move)
+        {
+            if (is_basic_unit_ctor(unit_type))
+            {
+                return 2;
+            }
+
+            if (move.which_skill()!.is_leap())
+            {
+                return 3;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+
         switch (this.type)
         {
             case ActionType.Defend:
-                return 2;
+                return 1;
             case ActionType.Move:
-                if (this.move.which_skill()!.is_leap())
-                {
-                    return 3;
-                }
-                else
-                {
-                    return 2;
-                }
+                return move_cost(this.unit_type, this.move);
             case ActionType.Upgrade:
-                if (is_advanced_unit_ctor(this.unit_type))
-                {
-                    return 3;
-                }
-                else
-                {
-                    return 4;
-                }
+                return 5;
             case ActionType.Attack:
-                if (this.move.which_skill()!.is_leap())
-                {
-                    return 5;
-                }
-                else
-                {
-                    return 4;
-                }
-            // case ActionType.Recruit:
-            //     switch (this.unit_type)
-            //     {
-            //         case Barbarian:
-            //         case Archer:
-            //         case Soldier:
-            //             return 8;
-            //         case Rider:
-            //             return 12;
-            //     }
-            //     throw new Error("Action.cost");
-            // case ActionType.Recall:
-            //     return 8;
+                return move_cost(this.unit_type, this.move) + 1;
         }
     }
 
