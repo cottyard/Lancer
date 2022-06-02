@@ -26,7 +26,6 @@ class RenderController implements IRenderController
     selected: Coordinate | null = null;
     options_capable: Coordinate[] = [];
     options_upgrade: Coordinate[] = [];
-    // options_recall: Coordinate[] = [];
     _show_heat: boolean = false;
     show_threats: boolean = true;
     _selection_frozen: boolean = false;
@@ -159,11 +158,6 @@ class RenderController implements IRenderController
         {
             this.canvas.paint_grid_indicator(option);
         }
-        // for (let option of this.options_recall)
-        // {
-        //     this.canvas.paint_grid_indicator(option, g.const.STYLE_GOLD, 3);
-        // }
-
         if (this.current)
         {
             this.canvas.paint_grid_indicator(this.current);
@@ -198,7 +192,6 @@ class RenderController implements IRenderController
         this.show_threats = true;
         this.options_capable = [];
         this.options_upgrade = [];
-        // this.options_recall = [];
         this.render_indicators();
     }
 
@@ -340,7 +333,6 @@ class RenderController implements IRenderController
         {
             this.options_capable = Rule.which_can_reach(this.displaying_board.unit, coord);
             this.options_upgrade = [];
-            // this.options_recall = [];
         }
         else
         {
@@ -349,21 +341,6 @@ class RenderController implements IRenderController
             {
                 this.options_capable = Rule.reachable_by(this.displaying_board.unit, coord);
                 this.options_upgrade = Rule.upgradable_by(this.displaying_board.unit, coord);
-                // this.options_recall = [];
-            }
-            else
-            {
-                // this.options_capable = [];
-                // this.options_upgrade = Rule.spawnable_by(this.displaying_board.unit, coord);
-
-                // for (let player of Player.both())
-                // {
-                //     if (Rule.is_king_side(this.displaying_board.unit, player, coord))
-                //     {
-                //         this.options_recall = Rule.recallable_by(this.displaying_board, player, coord);
-                //         return;
-                //     }
-                // }
             }
         }
     }
@@ -384,8 +361,6 @@ enum DisplayActionType
     Defend = 2,
     Move = 3,
     Attack = 4,
-    // Recruit = 5,
-    // Recall = 6,
     MoveAssist = 7,
     AttackAssist = 8
 }

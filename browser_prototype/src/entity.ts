@@ -426,9 +426,7 @@ enum ActionType
     Upgrade = 1,
     Defend = 2,
     Move = 3,
-    Attack = 4,
-    // Recruit = 5,
-    // Recall = 6
+    Attack = 4
 }
 
 class PlayerAction
@@ -579,35 +577,6 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
         unit.perfect.as_list().forEach(s => { unit.endow(s); });
         return unit;
     }
-
-    // static spawn_from_skill(player: Player, skill: Skill): Unit | null
-    // {
-    //     let ctor = Unit.which_to_spawn(skill);
-    //     if (ctor == null)
-    //     {
-    //         return null;
-    //     }
-    //     let unit = new ctor(player, null);
-    //     unit.endow_inborn();
-    //     return unit;
-    // }
-
-    // static which_to_spawn(skill: Skill): UnitConstructor | null
-    // {
-    //     if (!g.spawning_skills!.has(skill))
-    //     {
-    //         return null;
-    //     }
-
-    //     if (skill.equals(new Skill(0, 0)))
-    //     {
-    //         return Wagon;
-    //     }
-    //     else
-    //     {
-    //         return this.which_has_skill(skill, [Rider, Soldier, Barbarian, Archer]);
-    //     }
-    // }
 
     static which_has_skill(skill: Skill, ctors: UnitConstructor[]): UnitConstructor | null
     {

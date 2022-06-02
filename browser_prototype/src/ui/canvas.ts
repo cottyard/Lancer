@@ -259,25 +259,6 @@ class GameCanvas
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
             const color = g.display_action_style.get(a.type)!;
-
-            // if (a.type == DisplayActionType.Recall)
-            // {
-            //     let recalled = board.at(a.action.move.to)!;
-            //     this.mark_this_grid(from, color);
-            //     this.mark_this_grid(to, color, true);
-            //     this.paint_unit(CanvasUnitFactory(recalled), a.action.move.from, true);
-            //     continue;
-            // }
-            // else if (a.type == DisplayActionType.Recruit)
-            // {
-            //     this.paint_unit(CanvasUnitFactory(new a.action.unit_type(player_action.player, null)), a.action.move.from, true);
-            //     if (a.action.move.from.equals(a.action.move.to))
-            //     {
-            //         this.mark_this_grid(to, color);
-            //         continue;
-            //     }
-            // }
-
             const skill = a.action.move.which_skill()!;
             const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;

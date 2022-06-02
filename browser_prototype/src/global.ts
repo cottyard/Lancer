@@ -10,13 +10,11 @@ class Module
     readonly grid_count: number = 9;
     readonly skill_range: number = 2;
     readonly skillset_size: number = this.skill_range * 2 + 1;
-    readonly max_unit_count: number = 28;
     readonly layout_1st: UnitConstructor[] = [Archer, Rider, Archer, Rider, King, Rider, Archer, Rider, Archer];
     readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
     readonly all_unit_types: UnitConstructor[] = [
         King, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Spearman, Swordsman, Warrior
     ];
-    spawning_skills: SkillSet | null = null;
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
@@ -157,13 +155,6 @@ class Module
         -----`
     };
 
-    readonly spawning_skills_literal: string =
-        `-xxx-
-         -xxx-
-         --x--
-         -xxx-
-         -xxx-`;
-
     readonly perfect_skills: SkillSet[] = [];
     readonly inborn_skills: SkillSet[] = [];
 
@@ -188,15 +179,11 @@ class Module
             }
         });
 
-        this.spawning_skills = SkillSet.from_literal(this.spawning_skills_literal);
-
         this.display_action_style = new Map<DisplayActionType, string>([
             [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
             [DisplayActionType.Move, g.const.STYLE_BLACK],
             [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
-            // [DisplayActionType.Recruit, g.const.STYLE_CYAN],
-            // [DisplayActionType.Recall, g.const.STYLE_GOLD],
             [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
             [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
         ]);
@@ -206,8 +193,6 @@ class Module
             [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
             [ActionType.Move, g.const.STYLE_BLACK],
             [ActionType.Upgrade, g.const.STYLE_CYAN],
-            // [ActionType.Recruit, g.const.STYLE_CYAN],
-            // [ActionType.Recall, g.const.STYLE_GOLD]
         ]);
     }
 }
