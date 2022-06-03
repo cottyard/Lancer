@@ -157,11 +157,11 @@ class GameRound
         let board = new board_ctor();
         this.set_out(board);
         let resources: ResourceStatus[] = [];
-        for (let i = 0; i < g.resource_grids.length; ++i)
+        for (let i = 0; i < Rule.resource_grids.length; ++i)
         {
             resources.push(new NeutralState());
         }
-
+        
         return new GameRound(
             0, new GameBoard(board),
             {
