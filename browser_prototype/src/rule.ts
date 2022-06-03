@@ -3,9 +3,12 @@ class InvalidMove extends Error { }
 class Rule
 {
     static readonly resource_grids: Coordinate[] = [
-        new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4)
+        new Coordinate(1, 1), new Coordinate(4, 1), new Coordinate(7, 1),
+        new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4),
+        new Coordinate(1, 7), new Coordinate(4, 7), new Coordinate(7, 7),
     ];
-    static readonly resource_grid_supplies: number[] = [1, 2, 1];
+    static readonly resource_grid_supplies: number[] = 
+        [1, 1, 1, 1, 2, 1, 1, 1, 1];
 
     static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction
     {

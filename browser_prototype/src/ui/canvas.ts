@@ -74,8 +74,6 @@ class GameCanvas
 
         using(new Renderer(this.bg_ctx), (renderer) =>
         {
-            renderer.set_color(g.const.STYLE_GREY);
-
             for (let i = 0; i < grids; ++i)
             {
                 for (let j = 0; j < grids; ++j)
@@ -119,6 +117,22 @@ class GameCanvas
                     zero.add(new PositionDelta(0, -q * size)), width);
             });
         }
+    }
+
+    paint_resources(styles: string[])
+    {
+        let grid_size = g.settings.grid_size;
+        using(new Renderer(this.st_ctx), (renderer) =>
+        {
+            for (let i = 0; i < Rule.resource_grids.length; ++i)
+            {
+                let coord = Rule.resource_grids[i];
+                let style = styles[i];
+                renderer.rectangle(
+                    new Position(coord.x * grid_size, coord.y * grid_size),
+                    grid_size, grid_size, 0, style);
+            }
+        });
     }
 
     paint_victim_indicator(coordinate: Coordinate)

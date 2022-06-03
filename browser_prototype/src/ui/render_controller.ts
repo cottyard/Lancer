@@ -31,6 +31,7 @@ class RenderController implements IRenderController
     _selection_frozen: boolean = false;
 
     _displaying_board: GameBoard;
+    _resources: ResourceStatus[];
     private _show_last_round: boolean = false;
 
     displaying_actions: Players<PlayerAction>;
@@ -63,6 +64,7 @@ class RenderController implements IRenderController
         this.canvas.paint_background();
 
         this._displaying_board = this.context.present.board;
+        this._resources = this.context.present.resources;
         this.show_present();
     }
 
@@ -348,6 +350,23 @@ class RenderController implements IRenderController
     render_board()
     {
         this.canvas.clear_canvas(this.canvas.st_ctx);
+        this.canvas.paint_resources(this._resources.map<string>(state => {
+            if (state instanceof CapturedState)
+            {
+                if ((state as CapturedState).by == Player.P1)
+                {
+                    return g.const.STYLE_BLUE_LIGHT;
+                }
+                else
+                {
+                    return g.const.STYLE_RED_LIGHT;
+                }
+            }
+            else //if (state instanceof NeutralState)
+            {
+                return g.const.STYLE_GOLD_LIGHT;
+            }
+        }));
         this.displaying_board.unit.iterate_units((unit, coord) =>
         {
             this.canvas.paint_unit(CanvasUnitFactory(unit), coord);

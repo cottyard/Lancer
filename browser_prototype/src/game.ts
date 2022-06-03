@@ -156,11 +156,12 @@ class GameRound
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
         this.set_out(board);
-        let resources: ResourceStatus[] = [];
-        for (let i = 0; i < Rule.resource_grids.length; ++i)
-        {
-            resources.push(new NeutralState());
-        }
+        
+        let resources: ResourceStatus[] = [
+            new CapturedState(Player.P1), new CapturedState(Player.P1), new CapturedState(Player.P1),
+            new NeutralState(), new NeutralState(), new NeutralState(),
+            new CapturedState(Player.P2), new CapturedState(Player.P2), new CapturedState(Player.P2)
+        ]; 
         
         return new GameRound(
             0, new GameBoard(board),

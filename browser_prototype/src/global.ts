@@ -24,6 +24,7 @@ class Module
         'STYLE_RED_LIGHT': '#ff8080',
         'STYLE_RED': '#ff0000',
         'STYLE_GOLD': '#ffd700',
+        'STYLE_GOLD_LIGHT': "rgba(255, 215, 0, 0.5)",
         'STYLE_BLUE_LIGHT': '#80ccff',
         'STYLE_GREEN_LIGHT': '#80e080',
         'STYLE_GREEN': '#079400',
