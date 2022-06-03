@@ -566,7 +566,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
             return null;
         }
 
-        let promoted = new (<AdvancedUnitConstructor> ctor)(this.owner, null);
+        let promoted = new (<AdvancedUnitConstructor> ctor)(this.owner, this.current);
         promoted.endow(skill);
         return promoted;
     }
