@@ -1,6 +1,6 @@
 class InsufficientSupply extends Error { }
 
-const supply_basic_incremental: number = 9;
+const supply_basic_incremental: number = 7;
 
 enum GameStatus
 {
@@ -12,21 +12,21 @@ enum GameStatus
 
 class CapturingState
 {
-    constructor(public by: Player, public remaining_duration: number)
+    constructor(public readonly by: Player, public readonly remaining_duration: number)
     {
     }
 }
 
 class CapturedState
 {
-    constructor(public by: Player)
+    constructor(public readonly by: Player)
     {
     }
 }
 
 class NeutralizingState
 {
-    constructor(public owner: Player, public remaining_duration: number)
+    constructor(public readonly owner: Player, public readonly remaining_duration: number)
     {
     }
 }
@@ -84,6 +84,10 @@ class GameRound
     {
         for (let i = 0; i < this.resources.length; ++i)
         {
+            let status = this.resources[i];
+            let coord = Rule.resource_grids[i];
+            let unit = this.board.unit.at(coord);
+            this.resources[i] = Rule.updated_resource_status(status, unit);
         }
         return this.resources;
     }
@@ -158,9 +162,9 @@ class GameRound
         this.set_out(board);
         
         let resources: ResourceStatus[] = [
-            new CapturedState(Player.P1), new CapturedState(Player.P1), new CapturedState(Player.P1),
+            new CapturedState(Player.P2), new CapturedState(Player.P2), new CapturedState(Player.P2),
             new NeutralState(), new NeutralState(), new NeutralState(),
-            new CapturedState(Player.P2), new CapturedState(Player.P2), new CapturedState(Player.P2)
+            new CapturedState(Player.P1), new CapturedState(Player.P1), new CapturedState(Player.P1)
         ]; 
         
         return new GameRound(

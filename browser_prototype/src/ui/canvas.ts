@@ -133,8 +133,6 @@ class GameCanvas
                     grid_size, grid_size, 2, style);
             }
         });
-
-        
     }
 
     paint_victim_indicator(coordinate: Coordinate)

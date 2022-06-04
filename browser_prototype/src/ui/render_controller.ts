@@ -353,7 +353,7 @@ class RenderController implements IRenderController
         this.canvas.paint_resources(this._resources.map<string>(state => {
             if (state instanceof CapturedState)
             {
-                if ((state as CapturedState).by == Player.P1)
+                if ((state as CapturedState).by == Player.P2)
                 {
                     return g.const.STYLE_BLUE_LIGHT;
                 }
@@ -362,7 +362,18 @@ class RenderController implements IRenderController
                     return g.const.STYLE_RED_LIGHT;
                 }
             }
-            else //if (state instanceof NeutralState)
+            else if (state instanceof NeutralizingState)
+            {
+                if ((state as NeutralizingState).owner == Player.P2)
+                {
+                    return g.const.STYLE_BLUE_LIGHT;
+                }
+                else
+                {
+                    return g.const.STYLE_RED_LIGHT;
+                }
+            }
+            else
             {
                 return g.const.STYLE_BLACKISH;
             }

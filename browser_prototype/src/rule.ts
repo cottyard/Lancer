@@ -7,8 +7,71 @@ class Rule
         new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4),
         new Coordinate(1, 7), new Coordinate(4, 7), new Coordinate(7, 7),
     ];
+
     static readonly resource_grid_supplies: number[] = 
         [1, 1, 1, 1, 2, 1, 1, 1, 1];
+    
+    static readonly resource_capturing_rounds = 3
+    static readonly resource_neutralizing_rounds = 2
+
+    static updated_resource_status(status: ResourceStatus, unit: Unit | null): ResourceStatus
+    {
+        if (status instanceof CapturedState)
+        {
+            if (unit && unit.owner != status.by)
+            {
+                return new NeutralizingState(
+                    opponent(unit.owner), 
+                    Rule.resource_neutralizing_rounds);
+            }
+        }
+        else if (status instanceof NeutralState)
+        {
+            if (unit)
+            {
+                return new CapturingState(
+                    unit.owner, 
+                    Rule.resource_capturing_rounds);
+            }
+        }
+        else if (status instanceof CapturingState)
+        {
+            if (unit && unit.owner == status.by)
+            {
+                if (status.remaining_duration <= 1)
+                {
+                    return new CapturedState(status.by);
+                }
+                else
+                {
+                    return new CapturingState(status.by, status.remaining_duration - 1);
+                }
+            }
+            else
+            {
+                return new NeutralState();
+            }
+        }
+        else if (status instanceof NeutralizingState)
+        {
+            if (unit && unit.owner != status.owner)
+            {
+                if (status.remaining_duration <= 1)
+                {
+                    return new CapturedState(unit.owner);
+                }
+                else
+                {
+                    return new CapturingState(status.owner, status.remaining_duration - 1);
+                }
+            }
+            else
+            {
+                return new CapturedState(status.owner);
+            }
+        }
+        return status;
+    }
 
     static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction
     {
