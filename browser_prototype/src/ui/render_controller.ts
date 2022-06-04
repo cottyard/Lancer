@@ -355,11 +355,11 @@ class RenderController implements IRenderController
             {
                 if ((state as CapturedState).by == Player.P1)
                 {
-                    return g.const.STYLE_BLUE_LIGHT;
+                    return g.const.STYLE_BLUE_SHALLOW;
                 }
                 else
                 {
-                    return g.const.STYLE_RED_LIGHT;
+                    return g.const.STYLE_RED_SHALLOW;
                 }
             }
             else //if (state instanceof NeutralState)

@@ -78,7 +78,9 @@ class GameCanvas
             {
                 for (let j = 0; j < grids; ++j)
                 {
-                    if ((i + j) % 2 != 0)
+                    if ((i + j) % 2 != 0
+                        && !Rule.resource_grids.find(
+                            c => c.equals(new Coordinate(i, j))))
                     {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size),
