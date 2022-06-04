@@ -18,6 +18,7 @@ class Module
     unit_type_by_name = new Map<string, UnitConstructor>();
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
+        'STYLE_BLACKISH': "#555",
         'STYLE_BLACK': "#000",
         'STYLE_WHITE': "#FFF",
         'STYLE_CYAN': '#01cdfe',

@@ -78,9 +78,7 @@ class GameCanvas
             {
                 for (let j = 0; j < grids; ++j)
                 {
-                    if ((i + j) % 2 != 0
-                        && !Rule.resource_grids.find(
-                            c => c.equals(new Coordinate(i, j))))
+                    if ((i + j) % 2 != 0)
                     {
                         renderer.rectangle(
                             new Position(i * grid_size, j * grid_size),
@@ -130,11 +128,13 @@ class GameCanvas
             {
                 let coord = Rule.resource_grids[i];
                 let style = styles[i];
-                renderer.rectangle(
+                renderer.rectangle_dashed(
                     new Position(coord.x * grid_size, coord.y * grid_size),
-                    grid_size, grid_size, 0, style);
+                    grid_size, grid_size, 2, style);
             }
         });
+
+        
     }
 
     paint_victim_indicator(coordinate: Coordinate)

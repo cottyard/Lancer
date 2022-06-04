@@ -101,6 +101,24 @@
         }
     }
 
+    rectangle_dashed(position: Position, width: number, height: number, border_width: number, style: string | null = null): void
+    {
+        if (style)
+        {
+            this.set_color(style);
+        }
+
+        this.ctx.lineWidth = border_width;
+        //this.ctx.setLineDash([border_width * 4, border_width * 5]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(position.x, position.y);
+        this.ctx.lineTo(position.x + width, position.y);
+        this.ctx.lineTo(position.x + width, position.y + height);
+        this.ctx.lineTo(position.x, position.y + height);
+        this.ctx.lineTo(position.x, position.y);
+        this.ctx.stroke();
+    }
+
     crown()
     {
         let size = 10;
