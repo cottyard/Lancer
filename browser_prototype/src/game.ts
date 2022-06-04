@@ -129,9 +129,18 @@ class GameRound
         return this.supplies[player];
     }
 
-    supply_income(_player: Player): number 
+    supply_income(player: Player): number 
     {
-        return supply_basic_incremental;
+        let resource_income = 0;
+        for (let i = 0; i < this.resources.length; ++i)
+        {
+            let status = this.resources[i];
+            if (status instanceof CapturedState && status.by == player)
+            {
+                resource_income += Rule.resource_grid_supplies[i];
+            }
+        }
+        return supply_basic_incremental + resource_income;
     }
 
     static set_out(board: Board<Unit>): void
