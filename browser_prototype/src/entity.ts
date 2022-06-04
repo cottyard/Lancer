@@ -383,7 +383,7 @@ class Action implements ICopyable<Action>
     {
         function move_cost(unit_type: UnitConstructor, move: Move)
         {
-            if (is_basic_unit_ctor(unit_type))
+            if (unit_type == Archer)
             {
                 return 2;
             }
