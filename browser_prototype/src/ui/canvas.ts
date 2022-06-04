@@ -119,19 +119,14 @@ class GameCanvas
         }
     }
 
-    paint_resources(styles: string[])
+    paint_resource(coord: Coordinate, style: string, progress: number)
     {
         let grid_size = g.settings.grid_size;
         using(new Renderer(this.st_ctx), (renderer) =>
         {
-            for (let i = 0; i < Rule.resource_grids.length; ++i)
-            {
-                let coord = Rule.resource_grids[i];
-                let style = styles[i];
-                renderer.rectangle_dashed(
-                    new Position(coord.x * grid_size, coord.y * grid_size),
-                    grid_size, grid_size, 2, style);
-            }
+            renderer.rectangle_dashed(
+                new Position(coord.x * grid_size, coord.y * grid_size),
+                grid_size, grid_size, 2, style, progress);
         });
     }
 

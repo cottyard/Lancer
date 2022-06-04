@@ -58,11 +58,11 @@ class Rule
             {
                 if (status.remaining_duration <= 1)
                 {
-                    return new CapturedState(unit.owner);
+                    return new NeutralState();
                 }
                 else
                 {
-                    return new CapturingState(status.owner, status.remaining_duration - 1);
+                    return new NeutralizingState(status.owner, status.remaining_duration - 1);
                 }
             }
             else

@@ -350,34 +350,48 @@ class RenderController implements IRenderController
     render_board()
     {
         this.canvas.clear_canvas(this.canvas.st_ctx);
-        this.canvas.paint_resources(this._resources.map<string>(state => {
-            if (state instanceof CapturedState)
+
+        function get_resource_style(owner: Player): string
+        {
+            return owner == Player.P2 ? g.const.STYLE_BLUE_LIGHT
+                                      : g.const.STYLE_RED_LIGHT;
+        }
+
+        for (let i = 0; i < Rule.resource_grids.length; ++i)
+        {
+            let coord = Rule.resource_grids[i];
+            let status = this._resources[i];
+            let style = g.const.STYLE_BLACKISH;
+            let progress = 10;
+
+            if (status instanceof CapturedState)
             {
-                if ((state as CapturedState).by == Player.P2)
-                {
-                    return g.const.STYLE_BLUE_LIGHT;
-                }
-                else
-                {
-                    return g.const.STYLE_RED_LIGHT;
-                }
+                style = get_resource_style(status.by);
             }
-            else if (state instanceof NeutralizingState)
+            else if (status instanceof NeutralizingState)
             {
-                if ((state as NeutralizingState).owner == Player.P2)
-                {
-                    return g.const.STYLE_BLUE_LIGHT;
-                }
-                else
-                {
-                    return g.const.STYLE_RED_LIGHT;
-                }
+                style = get_resource_style(status.owner);
+                console.log("Neutralizing")
+                console.log(status.remaining_duration)
+                progress = 10.0 * status.remaining_duration / Rule.resource_neutralizing_rounds;
+                console.log(progress)
+            }
+            else if (status instanceof CapturingState)
+            {
+                console.log("Capturing")
+                style = get_resource_style(status.by);
+                console.log(status.remaining_duration)
+                progress = (1 - status.remaining_duration / Rule.resource_capturing_rounds) * 10;
+                console.log(progress)
             }
             else
             {
-                return g.const.STYLE_BLACKISH;
+                progress = 0
             }
-        }));
+
+            this.canvas.paint_resource(coord, style, progress);
+        }
+        
         this.displaying_board.unit.iterate_units((unit, coord) =>
         {
             this.canvas.paint_unit(CanvasUnitFactory(unit), coord);

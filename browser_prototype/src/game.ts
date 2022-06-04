@@ -77,16 +77,16 @@ class GameRound
             supplies,
             actions,
             martyrs,
-            this.resources_updated());
+            this.resources_updated(next_board));
     }
 
-    resources_updated(): ResourceStatus[]
+    resources_updated(board: GameBoard): ResourceStatus[]
     {
         for (let i = 0; i < this.resources.length; ++i)
         {
             let status = this.resources[i];
             let coord = Rule.resource_grids[i];
-            let unit = this.board.unit.at(coord);
+            let unit = board.unit.at(coord);
             this.resources[i] = Rule.updated_resource_status(status, unit);
         }
         return this.resources;
