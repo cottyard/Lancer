@@ -1,3 +1,16 @@
+enum OnlineGameStatus
+{
+    NotStarted,
+    InQueue,
+    WaitForPlayer,
+    Submitting,
+    WaitForOpponent,
+    Loading,
+    Victorious,
+    Defeated,
+    Tied
+}
+
 interface IOnlineController
 {
     status: OnlineGameStatus;
@@ -13,255 +26,407 @@ interface IOnlineController
     set_name(name: string): void;
     get_name(): string;
     submit_move(): void;
+
+
+    on_new_status(listener: Function): void;
+    on_new_session(listener: Function): void;
+    on_loading(listener: Function): void;
+    on_move(listener: Function): void;
+    new_session(player_name: string): void;
+
+    load_session(session: string, player_name: string): void;
 }
 
-enum OnlineGameStatus
-{
-    NotStarted,
-    InQueue,
-    WaitForPlayer,
-    Submitting,
-    WaitForOpponent,
-    Loading,
-    Victorious,
-    Defeated,
-    Tied
-}
+// class OnlineController implements IOnlineController
+// {
+//     readonly round_time = 60;
+//     player_name: string = `player${ Math.floor(10000 * Math.random()) }`;
+//     private _status: OnlineGameStatus = OnlineGameStatus.NotStarted;
+//     context: IOnlineGameContext;
+//     render_ctrl: IRenderController;
+//     seconds_before_submit = 0;
+//     timer_handle: number | null = null;
+//     enable_sound = false;
 
-class OnlineController implements IOnlineController
-{
-    readonly round_time = 60;
-    player_name: string = `player${ Math.floor(10000 * Math.random()) }`;
-    private _status: OnlineGameStatus = OnlineGameStatus.NotStarted;
-    context: IOnlineGameContext;
-    render_ctrl: IRenderController;
-    seconds_before_submit = 0;
-    timer_handle: number | null = null;
-    enable_sound = false;
+//     status_listeners: Function[] = [];
+//     loading_listeners: Function[] = [];
+//     session_listeners: ((session_id: string) => void)[] = [];
+//     move_listeners: (() => void)[] = [];
 
-    constructor()
-    {
-        this.context = new OnlineGameContext();
+//     //latest_game_id
+//     //session_id
+//     round_begin_time: Date = new Date();
 
-        this.context.on_new_session(this.on_new_session.bind(this));
-        this.context.on_new_game(this.on_new_game.bind(this));
-        this.context.on_new_status(() => this.render_ctrl.refresh());
-        this.context.on_loading(() => { this.status = OnlineGameStatus.Loading; });
-        this.context.on_move(() => { this.status = OnlineGameStatus.WaitForOpponent; });
 
-        let stub = class stub implements IComponent { render() { } };
-        let components = {
-            action_panel: new stub,
-            status_bar: new stub,
-            button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; render_text = () => { }; }
-        };
 
-        this.render_ctrl = new RenderController(this.context, components);
+//     // query_handle: number;
 
-        components.action_panel = new ActionPanel(<HTMLDivElement> document.getElementById('action-panel'), this.render_ctrl, this.context);
-        components.status_bar = new StatusBar(<HTMLDivElement> document.getElementById('status-bar'), this.render_ctrl, this.context);
-        components.button_bar = new ButtonBar(<HTMLDivElement> document.getElementById('button-bar'), this.render_ctrl, this);
+//     constructor()
+//     {
+//         this.context = new OnlineGameContext();
 
-        this.render_ctrl.refresh_all();
-    }
+//         this.context.on_new_session(this.on_new_session.bind(this));
+//         this.context.on_new_game(this.on_new_game.bind(this));
+//         this.context.on_new_status(() => this.render_ctrl.refresh());
+//         this.context.on_loading(() => { this.status = OnlineGameStatus.Loading; });
+//         this.context.on_move(() => { this.status = OnlineGameStatus.WaitForOpponent; });
 
-    adequate_supply(): boolean
-    {
-        let cost = this.context.action_cost(this.context.player);
-        let supply = this.context.present.supply(this.context.player);
-        return cost <= supply;
-    }
+//         let stub = class stub implements IComponent { render() { } };
+//         let components = {
+//             action_panel: new stub,
+//             status_bar: new stub,
+//             button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; render_text = () => { }; }
+//         };
 
-    submit_move(): void
-    {
-        this.stop_count_down();
-        this.context.make_move(this.context.player);
-        this.status = OnlineGameStatus.Submitting;
-    }
+//         this.render_ctrl = new RenderController(this.context, components);
 
-    is_first_round(): boolean
-    {
-        if (!this.context)
-        {
-            throw new Error("no context");
-        }
-        return this.context.last == null;
-    }
+//         components.action_panel = new ActionPanel(<HTMLDivElement> document.getElementById('action-panel'), this.render_ctrl, this.context);
+//         components.status_bar = new StatusBar(<HTMLDivElement> document.getElementById('status-bar'), this.render_ctrl, this.context);
+//         components.button_bar = new ButtonBar(<HTMLDivElement> document.getElementById('button-bar'), this.render_ctrl, this);
 
-    set_name(name: string): void
-    {
-        this.player_name = name;
-    }
+//         this.render_ctrl.refresh_all();
 
-    get_name(): string
-    {
-        return this.player_name;
-    }
+//         // this.query_handle = setInterval(() =>
+//         // {
+//         //     if (this.session_id)
+//         //     {
+//         //         query_match(this.session_id, this.query_session.bind(this));
+//         //     }
+//         // }, 2000);
+//     }
 
-    set status(value: OnlineGameStatus)
-    {
-        if ([
-            OnlineGameStatus.WaitForPlayer,
-            OnlineGameStatus.Victorious,
-            OnlineGameStatus.Defeated,
-            OnlineGameStatus.Tied].indexOf(value) > -1)
-        {
-            this.render_ctrl.components.button_bar.view_last_round = this.context.present.round_count > 0;
-        }
+//     adequate_supply(): boolean
+//     {
+//         let cost = this.context.action_cost(this.context.player);
+//         let supply = this.context.present.supply(this.context.player);
+//         return cost <= supply;
+//     }
 
-        if (value == OnlineGameStatus.WaitForPlayer)
-        {
-            this.start_count_down();
-            this.render_ctrl.unfreeze_selection();
-        }
+//     submit_move(): void
+//     {
+//         this.stop_count_down();
+//         this.context.make_move(this.context.player);
+//         this.status = OnlineGameStatus.Submitting;
+//     }
 
-        if (value == OnlineGameStatus.Submitting)
-        {
-            this.render_ctrl.freeze_selection();
-        }
+//     is_first_round(): boolean
+//     {
+//         if (!this.context)
+//         {
+//             throw new Error("no context");
+//         }
+//         return this.context.last == null;
+//     }
 
-        if (this._status != value)
-        {
-            if (value == OnlineGameStatus.WaitForOpponent)
-            {
-                if (this.status != OnlineGameStatus.Submitting)
-                {
-                    return;
-                }
-            }
+//     set_name(name: string): void
+//     {
+//         this.player_name = name;
+//     }
 
-            this._status = value;
-            this.render_ctrl.refresh();
-        }
-    }
+//     get_name(): string
+//     {
+//         return this.player_name;
+//     }
 
-    get status(): OnlineGameStatus
-    {
-        return this._status;
-    }
+//     set status(value: OnlineGameStatus)
+//     {
+//         if ([
+//             OnlineGameStatus.WaitForPlayer,
+//             OnlineGameStatus.Victorious,
+//             OnlineGameStatus.Defeated,
+//             OnlineGameStatus.Tied].indexOf(value) > -1)
+//         {
+//             this.render_ctrl.components.button_bar.view_last_round = this.context.present.round_count > 0;
+//         }
 
-    on_new_game()
-    {
-        switch (this.context.status)
-        {
-            case GameStatus.WonByPlayer1:
-                this.status = this.context.player == Player.P1 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
-                break;
-            case GameStatus.WonByPlayer2:
-                this.status = this.context.player == Player.P2 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
-                break;
-            case GameStatus.Tied:
-                this.status = OnlineGameStatus.Tied;
-                break;
-            case GameStatus.Ongoing:
-                this.status = OnlineGameStatus.WaitForPlayer;
-                break;
-            default:
-                throw new Error("Unknown status");
-        }
-    }
+//         if (value == OnlineGameStatus.WaitForPlayer)
+//         {
+//             this.start_count_down();
+//             this.render_ctrl.unfreeze_selection();
+//         }
 
-    on_new_session(session_id: string)
-    {
-        console.log('new session:', session_id);
-        this.status = OnlineGameStatus.InQueue;
-    }
+//         if (value == OnlineGameStatus.Submitting)
+//         {
+//             this.render_ctrl.freeze_selection();
+//         }
 
-    start_count_down()
-    {
-        this.stop_count_down();
-        this.seconds_before_submit = this.round_time;
-        this.render_ctrl.components.button_bar.render_text();
-        this.timer_handle = setInterval(this.timer.bind(this), 1000);
-    }
+//         if (this._status != value)
+//         {
+//             if (value == OnlineGameStatus.WaitForOpponent)
+//             {
+//                 if (this.status != OnlineGameStatus.Submitting)
+//                 {
+//                     return;
+//                 }
+//             }
 
-    stop_count_down()
-    {
-        if (this.timer_handle)
-        {
-            clearInterval(this.timer_handle);
-            this.timer_handle = null;
-        }
-    }
+//             this._status = value;
+//             this.render_ctrl.refresh();
+//         }
+//     }
 
-    timer()
-    {
-        this.seconds_before_submit--;
-        this.render_ctrl.components.button_bar.render_text();
+//     get status(): OnlineGameStatus
+//     {
+//         return this._status;
+//     }
 
-        if (this.enable_sound &&
-            this.seconds_before_submit > 0 &&
-            this.seconds_before_submit <= 10)
-        {
-            beep();
-        }
+//     on_new_game()
+//     {
+//         switch (this.context.status)
+//         {
+//             case GameStatus.WonByPlayer1:
+//                 this.status = this.context.player == Player.P1 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
+//                 break;
+//             case GameStatus.WonByPlayer2:
+//                 this.status = this.context.player == Player.P2 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
+//                 break;
+//             case GameStatus.Tied:
+//                 this.status = OnlineGameStatus.Tied;
+//                 break;
+//             case GameStatus.Ongoing:
+//                 this.status = OnlineGameStatus.WaitForPlayer;
+//                 break;
+//             default:
+//                 throw new Error("Unknown status");
+//         }
+//     }
 
-        if (this.seconds_before_submit <= 0)
-        {
+//     on_new_session(session_id: string)
+//     {
+//         console.log('new session:', session_id);
+//         this.status = OnlineGameStatus.InQueue;
+//     }
 
-            while (!this.adequate_supply())
-            {
-                this.context.pop_move(this.context.player);
-            }
-            this.submit_move();
-        }
-    }
+//     start_count_down()
+//     {
+//         this.stop_count_down();
+//         this.seconds_before_submit = this.round_time;
+//         this.render_ctrl.components.button_bar.render_text();
+//         this.timer_handle = setInterval(this.timer.bind(this), 1000);
+//     }
 
-    new_game()
-    {
-        let player_name = (<HTMLTextAreaElement> document.getElementById('player-name'))?.value;
-        if (player_name && player_name != 'undefined')
-        {
-            this.player_name = player_name;
-        }
-        this.context.new_session(this.player_name);
-    }
+//     stop_count_down()
+//     {
+//         if (this.timer_handle)
+//         {
+//             clearInterval(this.timer_handle);
+//             this.timer_handle = null;
+//         }
+//     }
 
-    load_session(session: string, player_name: string)
-    {
-        this.player_name = player_name;
-        this.context.load_session(session, player_name);
-    }
+//     timer()
+//     {
+//         this.seconds_before_submit--;
+//         this.render_ctrl.components.button_bar.render_text();
 
-    is_playing(): boolean
-    {
-        return [
-            OnlineGameStatus.WaitForOpponent,
-            OnlineGameStatus.Submitting,
-            OnlineGameStatus.WaitForPlayer,
-            OnlineGameStatus.Loading,
-        ].indexOf(this.status) > -1;
-    }
+//         if (this.enable_sound &&
+//             this.seconds_before_submit > 0 &&
+//             this.seconds_before_submit <= 10)
+//         {
+//             beep();
+//         }
 
-    is_in_queue(): boolean
-    {
-        return this.status == OnlineGameStatus.InQueue;
-    }
+//         if (this.seconds_before_submit <= 0)
+//         {
 
-    is_finished(): boolean
-    {
-        return [
-            OnlineGameStatus.Victorious,
-            OnlineGameStatus.Defeated,
-            OnlineGameStatus.Tied
-        ].indexOf(this.status) > -1;
-    }
+//             while (!this.adequate_supply())
+//             {
+//                 this.context.pop_move(this.context.player);
+//             }
+//             this.submit_move();
+//         }
+//     }
 
-    is_not_started(): boolean
-    {
-        return this.status == OnlineGameStatus.NotStarted;
-    }
-}
+//     new_game()
+//     {
+//         let player_name = (<HTMLTextAreaElement> document.getElementById('player-name'))?.value;
+//         if (player_name && player_name != 'undefined')
+//         {
+//             this.player_name = player_name;
+//         }
+//         this.context.new_session(this.player_name);
+//     }
 
-function beep()
-{
-    let v = g.audio_context.createOscillator();
-    let u = g.audio_context.createGain();
-    v.connect(u);
-    v.frequency.value = 880;
-    u.gain.value = 0.01;
-    v.type = "square";
-    u.connect(g.audio_context.destination);
-    v.start(g.audio_context.currentTime);
-    v.stop(g.audio_context.currentTime + 0.05);
-}
+//     load_session(session: string, player_name: string)
+//     {
+//         this.player_name = player_name;
+//         this.context.load_session(session, player_name);
+//     }
+
+//     is_playing(): boolean
+//     {
+//         return [
+//             OnlineGameStatus.WaitForOpponent,
+//             OnlineGameStatus.Submitting,
+//             OnlineGameStatus.WaitForPlayer,
+//             OnlineGameStatus.Loading,
+//         ].indexOf(this.status) > -1;
+//     }
+
+//     is_in_queue(): boolean
+//     {
+//         return this.status == OnlineGameStatus.InQueue;
+//     }
+
+//     is_finished(): boolean
+//     {
+//         return [
+//             OnlineGameStatus.Victorious,
+//             OnlineGameStatus.Defeated,
+//             OnlineGameStatus.Tied
+//         ].indexOf(this.status) > -1;
+//     }
+
+//     is_not_started(): boolean
+//     {
+//         return this.status == OnlineGameStatus.NotStarted;
+//     }
+
+    
+//     // new_session(player_name: string)
+//     // {
+//     //     new_game(player_name, (session: string) =>
+//     //     {
+//     //         this.load_session(session, player_name);
+//     //         for (let listener of this.session_listeners)
+//     //         {
+//     //             listener(session);
+//     //         }
+//     //     });
+//     // }
+
+//     // load_session(session: string, player_name: string)
+//     // {
+//     //     this.session_id = session;
+//     //     this.current_player_name = player_name;
+//     //     this.latest_game_id = null;
+//     //     this.current_game_id = null;
+//     // }
+
+//     // on_new_status(listener: Function)
+//     // {
+//     //     this.status_listeners.push(listener);
+//     // }
+
+//     // on_new_session(listener: (session_id: string) => void)
+//     // {
+//     //     this.session_listeners.push(listener);
+//     // }
+
+//     // on_loading(listener: Function)
+//     // {
+//     //     this.loading_listeners.push(listener);
+//     // }
+
+//     // on_move(listener: () => void)
+//     // {
+//     //     this.move_listeners.push(listener);
+//     // }
+// }
+
+
+//     // update_game()
+//     // {
+//     //     if (!this.latest_game_id)
+//     //     {
+//     //         return;
+//     //     }
+
+//     //     if (this.latest_game_id == this.current_game_id)
+//     //     {
+//     //         return;
+//     //     }
+
+//     //     for (let listener of this.loading_listeners)
+//     //     {
+//     //         listener();
+//     //     }
+
+//     //     fetch_game(this.latest_game_id, (serialized_game) =>
+//     //     {
+//     //         let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
+//     //         console.log('loading game', game_id);
+
+//     //         if (this.current_game_id == game_id)
+//     //         {
+//     //             return;
+//     //         }
+
+//     //         this.current_game_id = game_id;
+
+//     //         let name_valid = false;
+//     //         for (let p in player_name_map)
+//     //         {
+//     //             let player = deserialize_player(p);
+//     //             let name = player_name_map[p];
+//     //             this.player_names[player] = name;
+
+//     //             if (this.current_player_name == name)
+//     //             {
+//     //                 this.player = player;
+//     //                 name_valid = true;
+//     //             }
+//     //         }
+
+//     //         if (!name_valid)
+//     //         {
+//     //             throw new Error("player name not found in game");
+//     //         }
+
+//     //         for (let p in player_time_map)
+//     //         {
+//     //             let player = deserialize_player(p);
+//     //             let consumed = player_time_map[p];
+//     //             this._consumed_milliseconds[player] = consumed;
+//     //         }
+
+//     //         this._status = game_status;
+//     //         let game = GameRound.deserialize(game_payload);
+//     //         this.next(game);
+//     //     });
+//     // }
+
+//     // query_session(session_status: string)
+//     // {
+//     //     let status = JSON.parse(session_status);
+//     //     console.log('latest game:', status['latest']);
+//     //     this.latest_game_id = status['latest'];
+
+//     //     if (!this.latest_game_id)
+//     //     {
+//     //         return;
+//     //     }
+
+//     //     let updated = false;
+
+//     //     for (let player of Player.both())
+//     //     {
+//     //         let current_moved = this.player_moved[player];
+//     //         let moved = status['player_moved'][player];
+
+//     //         if (current_moved != moved)
+//     //         {
+//     //             this.player_moved[player] = moved;
+//     //             updated = true;
+//     //         }
+
+//     //         let current_time = this.consumed_milliseconds(player);
+//     //         let time = status['player_time'][player];
+//     //         if (current_time != time)
+//     //         {
+//     //             this._consumed_milliseconds[player] = time;
+//     //             updated = true;
+//     //         }
+//     //     }
+
+//     //     if (updated)
+//     //     {
+//     //         for (let listener of this.status_listeners)
+//     //         {
+//     //             listener();
+//     //         }
+//     //     }
+
+//     //     this.update_game();
+//     // }
+

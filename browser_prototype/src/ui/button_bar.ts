@@ -314,7 +314,6 @@ class SolitudeButtonBar implements IButtonBar
 
     constructor(public dom_element: HTMLDivElement, public render_ctrl: IRenderController, public context: IGameContext)
     {
-        context.on_new_game(this.render.bind(this));
     }
 
     set view_last_round(value: boolean)
