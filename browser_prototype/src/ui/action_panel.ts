@@ -20,7 +20,7 @@ class ActionPanel implements IComponent
     constructor(
         public dom_element: HTMLDivElement,
         public render_ctrl: IRenderController,
-        public context: IGameContext) 
+        public game: IGameUiFacade) 
     {
         this.dragging = null;
 
@@ -35,14 +35,11 @@ class ActionPanel implements IComponent
     render()
     {
         this.dom_element.innerHTML = "";
-
-        for (let player of Player.both())
-        {
-            new DisplayPlayerAction(this.context.action(player)).actions.forEach((action, index) =>
+        new DisplayPlayerAction(this.game.action).actions.forEach(
+            (action, index) =>
             {
                 this.dom_element.appendChild(this.renderAction(action, index));
             });
-        }
     }
 
     renderAction(action: DisplayAction, index: number): HTMLElement
@@ -111,7 +108,7 @@ class ActionPanel implements IComponent
         });
         cross.addEventListener("mousedown", (e: MouseEvent) =>
         {
-            this.context.delete_moves(action.player, (m: Move): m is Move => m.equals(action.action.move));
+            this.game.staging_area.delete_moves((m: Move): m is Move => m.equals(action.action.move));
             this.render_ctrl.refresh();
             e.cancelBubble = true;
         });
@@ -165,8 +162,7 @@ class ActionPanel implements IComponent
 
             const dragging_move = this.dragging.action.action.move;
 
-            let player = this.dragging.action.player;
-            const ordered_moves = this.context.move(player).moves
+            const ordered_moves = this.game.staging_area.move.moves
                 .map((move, index) =>
                 {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
@@ -175,7 +171,7 @@ class ActionPanel implements IComponent
                 .sort((a, b) => a.order - b.order)
                 .map(({ move }) => move);
 
-            this.context.prepare_moves(player, ordered_moves);
+            this.game.staging_area.prepare_moves(ordered_moves);
 
             this.dragging.placeholder.remove();
             this.dragging = null;
@@ -231,14 +227,14 @@ class ActionPanel implements IComponent
 
     getMainUnit(action: DisplayAction): Unit 
     {
-        return this.context.present.board.unit.at(action.action.move.from)!;
+        return this.game.context.present.board.unit.at(action.action.move.from)!;
     }
 
     getTargetUnit(action: DisplayAction): Unit | null
     {
         if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
         {
-            return this.context.present.board.unit.at(action.action.move.to);
+            return this.game.context.present.board.unit.at(action.action.move.to);
         }
         return null;
     }

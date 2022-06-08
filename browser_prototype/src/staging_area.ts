@@ -1,9 +1,8 @@
 interface IPlayerMoveStagingArea
 {
-    board: GameBoard;
     move: PlayerMove;
-    action: PlayerAction;
-    cost: number;
+    action(board: GameBoard): PlayerAction;
+    cost(board: GameBoard): number;
     prepare_move(move: Move): "accepted" | "overridden" | "invalid";
     prepare_moves(moves: Move[]): boolean;
     delete_moves(filter: (move: Move) => move is Move): Move[];
@@ -12,20 +11,20 @@ interface IPlayerMoveStagingArea
 
 class PlayerMoveStagingArea implements IPlayerMoveStagingArea
 {
-    constructor(public board: GameBoard, public move: PlayerMove)
+    constructor(public move: PlayerMove)
     {
     }
 
-    get action(): PlayerAction
+    action(board: GameBoard): PlayerAction
     {
-        return Rule.validate_player_move(this.board, this.move);
-        //action.actions.sort((a1, a2) => a2.type - a1.type);
+        return Rule.validate_player_move(board, this.move);
     }
 
-    get cost(): number
+    cost(board: GameBoard): number
     {
-        return this.action.cost();
+        return this.action(board).cost();
     }
+
 
     delete_moves(which: (move: Move) => move is Move): Move[]
     {

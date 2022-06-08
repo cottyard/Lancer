@@ -1,19 +1,6 @@
-enum OnlineGameStatus
-{
-    NotStarted,
-    InQueue,
-    WaitForPlayer,
-    Submitting,
-    WaitForOpponent,
-    Loading,
-    Victorious,
-    Defeated,
-    Tied
-}
-
 interface IOnlineController
 {
-    status: OnlineGameStatus;
+    status: GameStatus;
     seconds_before_submit: number;
     enable_sound: boolean;
     adequate_supply(): boolean;
@@ -109,14 +96,7 @@ interface IOnlineController
 //         this.status = OnlineGameStatus.Submitting;
 //     }
 
-//     is_first_round(): boolean
-//     {
-//         if (!this.context)
-//         {
-//             throw new Error("no context");
-//         }
-//         return this.context.last == null;
-//     }
+
 
 //     set_name(name: string): void
 //     {
@@ -237,15 +217,7 @@ interface IOnlineController
 //         }
 //     }
 
-//     new_game()
-//     {
-//         let player_name = (<HTMLTextAreaElement> document.getElementById('player-name'))?.value;
-//         if (player_name && player_name != 'undefined')
-//         {
-//             this.player_name = player_name;
-//         }
-//         this.context.new_session(this.player_name);
-//     }
+
 
 //     load_session(session: string, player_name: string)
 //     {
@@ -253,34 +225,7 @@ interface IOnlineController
 //         this.context.load_session(session, player_name);
 //     }
 
-//     is_playing(): boolean
-//     {
-//         return [
-//             OnlineGameStatus.WaitForOpponent,
-//             OnlineGameStatus.Submitting,
-//             OnlineGameStatus.WaitForPlayer,
-//             OnlineGameStatus.Loading,
-//         ].indexOf(this.status) > -1;
-//     }
 
-//     is_in_queue(): boolean
-//     {
-//         return this.status == OnlineGameStatus.InQueue;
-//     }
-
-//     is_finished(): boolean
-//     {
-//         return [
-//             OnlineGameStatus.Victorious,
-//             OnlineGameStatus.Defeated,
-//             OnlineGameStatus.Tied
-//         ].indexOf(this.status) > -1;
-//     }
-
-//     is_not_started(): boolean
-//     {
-//         return this.status == OnlineGameStatus.NotStarted;
-//     }
 
     
 //     // new_session(player_name: string)

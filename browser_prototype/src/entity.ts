@@ -261,7 +261,7 @@ type Players<T> =
 
 module Players
 {
-    export function map<T>(ctor: (p: Player) => T): Players<T>
+    export function create<T>(ctor: (p: Player) => T): Players<T>
     {
         return {
             [Player.P1]: ctor(Player.P1),

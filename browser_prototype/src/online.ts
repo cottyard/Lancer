@@ -1,17 +1,3 @@
-interface IOnlineGameHint
-{
-    move_submitted(player: Player): boolean;
-}
-
-class OnlineGameContext
-{
-    constructor(public game_id: string, 
-                public game: GameContext, 
-                public player: Player,
-                public consumed_msecs: Players<number>)
-    {
-    }
-
     // prepare_move(player: Player, move: Move): "accepted" | "overridden" | "invalid"
     // {
     //     if (this.player == player)
@@ -43,5 +29,3 @@ class OnlineGameContext
     //     super.next(game);
     // }
 
-
-}

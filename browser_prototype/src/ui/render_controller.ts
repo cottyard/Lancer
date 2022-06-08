@@ -37,7 +37,7 @@ class RenderController implements IRenderController
     displaying_actions: Players<PlayerAction>;
 
     constructor(
-        public context: IGameContext,
+        public game: IGameUiFacade,
         public components: {
             action_panel: IComponent,
             status_bar: IComponent,
@@ -59,12 +59,12 @@ class RenderController implements IRenderController
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        this.displaying_actions = Players.map((p) => new PlayerAction(p));
+        this.displaying_actions = Players.create((p) => new PlayerAction(p));
 
         this.canvas.paint_background();
 
-        this._displaying_board = this.context.present.board;
-        this._resources = this.context.present.resources;
+        this._displaying_board = this.game.context.present.board;
+        this._resources = this.game.context.present.resources;
         this.show_present();
     }
 
@@ -119,17 +119,17 @@ class RenderController implements IRenderController
 
     set show_last_round(value: boolean)
     {
-        if (value && this.context.last)
+        if (value && this.game.context.last)
         {
             this._show_last_round = true;
-            this.displaying_actions = this.context.present.last_actions!;
-            this.displaying_board = this.context.last!.board;
+            this.displaying_actions = this.game.context.present.last_actions!;
+            this.displaying_board = this.game.context.last!.board;
         }
         else if (!value)
         {
             this._show_last_round = false;
-            this.displaying_actions = this.context.actions;
-            this.displaying_board = this.context.present.board;
+            this.displaying_actions[this.game.context.player] = this.game.action;
+            this.displaying_board = this.game.context.present.board;
         }
     }
 
@@ -178,7 +178,7 @@ class RenderController implements IRenderController
         }
         if (this.show_last_round)
         {
-            for (let martyr of this.context.present.martyrs)
+            for (let martyr of this.game.context.present.martyrs)
             {
                 this.canvas.paint_victim_indicator(martyr.quester.from_grid);
             }
@@ -314,13 +314,8 @@ class RenderController implements IRenderController
 
         if (this.selected && !this.selection_frozen)
         {
-            for (let player of Player.both())
-            {
-                if (this.context.prepare_move(player, new Move(this.selected, this.current)) != "invalid")
-                {
-                    break;
-                }
-            }
+            this.game.staging_area.prepare_move(
+                new Move(this.selected, this.current));
         }
 
         this.selected = null;
@@ -426,6 +421,9 @@ class DisplayPlayerAction
         this.player = player_action.player;
 
         let first_arriver = new HashSet<Coordinate>();
+
+        player_action.actions.sort((a1, a2) => a2.type - a1.type);
+
         this.actions = player_action.actions.map((a: Action) =>
         {
             let type = <DisplayActionType> <unknown> a.type;
