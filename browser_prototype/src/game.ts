@@ -20,12 +20,14 @@ interface IGameContext
     status: GameContextStatus;
     consumed_msecs: Players<number>;
     players_name: Players<string>;
-    make_move(moves: Players<PlayerMove>): void;
+    //make_move(moves: Players<PlayerMove>): void;
 }
 
 class GameContext implements IGameContext
 {
-    protected history: GameRound[] = [];
+    protected rounds: GameRound[] = [
+        GameRound.new_game()
+    ];
 
     public status: GameContextStatus = GameContextStatus.NotStarted;
 
@@ -37,30 +39,29 @@ class GameContext implements IGameContext
     constructor(
         public game_id: string,
         public player: Player,
-        public players_name: Players<string>,
-        protected _present: GameRound)
+        public players_name: Players<string>)
     {
     }
 
     get last(): GameRound | null
     {
-        if (this.history.length > 0)
+        if (this.rounds.length >= 2)
         {
-            return this.history[this.history.length - 1];
+            return this.rounds[this.rounds.length - 2];
         }
         return null;
     }
 
     get present(): GameRound
     {
-        return this._present;
+        return this.rounds[this.rounds.length - 1];
     }
 
-    make_move(moves: Players<PlayerMove>): void
-    {
-        this.history.push(this._present);
-        this._present = this._present.proceed(moves);
-    }
+    // make_move(moves: Players<PlayerMove>): void
+    // {
+    //     this.history.push(this._present);
+    //     this._present = this._present.proceed(moves);
+    // }
 }
 
 interface IGameUiFacade
@@ -115,7 +116,7 @@ class GameUiFacade implements IGameUiFacade
     {
         let moves = Players.create((p) => new PlayerMove(p));
         moves[this.staging_area.move.player] = this.staging_area.move;
-        this.context.make_move(moves);
+        //this.context.make_move(moves);
     }
 
     new_game(): void

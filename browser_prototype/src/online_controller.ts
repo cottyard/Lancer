@@ -82,30 +82,11 @@ interface IOnlineController
 //         // }, 2000);
 //     }
 
-//     adequate_supply(): boolean
-//     {
-//         let cost = this.context.action_cost(this.context.player);
-//         let supply = this.context.present.supply(this.context.player);
-//         return cost <= supply;
-//     }
-
 //     submit_move(): void
 //     {
 //         this.stop_count_down();
 //         this.context.make_move(this.context.player);
 //         this.status = OnlineGameStatus.Submitting;
-//     }
-
-
-
-//     set_name(name: string): void
-//     {
-//         this.player_name = name;
-//     }
-
-//     get_name(): string
-//     {
-//         return this.player_name;
 //     }
 
 //     set status(value: OnlineGameStatus)
