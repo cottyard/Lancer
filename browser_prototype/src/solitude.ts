@@ -2,13 +2,23 @@ function ui_solitude()
 {
     clear_intervals();
     g.initialize();
-    let context = new GameContext(
-        "local game",
-        Player.P1,
-        {
-            [Player.P1]: 'player 1',
-            [Player.P2]: 'player 2'
-        });
+    let context = <GameContext>notify_changes_for_object(
+        'GameContext changed',
+        new GameContext(
+            "local game",
+            Player.P1,
+            {
+                [Player.P1]: 'player 1',
+                [Player.P2]: 'player 2'
+            }));
+    
+    g.event_box.subscribe('GameContext changed', (context: GameContext) => {
+        console.log("context changed");
+        console.log(context.game_id);
+    });
+
+    context.game_id = "123";
+}
 
     // let stub = class stub implements IComponent { render() { } };
     // let components = {
@@ -26,4 +36,3 @@ function ui_solitude()
     // ctrl.refresh_all();
 
     // g.render_control = ctrl;
-}

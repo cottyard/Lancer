@@ -209,150 +209,129 @@ interface IOnlineController
 
 
     
-//     // new_session(player_name: string)
-//     // {
-//     //     new_game(player_name, (session: string) =>
-//     //     {
-//     //         this.load_session(session, player_name);
-//     //         for (let listener of this.session_listeners)
-//     //         {
-//     //             listener(session);
-//     //         }
-//     //     });
-//     // }
+    // new_session(player_name: string)
+    // {
+    //     new_game(player_name, (session: string) =>
+    //     {
+    //         this.load_session(session, player_name);
+    //         for (let listener of this.session_listeners)
+    //         {
+    //             listener(session);
+    //         }
+    //     });
+    // }
 
-//     // load_session(session: string, player_name: string)
-//     // {
-//     //     this.session_id = session;
-//     //     this.current_player_name = player_name;
-//     //     this.latest_game_id = null;
-//     //     this.current_game_id = null;
-//     // }
-
-//     // on_new_status(listener: Function)
-//     // {
-//     //     this.status_listeners.push(listener);
-//     // }
-
-//     // on_new_session(listener: (session_id: string) => void)
-//     // {
-//     //     this.session_listeners.push(listener);
-//     // }
-
-//     // on_loading(listener: Function)
-//     // {
-//     //     this.loading_listeners.push(listener);
-//     // }
-
-//     // on_move(listener: () => void)
-//     // {
-//     //     this.move_listeners.push(listener);
-//     // }
-// }
+    // load_session(session: string, player_name: string)
+    // {
+    //     this.session_id = session;
+    //     this.current_player_name = player_name;
+    //     this.latest_game_id = null;
+    //     this.current_game_id = null;
+    // }
 
 
-//     // update_game()
-//     // {
-//     //     if (!this.latest_game_id)
-//     //     {
-//     //         return;
-//     //     }
+    // update_game()
+    // {
+    //     if (!this.latest_game_id)
+    //     {
+    //         return;
+    //     }
 
-//     //     if (this.latest_game_id == this.current_game_id)
-//     //     {
-//     //         return;
-//     //     }
+    //     if (this.latest_game_id == this.current_game_id)
+    //     {
+    //         return;
+    //     }
 
-//     //     for (let listener of this.loading_listeners)
-//     //     {
-//     //         listener();
-//     //     }
+    //     for (let listener of this.loading_listeners)
+    //     {
+    //         listener();
+    //     }
 
-//     //     fetch_game(this.latest_game_id, (serialized_game) =>
-//     //     {
-//     //         let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
-//     //         console.log('loading game', game_id);
+    //     fetch_game(this.latest_game_id, (serialized_game) =>
+    //     {
+    //         let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
+    //         console.log('loading game', game_id);
 
-//     //         if (this.current_game_id == game_id)
-//     //         {
-//     //             return;
-//     //         }
+    //         if (this.current_game_id == game_id)
+    //         {
+    //             return;
+    //         }
 
-//     //         this.current_game_id = game_id;
+    //         this.current_game_id = game_id;
 
-//     //         let name_valid = false;
-//     //         for (let p in player_name_map)
-//     //         {
-//     //             let player = deserialize_player(p);
-//     //             let name = player_name_map[p];
-//     //             this.player_names[player] = name;
+    //         let name_valid = false;
+    //         for (let p in player_name_map)
+    //         {
+    //             let player = deserialize_player(p);
+    //             let name = player_name_map[p];
+    //             this.player_names[player] = name;
 
-//     //             if (this.current_player_name == name)
-//     //             {
-//     //                 this.player = player;
-//     //                 name_valid = true;
-//     //             }
-//     //         }
+    //             if (this.current_player_name == name)
+    //             {
+    //                 this.player = player;
+    //                 name_valid = true;
+    //             }
+    //         }
 
-//     //         if (!name_valid)
-//     //         {
-//     //             throw new Error("player name not found in game");
-//     //         }
+    //         if (!name_valid)
+    //         {
+    //             throw new Error("player name not found in game");
+    //         }
 
-//     //         for (let p in player_time_map)
-//     //         {
-//     //             let player = deserialize_player(p);
-//     //             let consumed = player_time_map[p];
-//     //             this._consumed_milliseconds[player] = consumed;
-//     //         }
+    //         for (let p in player_time_map)
+    //         {
+    //             let player = deserialize_player(p);
+    //             let consumed = player_time_map[p];
+    //             this._consumed_milliseconds[player] = consumed;
+    //         }
 
-//     //         this._status = game_status;
-//     //         let game = GameRound.deserialize(game_payload);
-//     //         this.next(game);
-//     //     });
-//     // }
+    //         this._status = game_status;
+    //         let game = GameRound.deserialize(game_payload);
+    //         this.next(game);
+    //     });
+    // }
 
-//     // query_session(session_status: string)
-//     // {
-//     //     let status = JSON.parse(session_status);
-//     //     console.log('latest game:', status['latest']);
-//     //     this.latest_game_id = status['latest'];
+    // query_session(session_status: string)
+    // {
+    //     let status = JSON.parse(session_status);
+    //     console.log('latest game:', status['latest']);
+    //     this.latest_game_id = status['latest'];
 
-//     //     if (!this.latest_game_id)
-//     //     {
-//     //         return;
-//     //     }
+    //     if (!this.latest_game_id)
+    //     {
+    //         return;
+    //     }
 
-//     //     let updated = false;
+    //     let updated = false;
 
-//     //     for (let player of Player.both())
-//     //     {
-//     //         let current_moved = this.player_moved[player];
-//     //         let moved = status['player_moved'][player];
+    //     for (let player of Player.both())
+    //     {
+    //         let current_moved = this.player_moved[player];
+    //         let moved = status['player_moved'][player];
 
-//     //         if (current_moved != moved)
-//     //         {
-//     //             this.player_moved[player] = moved;
-//     //             updated = true;
-//     //         }
+    //         if (current_moved != moved)
+    //         {
+    //             this.player_moved[player] = moved;
+    //             updated = true;
+    //         }
 
-//     //         let current_time = this.consumed_milliseconds(player);
-//     //         let time = status['player_time'][player];
-//     //         if (current_time != time)
-//     //         {
-//     //             this._consumed_milliseconds[player] = time;
-//     //             updated = true;
-//     //         }
-//     //     }
+    //         let current_time = this.consumed_milliseconds(player);
+    //         let time = status['player_time'][player];
+    //         if (current_time != time)
+    //         {
+    //             this._consumed_milliseconds[player] = time;
+    //             updated = true;
+    //         }
+    //     }
 
-//     //     if (updated)
-//     //     {
-//     //         for (let listener of this.status_listeners)
-//     //         {
-//     //             listener();
-//     //         }
-//     //     }
+    //     if (updated)
+    //     {
+    //         for (let listener of this.status_listeners)
+    //         {
+    //             listener();
+    //         }
+    //     }
 
-//     //     this.update_game();
-//     // }
+    //     this.update_game();
+    // }
 
