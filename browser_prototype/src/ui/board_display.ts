@@ -1,4 +1,4 @@
-interface IRenderController
+interface IBoardDisplay
 {
     displaying_board: GameBoard;
     components: {
@@ -7,18 +7,18 @@ interface IRenderController
         button_bar: IButtonBar;
     };
     show_last_round: boolean;
-    refresh(): void;
+    // refresh(): void;
     highlight(coord: Coordinate): void;
     show_last(): void;
     show_present(): void;
     show_heat(): void;
     hide_heat(): void;
-    refresh_all(): void;
+    // refresh_all(): void;
     freeze_selection(): void;
     unfreeze_selection(): void;
 }
 
-class RenderController implements IRenderController
+class BoardDisplay implements IBoardDisplay
 {
     canvas: GameCanvas;
 
@@ -68,11 +68,11 @@ class RenderController implements IRenderController
         this.show_present();
     }
 
-    refresh_all()
-    {
-        this.render_board();
-        this.refresh();
-    }
+    // refresh_all()
+    // {
+    //     this.render_board();
+    //     this.refresh();
+    // }
 
     // test_run()
     // {
@@ -99,11 +99,11 @@ class RenderController implements IRenderController
         this.canvas.paint_grid_indicator(coord);
     }
 
-    refresh()
-    {
-        this.render_indicators();
-        this.components.button_bar.render();
-    }
+    // refresh()
+    // {
+    //     this.render_indicators();
+    //     this.components.button_bar.render();
+    // }
 
     set displaying_board(value: GameBoard)
     {
@@ -321,7 +321,7 @@ class RenderController implements IRenderController
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);
-        this.refresh();
+        //this.refresh();
     }
 
     update_options(coord: Coordinate)

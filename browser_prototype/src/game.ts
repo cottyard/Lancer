@@ -20,6 +20,7 @@ interface IGameContext
     status: GameContextStatus;
     consumed_msecs: Players<number>;
     players_name: Players<string>;
+    players_moved: Players<boolean>;
     //make_move(moves: Players<PlayerMove>): void;
 }
 
@@ -30,6 +31,8 @@ class GameContext implements IGameContext
     ];
 
     public status: GameContextStatus = GameContextStatus.NotStarted;
+
+    public players_moved: Players<boolean> = Players.create(() => false);
 
     public consumed_msecs: Players<number> = {
         [Player.P1]: 0,
@@ -81,14 +84,11 @@ interface IGameUiFacade
 
     submit_move(): void;
     new_game(): void;
-
-    players_moved: Players<boolean>;
 }
 
 class GameUiFacade implements IGameUiFacade
 {
     public player_name: string = "Anonymous";
-    public players_moved: Players<boolean> = Players.create(() => false);
 
     constructor(
         public context: GameContext, 

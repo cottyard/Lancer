@@ -2,7 +2,7 @@ class StatusBar implements IComponent
 {
     constructor(
         public dom_element: HTMLDivElement,
-        public render_ctrl: IRenderController,
+        public render_ctrl: IBoardDisplay,
         public game: IGameUiFacade)
     {
     }
@@ -95,7 +95,7 @@ class StatusBar implements IComponent
         div.appendChild(DomHelper.createText(`(+${ income })`));
 
         let text = null;
-        if (this.game.players_moved[player])
+        if (this.game.context.players_moved[player])
         {
             text = '🟢';
         }

@@ -19,7 +19,7 @@ class ActionPanel implements IComponent
 
     constructor(
         public dom_element: HTMLDivElement,
-        public render_ctrl: IRenderController,
+        public render_ctrl: IBoardDisplay,
         public game: IGameUiFacade) 
     {
         this.dragging = null;
