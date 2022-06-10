@@ -109,7 +109,7 @@ class ActionPanel implements IComponent
         cross.addEventListener("mousedown", (e: MouseEvent) =>
         {
             this.game.staging_area.delete_moves((m: Move): m is Move => m.equals(action.action.move));
-            this.render_ctrl.refresh();
+            // this.render_ctrl.refresh();
             e.cancelBubble = true;
         });
 
@@ -219,7 +219,7 @@ class ActionPanel implements IComponent
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
-            this.render_ctrl.refresh();
+            // this.render_ctrl.refresh();
         });
 
         return div;

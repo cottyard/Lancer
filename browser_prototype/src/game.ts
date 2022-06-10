@@ -21,20 +21,20 @@ interface IGameContext
     consumed_msecs: Players<number>;
     players_name: Players<string>;
     players_moved: Players<boolean>;
+
+    new_round(round: GameRound): void;
     //make_move(moves: Players<PlayerMove>): void;
 }
 
 class GameContext implements IGameContext
 {
-    protected rounds: GameRound[] = [
-        GameRound.new_game()
-    ];
+    rounds: GameRound[] = [ GameRound.new_game() ];
 
-    public status: GameContextStatus = GameContextStatus.NotStarted;
+    status: GameContextStatus = GameContextStatus.NotStarted;
 
-    public players_moved: Players<boolean> = Players.create(() => false);
+    players_moved: Players<boolean> = Players.create(() => false);
 
-    public consumed_msecs: Players<number> = {
+    consumed_msecs: Players<number> = {
         [Player.P1]: 0,
         [Player.P2]: 0
     }
@@ -44,6 +44,11 @@ class GameContext implements IGameContext
         public player: Player,
         public players_name: Players<string>)
     {
+    }
+
+    new_round(round: GameRound): void 
+    {
+        this.rounds.push(round);
     }
 
     get last(): GameRound | null

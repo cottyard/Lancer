@@ -222,3 +222,25 @@ function notify_changes_for_object(event: string, object: any): any
       
       return new Proxy(object, handler);
 }
+
+function beep(): void
+{
+    let v = g.audio_context.createOscillator();
+    let u = g.audio_context.createGain();
+    v.connect(u);
+    v.frequency.value = 880;
+    u.gain.value = 0.01;
+    v.type = "square";
+    u.connect(g.audio_context.destination);
+    v.start(g.audio_context.currentTime);
+    v.stop(g.audio_context.currentTime + 0.05);
+}
+
+function clear_intervals()
+{
+    let interval_id = setInterval(() => { }, 10000);
+    for (let i = 1; i <= interval_id; i++)
+    {
+        clearInterval(i);
+    }
+}

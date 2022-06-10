@@ -14,10 +14,11 @@ function ui_solitude()
     
     g.event_box.subscribe('GameContext changed', (context: GameContext) => {
         console.log("context changed");
-        console.log(context.game_id);
+        console.log(context.rounds.length);
     });
-
-    context.game_id = "123";
+    // context.game_id = "123";
+    
+    context.new_round(GameRound.new_game());
 }
 
     // let stub = class stub implements IComponent { render() { } };

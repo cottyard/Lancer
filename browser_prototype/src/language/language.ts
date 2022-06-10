@@ -91,16 +91,3 @@ function extract<T>(array: T[], filter: (a: T) => a is T): T[]
     array.splice(0, array.length, ...remaining);
     return extracted;
 }
-
-function beep(): void
-{
-    let v = g.audio_context.createOscillator();
-    let u = g.audio_context.createGain();
-    v.connect(u);
-    v.frequency.value = 880;
-    u.gain.value = 0.01;
-    v.type = "square";
-    u.connect(g.audio_context.destination);
-    v.start(g.audio_context.currentTime);
-    v.stop(g.audio_context.currentTime + 0.05);
-}
