@@ -23,11 +23,11 @@ class BoardDisplay implements IBoardDisplay
     show_threats: boolean = true;
     _selection_frozen: boolean = false;
 
-    _displaying_board: GameBoard;
-    _resources: ResourceStatus[];
     private _show_last_round: boolean = false;
-
+    displaying_board: GameBoard;
     displaying_actions: Players<PlayerAction>;
+
+    _resources: ResourceStatus[];
 
     constructor(public game: IGameUiFacade)
     {
@@ -46,12 +46,12 @@ class BoardDisplay implements IBoardDisplay
         this.canvas.animate.addEventListener("touchend", this.on_touch.bind(this));
         this.canvas.animate.addEventListener("touchleave", this.clear_grid_incicators.bind(this));
 
-        this.displaying_actions = Players.create((p) => new PlayerAction(p));
-
         this.canvas.paint_background();
 
-        this._displaying_board = this.game.context.present.board;
+        this.displaying_board = this.game.context.present.board;
+        this.displaying_actions = Players.create((p) => new PlayerAction(p));
         this._resources = this.game.context.present.resources;
+
         this.show_present();
     }
 
@@ -85,29 +85,20 @@ class BoardDisplay implements IBoardDisplay
         this.canvas.paint_grid_indicator(coord);
     }
 
-    set displaying_board(value: GameBoard)
-    {
-        this._displaying_board = value;
-        this.render_board();
-        this.render_indicators();
-    }
-
-    get displaying_board()
-    {
-        return this._displaying_board;
-    }
-
     set show_last_round(value: boolean)
     {
-        if (value && this.game.context.last)
+        this._show_last_round = value && this.game.context.last != null;
+    }
+
+    update_displaying_items()
+    {
+        if (this.show_last_round)
         {
-            this._show_last_round = true;
             this.displaying_actions = this.game.context.present.last_actions!;
             this.displaying_board = this.game.context.last!.board;
         }
-        else if (!value)
+        else
         {
-            this._show_last_round = false;
             this.displaying_actions[this.game.context.player] = this.game.action;
             this.displaying_board = this.game.context.present.board;
         }
@@ -121,11 +112,15 @@ class BoardDisplay implements IBoardDisplay
     show_last()
     {
         this.show_last_round = true;
+        this.render_board();
+        this.render_indicators();
     }
 
     show_present()
     {
         this.show_last_round = false;
+        this.render_board();
+        this.render_indicators();
     }
 
     render_indicators(): void
@@ -152,6 +147,8 @@ class BoardDisplay implements IBoardDisplay
         {
             this.render_heat();
         }
+
+        this.update_displaying_items();
         for (let player_action of Array.from(Player.values(this.displaying_actions)))
         {
             this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board.unit);
@@ -318,6 +315,7 @@ class BoardDisplay implements IBoardDisplay
 
     render_board()
     {
+        this.update_displaying_items();
         this.canvas.clear_canvas(this.canvas.st_ctx);
 
         function get_resource_style(owner: Player): string

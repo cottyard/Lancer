@@ -3,17 +3,19 @@ function ui_solitude()
     clear_intervals();
     g.initialize();
 
-    let context = <GameContext>notify_changes_for_object(
-        'GameContext changed',
-        new GameContext(
-            "local game",
-            Player.P1,
-            {
-                [Player.P1]: 'player 1',
-                [Player.P2]: 'player 2'
-            }));
+    let context = new GameContext(
+        "local game",
+        Player.P1,
+        {
+            [Player.P1]: 'player 1',
+            [Player.P2]: 'player 2'
+        });
 
-    let facade = new GameUiFacade(context, new PlayerMoveStagingArea(Player.P1));
+    let facade = new GameUiFacade(
+        context, 
+        new PlayerMoveStagingArea(Player.P1),
+        new LocalAgent(context));
+
     let board_display = new BoardDisplay(facade);
 
     let action_panel = new ActionPanel(
@@ -37,9 +39,9 @@ function ui_solitude()
     });
 
     g.event_box.subscribe('GameContext round changed', _ => {
-        console.log("render board");
-        board_display.render_board();
+        console.log("round");
+        board_display.show_present();
     });
 
-    context.status = GameContextStatus.NotStarted;
+    g.event_box.emit("GameContext changed", null);
 }

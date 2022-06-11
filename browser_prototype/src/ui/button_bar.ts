@@ -1,7 +1,7 @@
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
-    render_text(): void;
+    update_text(): void;
 }
 
 class ButtonBar implements IButtonBar
@@ -32,8 +32,7 @@ class ButtonBar implements IButtonBar
         {
             this.board_display.show_present();
         }
-
-        this.update_last_round_name();
+        this.render();
     }
 
     get view_last_round()
@@ -52,7 +51,7 @@ class ButtonBar implements IButtonBar
         {
             this.board_display.hide_heat();
         }
-        this.update_heat_name();
+        this.render();
     }
 
     get show_heat()
@@ -60,7 +59,7 @@ class ButtonBar implements IButtonBar
         return this._show_heat;
     }
 
-    render_text()
+    update_text()
     {
         this.update_last_round_name();
         this.update_heat_name();
@@ -279,7 +278,7 @@ class ButtonBar implements IButtonBar
             this.dom_element.appendChild(this.heat_button);
         }
 
-        this.render_text();
+        this.update_text();
     }
 }
 

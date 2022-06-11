@@ -7,6 +7,7 @@ interface IPlayerMoveStagingArea
     prepare_moves(moves: Move[]): boolean;
     delete_moves(filter: (move: Move) => move is Move): Move[];
     pop_move(): Move | null;
+    clear(): void;
 }
 
 class PlayerMoveStagingArea implements IPlayerMoveStagingArea
@@ -27,10 +28,14 @@ class PlayerMoveStagingArea implements IPlayerMoveStagingArea
         return this.action(board).cost();
     }
 
-
     delete_moves(which: (move: Move) => move is Move): Move[]
     {
         return this.move.extract(which);
+    }
+
+    clear() : void
+    {
+        this.move.moves.length = 0;
     }
 
     pop_move(): Move | null

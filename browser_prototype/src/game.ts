@@ -23,7 +23,6 @@ interface IGameContext
     players_moved: Players<boolean>;
 
     new_round(round: GameRound): void;
-    //make_move(moves: Players<PlayerMove>): void;
 }
 
 class GameContext implements IGameContext
@@ -49,7 +48,6 @@ class GameContext implements IGameContext
     new_round(round: GameRound): void 
     {
         this.rounds.push(round);
-        g.event_box.emit("GameContext round changed", null);
     }
 
     get last(): GameRound | null
@@ -65,12 +63,6 @@ class GameContext implements IGameContext
     {
         return this.rounds[this.rounds.length - 1];
     }
-
-    // make_move(moves: Players<PlayerMove>): void
-    // {
-    //     this.history.push(this._present);
-    //     this._present = this._present.proceed(moves);
-    // }
 }
 
 interface IGameUiFacade
@@ -98,7 +90,8 @@ class GameUiFacade implements IGameUiFacade
 
     constructor(
         public context: GameContext, 
-        public staging_area: PlayerMoveStagingArea)
+        public staging_area: IPlayerMoveStagingArea,
+        public server_agent: IServerAgent)
     {
     }
 
@@ -120,14 +113,13 @@ class GameUiFacade implements IGameUiFacade
 
     submit_move(): void 
     {
-        let moves = Players.create((p) => new PlayerMove(p));
-        moves[this.staging_area.move.player] = this.staging_area.move;
-        //this.context.make_move(moves);
+        this.server_agent.submit_move(this.staging_area.move);
+        this.staging_area.clear();
     }
 
     new_game(): void
     {
-        // queue match with this.player_name;
+        this.server_agent.new_game();
     }
 
     is_playing(): boolean
