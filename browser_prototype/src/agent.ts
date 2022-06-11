@@ -21,7 +21,29 @@ class LocalAgent extends ServerAgent
         let moves = Players.create((p) => new PlayerMove(p));
         moves[move.player] = move;
         this.context.new_round(this.context.present.proceed(moves));
-        this.context.status = GameContextStatus.WaitForPlayer;
+
+        switch (this.context.present.status())
+        {
+            case GameStatus.WonByPlayer1:
+                this.context.status = this.context.player == Player.P1 ? 
+                                      GameContextStatus.Victorious :
+                                      GameContextStatus.Defeated;
+                break;
+            case GameStatus.WonByPlayer2:
+                this.context.status = this.context.player == Player.P2 ?
+                                      GameContextStatus.Victorious : 
+                                      GameContextStatus.Defeated;
+                break;
+            case GameStatus.Tied:
+                this.context.status = GameContextStatus.Tied;
+                break;
+            case GameStatus.Ongoing:
+                this.context.status = GameContextStatus.WaitForPlayer;
+                break;
+            default:
+                throw new Error("Unknown status");
+        }
+
         g.event_box.emit("GameContext changed", null);
         g.event_box.emit("GameContext round changed", null);
     }

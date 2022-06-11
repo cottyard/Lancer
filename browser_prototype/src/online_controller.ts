@@ -131,26 +131,6 @@ interface IOnlineController
 //         return this._status;
 //     }
 
-//     on_new_game()
-//     {
-//         switch (this.context.status)
-//         {
-//             case GameStatus.WonByPlayer1:
-//                 this.status = this.context.player == Player.P1 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
-//                 break;
-//             case GameStatus.WonByPlayer2:
-//                 this.status = this.context.player == Player.P2 ? OnlineGameStatus.Victorious : OnlineGameStatus.Defeated;
-//                 break;
-//             case GameStatus.Tied:
-//                 this.status = OnlineGameStatus.Tied;
-//                 break;
-//             case GameStatus.Ongoing:
-//                 this.status = OnlineGameStatus.WaitForPlayer;
-//                 break;
-//             default:
-//                 throw new Error("Unknown status");
-//         }
-//     }
 
 //     on_new_session(session_id: string)
 //     {
