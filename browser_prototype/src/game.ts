@@ -72,6 +72,8 @@ interface IGameUiFacade
     staging_area: IPlayerMoveStagingArea;
     action: PlayerAction;
     cost: number;
+    prepare_move(move: Move): void;
+    prepare_moves(moves: Move[]): void;
     sufficient_fund(): boolean;
 
     is_playing(): boolean;
@@ -111,10 +113,21 @@ class GameUiFacade implements IGameUiFacade
         return this.staging_area.cost(this.context.present.board);
     }
 
+    prepare_move(move: Move): void 
+    {
+         this.staging_area.prepare_move(this.context.present.board, move);
+    }
+
+    prepare_moves(moves: Move[]): void 
+    {
+        this.staging_area.prepare_moves(this.context.present.board, moves);
+    }
+
     submit_move(): void 
     {
-        this.server_agent.submit_move(this.staging_area.move);
-        this.staging_area.clear();
+        let m = this.staging_area.move;
+        this.staging_area.reset();
+        this.server_agent.submit_move(m);
     }
 
     new_game(): void

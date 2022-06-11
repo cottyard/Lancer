@@ -171,7 +171,7 @@ class ActionPanel implements IComponent
                 .sort((a, b) => a.order - b.order)
                 .map(({ move }) => move);
 
-            this.game.staging_area.prepare_moves(ordered_moves);
+            this.game.prepare_moves(ordered_moves);
 
             this.dragging.placeholder.remove();
             this.dragging = null;

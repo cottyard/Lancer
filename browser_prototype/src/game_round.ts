@@ -82,14 +82,15 @@ class GameRound
 
     resources_updated(board: GameBoard): ResourceStatus[]
     {
+        let resources: ResourceStatus[] = [];
         for (let i = 0; i < this.resources.length; ++i)
         {
             let status = this.resources[i];
             let coord = Rule.resource_grids[i];
             let unit = board.unit.at(coord);
-            this.resources[i] = Rule.updated_resource_status(status, unit);
+            resources[i] = Rule.updated_resource_status(status, unit);
         }
-        return this.resources;
+        return resources;
     }
 
     status(): GameStatus

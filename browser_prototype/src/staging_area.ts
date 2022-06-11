@@ -3,11 +3,11 @@ interface IPlayerMoveStagingArea
     move: PlayerMove;
     action(board: GameBoard): PlayerAction;
     cost(board: GameBoard): number;
-    prepare_move(move: Move): "accepted" | "overridden" | "invalid";
-    prepare_moves(moves: Move[]): boolean;
+    prepare_move(board: GameBoard, move: Move): "accepted" | "overridden" | "invalid";
+    prepare_moves(board: GameBoard, moves: Move[]): boolean;
     delete_moves(filter: (move: Move) => move is Move): Move[];
     pop_move(): Move | null;
-    clear(): void;
+    reset(): void;
 }
 
 class PlayerMoveStagingArea implements IPlayerMoveStagingArea
@@ -33,9 +33,9 @@ class PlayerMoveStagingArea implements IPlayerMoveStagingArea
         return this.move.extract(which);
     }
 
-    clear() : void
+    reset() : void
     {
-        this.move.moves.length = 0;
+        this.move = new PlayerMove(this.move.player);
     }
 
     pop_move(): Move | null
@@ -44,14 +44,14 @@ class PlayerMoveStagingArea implements IPlayerMoveStagingArea
         return removed || null;
     }
 
-    prepare_move(move: Move): "accepted" | "overridden" | "invalid"
+    prepare_move(board: GameBoard, move: Move): "accepted" | "overridden" | "invalid"
     {
         let overrided = this.delete_moves(
             (m: Move): m is Move => m.from.equals(move.from));
         this.move.moves.push(move);
         try
         {
-            this.action;
+            this.action(board);
         }
         catch
         {
@@ -61,13 +61,13 @@ class PlayerMoveStagingArea implements IPlayerMoveStagingArea
         return overrided.length > 0 ? "overridden" : "accepted";
     }
 
-    prepare_moves(moves: Move[]): boolean
+    prepare_moves(board: GameBoard, moves: Move[]): boolean
     {
         let old = this.move.moves;
         this.move.moves = moves;
         try
         {
-            this.action;
+            this.action(board);
         }
         catch
         {

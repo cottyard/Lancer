@@ -27,7 +27,7 @@ class BoardDisplay implements IBoardDisplay
     displaying_board: GameBoard;
     displaying_actions: Players<PlayerAction>;
 
-    _resources: ResourceStatus[];
+    displaying_resources: ResourceStatus[];
 
     constructor(public game: IGameUiFacade)
     {
@@ -50,7 +50,7 @@ class BoardDisplay implements IBoardDisplay
 
         this.displaying_board = this.game.context.present.board;
         this.displaying_actions = Players.create((p) => new PlayerAction(p));
-        this._resources = this.game.context.present.resources;
+        this.displaying_resources = this.game.context.present.resources;
 
         this.show_present();
     }
@@ -94,13 +94,17 @@ class BoardDisplay implements IBoardDisplay
     {
         if (this.show_last_round)
         {
-            this.displaying_actions = this.game.context.present.last_actions!;
+            this.displaying_actions = this.game.context.present.last_actions 
+                                    || Players.create((p) => new PlayerAction(p));
             this.displaying_board = this.game.context.last!.board;
+            this.displaying_resources = this.game.context.last!.resources;
         }
         else
         {
+            this.displaying_actions = Players.create((p) => new PlayerAction(p));
             this.displaying_actions[this.game.context.player] = this.game.action;
             this.displaying_board = this.game.context.present.board;
+            this.displaying_resources = this.game.context.present.resources;
         }
     }
 
@@ -151,7 +155,8 @@ class BoardDisplay implements IBoardDisplay
         this.update_displaying_items();
         for (let player_action of Array.from(Player.values(this.displaying_actions)))
         {
-            this.canvas.paint_actions(new DisplayPlayerAction(player_action), this.displaying_board.unit);
+            this.canvas.paint_actions(
+                new DisplayPlayerAction(player_action), this.displaying_board.unit);
         }
         if (this.show_last_round)
         {
@@ -285,8 +290,7 @@ class BoardDisplay implements IBoardDisplay
 
         if (this.selected && !this.selection_frozen)
         {
-            this.game.staging_area.prepare_move(
-                new Move(this.selected, this.current));
+            this.game.prepare_move(new Move(this.selected, this.current));
         }
 
         this.selected = null;
@@ -327,7 +331,7 @@ class BoardDisplay implements IBoardDisplay
         for (let i = 0; i < Rule.resource_grids.length; ++i)
         {
             let coord = Rule.resource_grids[i];
-            let status = this._resources[i];
+            let status = this.displaying_resources[i];
             let style = g.const.STYLE_BLACKISH;
             let progress = 10;
 
