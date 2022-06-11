@@ -30,7 +30,7 @@ function ui_solitude()
     g.ui_components.push(status_bar);
     g.ui_components.push(button_bar);
 
-    g.event_box.subscribe('GameContext changed', _ => {
+    g.event_box.subscribe('refresh ui', _ => {
         console.log("render");
         for (let c of g.ui_components)
         {
@@ -38,10 +38,10 @@ function ui_solitude()
         }
     });
 
-    g.event_box.subscribe('GameContext round changed', _ => {
+    g.event_box.subscribe('refresh board', _ => {
         console.log("round");
         board_display.show_present();
     });
 
-    g.event_box.emit("GameContext changed", null);
+    g.event_box.emit("refresh ui", null);
 }

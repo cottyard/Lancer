@@ -296,7 +296,8 @@ class BoardDisplay implements IBoardDisplay
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);
-        this.render_indicators();
+        
+        g.event_box.emit("refresh ui", null);
     }
 
     update_options(coord: Coordinate)

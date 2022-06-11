@@ -44,15 +44,15 @@ class LocalAgent extends ServerAgent
                 throw new Error("Unknown status");
         }
 
-        g.event_box.emit("GameContext changed", null);
-        g.event_box.emit("GameContext round changed", null);
+        g.event_box.emit("refresh ui", null);
+        g.event_box.emit("refresh board", null);
     }
 
     new_game(): void 
     {
         this.context.new_round(GameRound.new_game());
         this.context.status = GameContextStatus.WaitForPlayer;
-        g.event_box.emit("GameContext changed", null);
-        g.event_box.emit("GameContext round changed", null);
+        g.event_box.emit("refresh ui", null);
+        g.event_box.emit("refresh board", null);
     }
 }

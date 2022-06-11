@@ -108,9 +108,10 @@ class ActionPanel implements IComponent
         });
         cross.addEventListener("mousedown", (e: MouseEvent) =>
         {
-            this.game.staging_area.delete_moves((m: Move): m is Move => m.equals(action.action.move));
-            // this.render_ctrl.refresh();
+            this.game.staging_area.delete_moves(
+                (m: Move): m is Move => m.equals(action.action.move));
             e.cancelBubble = true;
+            g.event_box.emit("refresh ui", null);
         });
 
         // Drag support.
@@ -219,7 +220,7 @@ class ActionPanel implements IComponent
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
-            // this.render_ctrl.refresh();
+            g.event_box.emit("refresh ui", null);
         });
 
         return div;
