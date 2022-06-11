@@ -2,7 +2,7 @@ class StatusBar implements IComponent
 {
     constructor(
         public dom_element: HTMLDivElement,
-        public render_ctrl: IBoardDisplay,
+        public board_display: IBoardDisplay,
         public game: IGameUiFacade)
     {
     }
@@ -32,7 +32,7 @@ class StatusBar implements IComponent
             if (player == Player.P1)
             {
                 let round_number = this.game.context.present.round_count;
-                if (this.render_ctrl.show_last_round)
+                if (this.board_display.show_last_round)
                 {
                     round_number--;
                 }

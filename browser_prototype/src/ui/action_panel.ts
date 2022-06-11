@@ -19,7 +19,7 @@ class ActionPanel implements IComponent
 
     constructor(
         public dom_element: HTMLDivElement,
-        public render_ctrl: IBoardDisplay,
+        public board_display: IBoardDisplay,
         public game: IGameUiFacade) 
     {
         this.dragging = null;
@@ -210,7 +210,7 @@ class ActionPanel implements IComponent
             DomHelper.applyStyle(div, {
                 backgroundColor: "#b0b0b0",
             });
-            this.render_ctrl.highlight(action.action.move.from);
+            this.board_display.highlight(action.action.move.from);
         });
 
         div.addEventListener("mouseleave", () =>

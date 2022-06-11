@@ -2,6 +2,7 @@ function ui_solitude()
 {
     clear_intervals();
     g.initialize();
+
     let context = <GameContext>notify_changes_for_object(
         'GameContext changed',
         new GameContext(
@@ -11,29 +12,34 @@ function ui_solitude()
                 [Player.P1]: 'player 1',
                 [Player.P2]: 'player 2'
             }));
-    
-    g.event_box.subscribe('GameContext changed', (context: GameContext) => {
-        console.log("context changed");
-        console.log(context.rounds.length);
+
+    let facade = new GameUiFacade(context, new PlayerMoveStagingArea(Player.P1));
+    let board_display = new BoardDisplay(facade);
+
+    let action_panel = new ActionPanel(
+        <HTMLDivElement> document.getElementById('action-panel'), board_display, facade);
+    let status_bar = new StatusBar(
+        <HTMLDivElement> document.getElementById('status-bar'), board_display, facade);
+    let button_bar = new ButtonBar(
+        <HTMLDivElement> document.getElementById('button-bar'), board_display, facade);
+
+    g.ui_components.push(board_display);
+    g.ui_components.push(action_panel);
+    g.ui_components.push(status_bar);
+    g.ui_components.push(button_bar);
+
+    g.event_box.subscribe('GameContext changed', _ => {
+        console.log("render");
+        for (let c of g.ui_components)
+        {
+            c.render();
+        }
     });
-    // context.game_id = "123";
-    
-    context.new_round(GameRound.new_game());
+
+    g.event_box.subscribe('GameContext round changed', _ => {
+        console.log("render board");
+        board_display.render_board();
+    });
+
+    context.status = GameContextStatus.NotStarted;
 }
-
-    // let stub = class stub implements IComponent { render() { } };
-    // let components = {
-    //     action_panel: new stub,
-    //     status_bar: new stub,
-    //     button_bar: new class _ extends stub implements IButtonBar { view_last_round: boolean = true; render_text = () => { }; }
-    // };
-
-    // let ctrl = new RenderController(context, components);
-
-    // components.action_panel = new ActionPanel(<HTMLDivElement> document.getElementById('action-panel'), ctrl, context);
-    // components.status_bar = new StatusBar(<HTMLDivElement> document.getElementById('status-bar'), context);
-    // components.button_bar = new ButtonBar(<HTMLDivElement> document.getElementById('button-bar'), ctrl, context);
-
-    // ctrl.refresh_all();
-
-    // g.render_control = ctrl;

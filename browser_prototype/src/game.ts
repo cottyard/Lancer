@@ -28,7 +28,7 @@ interface IGameContext
 
 class GameContext implements IGameContext
 {
-    rounds: GameRound[] = [ GameRound.new_game() ];
+    private rounds: GameRound[] = [ GameRound.new_showcase() ];
 
     status: GameContextStatus = GameContextStatus.NotStarted;
 
@@ -49,6 +49,7 @@ class GameContext implements IGameContext
     new_round(round: GameRound): void 
     {
         this.rounds.push(round);
+        g.event_box.emit("GameContext round changed", null);
     }
 
     get last(): GameRound | null

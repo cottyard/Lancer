@@ -11,8 +11,10 @@ interface IPlayerMoveStagingArea
 
 class PlayerMoveStagingArea implements IPlayerMoveStagingArea
 {
-    constructor(public move: PlayerMove)
+    move: PlayerMove;
+    constructor(player: Player)
     {
+        this.move = new PlayerMove(player);
     }
 
     action(board: GameBoard): PlayerAction

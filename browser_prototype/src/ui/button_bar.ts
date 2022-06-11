@@ -16,7 +16,7 @@ class ButtonBar implements IButtonBar
 
     constructor(
         public dom_element: HTMLDivElement,
-        public render_ctrl: IBoardDisplay,
+        public board_display: IBoardDisplay,
         public game: IGameUiFacade)
     {
     }
@@ -26,11 +26,11 @@ class ButtonBar implements IButtonBar
         this._view_last_round = value;
         if (value)
         {
-            this.render_ctrl.show_last();
+            this.board_display.show_last();
         }
         else
         {
-            this.render_ctrl.show_present();
+            this.board_display.show_present();
         }
 
         this.update_last_round_name();
@@ -46,11 +46,11 @@ class ButtonBar implements IButtonBar
         this._show_heat = value;
         if (value)
         {
-            this.render_ctrl.show_heat();
+            this.board_display.show_heat();
         }
         else
         {
-            this.render_ctrl.hide_heat();
+            this.board_display.hide_heat();
         }
         this.update_heat_name();
     }
@@ -230,7 +230,7 @@ class ButtonBar implements IButtonBar
                 {
                     this.view_last_round_handle = setTimeout(() =>
                     {
-                        this.render_ctrl.show_last();
+                        this.board_display.show_last();
                     }, 200);
                 }
             };
@@ -239,7 +239,7 @@ class ButtonBar implements IButtonBar
                 this._view_last_round_on_hover = true;
                 if (!this.view_last_round)
                 {
-                    this.render_ctrl.show_present();
+                    this.board_display.show_present();
                 }
                 if (this.view_last_round_handle)
                 {
@@ -261,14 +261,14 @@ class ButtonBar implements IButtonBar
             {
                 if (!this.show_heat)
                 {
-                    this.render_ctrl.show_heat();
+                    this.board_display.show_heat();
                 }
             };
             this.heat_button.onmouseleave = () =>
             {
                 if (!this.show_heat)
                 {
-                    this.render_ctrl.hide_heat();
+                    this.board_display.hide_heat();
                 }
             };
             this.heat_button.onclick = () =>

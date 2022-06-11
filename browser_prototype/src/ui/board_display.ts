@@ -1,19 +1,12 @@
-interface IBoardDisplay
+interface IBoardDisplay extends IComponent
 {
     displaying_board: GameBoard;
-    components: {
-        action_panel: IComponent,
-        status_bar: IComponent,
-        button_bar: IButtonBar;
-    };
     show_last_round: boolean;
-    // refresh(): void;
     highlight(coord: Coordinate): void;
     show_last(): void;
     show_present(): void;
     show_heat(): void;
     hide_heat(): void;
-    // refresh_all(): void;
     freeze_selection(): void;
     unfreeze_selection(): void;
 }
@@ -36,13 +29,7 @@ class BoardDisplay implements IBoardDisplay
 
     displaying_actions: Players<PlayerAction>;
 
-    constructor(
-        public game: IGameUiFacade,
-        public components: {
-            action_panel: IComponent,
-            status_bar: IComponent,
-            button_bar: IButtonBar;
-        })
+    constructor(public game: IGameUiFacade)
     {
         this.canvas = new GameCanvas(
             <HTMLCanvasElement> document.getElementById('background'),
@@ -68,11 +55,10 @@ class BoardDisplay implements IBoardDisplay
         this.show_present();
     }
 
-    // refresh_all()
-    // {
-    //     this.render_board();
-    //     this.refresh();
-    // }
+    render(): void 
+    {
+        this.render_indicators();
+    }
 
     // test_run()
     // {
@@ -98,12 +84,6 @@ class BoardDisplay implements IBoardDisplay
     {
         this.canvas.paint_grid_indicator(coord);
     }
-
-    // refresh()
-    // {
-    //     this.render_indicators();
-    //     this.components.button_bar.render();
-    // }
 
     set displaying_board(value: GameBoard)
     {
@@ -183,8 +163,6 @@ class BoardDisplay implements IBoardDisplay
                 this.canvas.paint_victim_indicator(martyr.quester.from_grid);
             }
         }
-        this.components.action_panel.render();
-        this.components.status_bar.render();
     }
 
     clear_grid_incicators(): void
@@ -209,10 +187,6 @@ class BoardDisplay implements IBoardDisplay
         {
             this.canvas.paint_heat(coord, heat);
         });
-        // this.displaying_board.buff.iterate_units((buff, coord) =>
-        // {
-        //     this.canvas.paint_buff(coord, buff);
-        // });
     }
 
     show_heat(): void
@@ -321,7 +295,7 @@ class BoardDisplay implements IBoardDisplay
         this.selected = null;
         this.show_threats = true;
         this.update_options(this.current);
-        //this.refresh();
+        this.render_indicators();
     }
 
     update_options(coord: Coordinate)

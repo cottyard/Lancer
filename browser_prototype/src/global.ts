@@ -1,6 +1,6 @@
 class Module
 {
-    global_lifecycle_objects = {};
+    ui_components: IComponent[] = [];
     audio_context = new AudioContext();
     event_box = new EventBox();
 
