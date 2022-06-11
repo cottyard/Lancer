@@ -64,4 +64,36 @@ class AI
 
     //     return picked_moves;
     // }
+
+    static get_random_move(round: GameRound, player: Player): PlayerMove
+    {
+        let supply = round.supply(player);
+        let cost = 0;
+        let stage = new PlayerMoveStagingArea(player);
+
+        while (cost < supply)
+        {
+            let all = Rule.valid_moves(round.board, player);
+            if (!all)
+            {
+                break;
+            }
+            let random_move = all[Math.floor(Math.random() * all.length)];
+
+            let res = stage.prepare_move(round.board, random_move);
+            if (res == "overridden")
+            {
+                break;
+            }
+            cost = stage.cost(round.board);
+        }
+
+        while (cost > supply)
+        {
+            stage.pop_move();
+            cost = stage.cost(round.board);
+        }
+
+        return stage.move;
+    }
 }

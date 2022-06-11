@@ -20,6 +20,8 @@ class LocalAgent extends ServerAgent
     {
         let moves = Players.create((p) => new PlayerMove(p));
         moves[move.player] = move;
+        let op = opponent(move.player);
+        moves[op] = AI.get_random_move(this.context.present, op);
         this.context.new_round(this.context.present.proceed(moves));
 
         switch (this.context.present.status())

@@ -401,7 +401,7 @@ class Action implements ICopyable<Action>
         switch (this.type)
         {
             case ActionType.Defend:
-                return 1;
+                return 2;
             case ActionType.Move:
                 return move_cost(this.unit_type, this.move);
             case ActionType.Upgrade:
