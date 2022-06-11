@@ -11,7 +11,7 @@ class StatusBar implements IComponent
     {
         this.dom_element.innerHTML = "";
 
-        DomHelper.applyStyle(this.dom_element, {
+        DomHelper.apply_style(this.dom_element, {
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-end",
@@ -37,7 +37,7 @@ class StatusBar implements IComponent
                     round_number--;
                 }
 
-                this.dom_element.appendChild(DomHelper.createText(
+                this.dom_element.appendChild(DomHelper.create_text(
                     `Round ${ round_number }`,
                     {
                         'text-align': 'center',
@@ -72,7 +72,7 @@ class StatusBar implements IComponent
         is_me: boolean
     ): HTMLElement
     {
-        const div = DomHelper.createDiv({
+        const div = DomHelper.create_div({
             display: "flex",
             flexDirection: "row",
             marginLeft: "10px",
@@ -80,19 +80,19 @@ class StatusBar implements IComponent
             alignItems: "center",
             fontWeight: is_me ? "bold" : "normal",
         });
-        div.appendChild(DomHelper.createText(name, {
+        div.appendChild(DomHelper.create_text(name, {
             color: g.settings.player_color_map[player]
         }));
-        div.appendChild(DomHelper.createText("🍞", {
+        div.appendChild(DomHelper.create_text("🍞", {
         }));
 
         let remaining = is_me ? supply - cost : supply;
-        div.appendChild(DomHelper.createText(remaining.toString(), {
+        div.appendChild(DomHelper.create_text(remaining.toString(), {
             color: remaining < 0 ? "red" : "black",
             marginRight: "5px"
         }));
 
-        div.appendChild(DomHelper.createText(`(+${ income })`));
+        div.appendChild(DomHelper.create_text(`(+${ income })`));
 
         let text = null;
         if (this.game.context.players_moved[player])
@@ -105,7 +105,7 @@ class StatusBar implements IComponent
         }
         if (text)
         {
-            div.appendChild(DomHelper.createText(text, {
+            div.appendChild(DomHelper.create_text(text, {
                 marginLeft: "10px"
             }));
         }
@@ -113,7 +113,7 @@ class StatusBar implements IComponent
         let consumed = this.game.context.consumed_msecs[player];
         if (consumed != undefined)
         {
-            div.appendChild(DomHelper.createText(
+            div.appendChild(DomHelper.create_text(
                 this.timestamp(consumed),
                 {
                     marginLeft: "3px"

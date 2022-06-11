@@ -2,43 +2,43 @@ type Style =  {[key: string]: string | number};
 
 class DomHelper
 {
-    static createCanvas(style: Style = {}): HTMLCanvasElement
+    static create_canvas(style: Style = {}): HTMLCanvasElement
     {
         const canvas = document.createElement("canvas");
-        DomHelper.applyStyle(canvas, style);
+        DomHelper.apply_style(canvas, style);
         return canvas;
     }
 
-    static createText(text: string, style: Style = {}): HTMLDivElement
+    static create_text(text: string, style: Style = {}): HTMLDivElement
     {
-        const div = DomHelper.createDiv(style);
+        const div = DomHelper.create_div(style);
         div.appendChild(document.createTextNode(text));
         return div;
     }
 
-    static createTextArea(style: Style = {}): HTMLTextAreaElement
+    static create_textarea(style: Style = {}): HTMLTextAreaElement
     {
         const textarea = document.createElement("textarea");
         textarea.id = 'player-name';
-        DomHelper.applyStyle(textarea, style);
+        DomHelper.apply_style(textarea, style);
         return textarea;
     }
   
-    static createDiv(style: Style = {}): HTMLDivElement
+    static create_div(style: Style = {}): HTMLDivElement
     {
         const div = document.createElement("div");
-        DomHelper.applyStyle(div, style);
+        DomHelper.apply_style(div, style);
         return div;
     }
 
-    static createButton(style: Style = {}): HTMLButtonElement
+    static create_button(style: Style = {}): HTMLButtonElement
     {
         const btn = document.createElement("button");
-        DomHelper.applyStyle(btn, style);
+        DomHelper.apply_style(btn, style);
         return btn;
     }
   
-    static applyStyle(element: HTMLElement, style: Style): void
+    static apply_style(element: HTMLElement, style: Style): void
     {
         for (var key in style) {
             // To supress typescript error.

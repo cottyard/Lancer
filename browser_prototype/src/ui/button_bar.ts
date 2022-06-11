@@ -125,7 +125,7 @@ class ButtonBar implements IButtonBar
     {
         this.dom_element.innerHTML = "";
 
-        DomHelper.applyStyle(this.dom_element, {
+        DomHelper.apply_style(this.dom_element, {
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-end",
@@ -134,7 +134,7 @@ class ButtonBar implements IButtonBar
 
         if (!this.game.is_playing())
         {
-            let new_game = DomHelper.createButton();
+            let new_game = DomHelper.create_button();
             new_game.onclick = () => { this.game.new_game(); };
 
             if (this.game.is_in_queue())
@@ -147,7 +147,7 @@ class ButtonBar implements IButtonBar
                 new_game.innerText = "Find Game";
             }
 
-            let player_name = DomHelper.createTextArea();
+            let player_name = DomHelper.create_textarea();
             player_name.textContent = this.game.player_name;
             player_name.onfocus = () => { player_name.select(); };
             player_name.onkeyup = () =>
@@ -171,7 +171,7 @@ class ButtonBar implements IButtonBar
 
         if (this.game.is_playing())
         {
-            let submit_button = DomHelper.createButton();
+            let submit_button = DomHelper.create_button();
 
             if (this.game.context.status == GameContextStatus.WaitForPlayer)
             {
@@ -202,20 +202,20 @@ class ButtonBar implements IButtonBar
                 text = 'Game is tied.';
             }
 
-            let status = DomHelper.createText(text, {
+            let status = DomHelper.create_text(text, {
                 fontWeight: "bold",
                 marginLeft: "20px"
             });
             this.dom_element.appendChild(status);
         }
 
-        this.dom_element.appendChild(DomHelper.createDiv({
+        this.dom_element.appendChild(DomHelper.create_div({
             flexGrow: 1
         }));
 
         if (!this.game.is_not_started() && !this.game.is_in_queue())
         {
-            this.last_round_button = DomHelper.createButton();
+            this.last_round_button = DomHelper.create_button();
 
             this.last_round_button.onclick = () =>
             {
@@ -254,7 +254,7 @@ class ButtonBar implements IButtonBar
 
             this.dom_element.appendChild(this.last_round_button);
 
-            this.heat_button = DomHelper.createButton();
+            this.heat_button = DomHelper.create_button();
 
             this.heat_button.onmouseenter = () =>
             {

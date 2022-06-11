@@ -214,7 +214,6 @@ function notify_changes_for_object(event: string, object: any): any
             return target[key];
         },
         set: (target: any, prop: any, value: any) => {
-            console.log("change ", prop, " to ", value);
             target[prop] = value;
             g.event_box.emit(event, object);
             return true;

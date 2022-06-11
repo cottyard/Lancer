@@ -342,18 +342,12 @@ class BoardDisplay implements IBoardDisplay
             else if (status instanceof NeutralizingState)
             {
                 style = get_resource_style(status.owner);
-                console.log("Neutralizing")
-                console.log(status.remaining_duration)
                 progress = 10.0 * status.remaining_duration / Rule.resource_neutralizing_rounds;
-                console.log(progress)
             }
             else if (status instanceof CapturingState)
             {
-                console.log("Capturing")
                 style = get_resource_style(status.by);
-                console.log(status.remaining_duration)
                 progress = (1 - status.remaining_duration / Rule.resource_capturing_rounds) * 10;
-                console.log(progress)
             }
             else
             {

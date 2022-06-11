@@ -24,7 +24,7 @@ class ActionPanel implements IComponent
     {
         this.dragging = null;
 
-        DomHelper.applyStyle(this.dom_element, {
+        DomHelper.apply_style(this.dom_element, {
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
@@ -38,13 +38,13 @@ class ActionPanel implements IComponent
         new DisplayPlayerAction(this.game.action).actions.forEach(
             (action, index) =>
             {
-                this.dom_element.appendChild(this.renderAction(action, index));
+                this.dom_element.appendChild(this.render_action(action, index));
             });
     }
 
-    renderAction(action: DisplayAction, index: number): HTMLElement
+    render_action(action: DisplayAction, index: number): HTMLElement
     {
-        const div = DomHelper.createDiv({
+        const div = DomHelper.create_div({
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
@@ -58,11 +58,11 @@ class ActionPanel implements IComponent
         });
 
         // Action unit.
-        div.appendChild(this.renderUnit(this.getMainUnit(action)));
+        div.appendChild(this.render_unit(this.get_main_unit(action)));
 
         // Action name.
-        div.appendChild(DomHelper.createText(
-            this.getActionTypeText(action.type),
+        div.appendChild(DomHelper.create_text(
+            this.get_action_type_text(action.type),
             {
                 color: g.display_action_style.get(action.type) || "black",
                 'font-weight': 'bold',
@@ -74,35 +74,35 @@ class ActionPanel implements IComponent
         const target_unit = this.getTargetUnit(action);
         if (target_unit != null)
         {
-            div.appendChild(this.renderUnit(target_unit));
+            div.appendChild(this.render_unit(target_unit));
         }
 
         // Space between supply and action name/target.
-        div.appendChild(DomHelper.createDiv({
+        div.appendChild(DomHelper.create_div({
             flexGrow: "1",
         }));
 
         // cost.
-        div.appendChild(DomHelper.createText(
+        div.appendChild(DomHelper.create_text(
             "🍞" + action.action.cost().toString(),
             { 'font-weight': 'bold' }
         ));
 
         // Cross & callback.
-        const cross = div.appendChild(DomHelper.createText("✘", {
+        const cross = div.appendChild(DomHelper.create_text("✘", {
             fontSize: "20px",
             padding: "20px",
             margin: "-10px"
         }));
         cross.addEventListener("mouseenter", () =>
         {
-            DomHelper.applyStyle(cross, {
+            DomHelper.apply_style(cross, {
                 color: "red",
             });
         });
         cross.addEventListener("mouseleave", () =>
         {
-            DomHelper.applyStyle(cross, {
+            DomHelper.apply_style(cross, {
                 color: "black",
             });
         });
@@ -123,7 +123,7 @@ class ActionPanel implements IComponent
                 clientY: e.clientY,
                 pos_offset: 0,
                 placeholder: this.dom_element.insertBefore(
-                    DomHelper.createDiv({
+                    DomHelper.create_div({
                         height: ActionPanel.item_height.toString() + "px",
                         order: (index * 2).toString(),
                     }),
@@ -132,7 +132,7 @@ class ActionPanel implements IComponent
             };
 
             // Draw an empty placeholder.
-            DomHelper.applyStyle(div, {
+            DomHelper.apply_style(div, {
                 position: "fixed",
                 width: div.clientWidth.toString() + "px",
                 top: (e.clientY - this.dragging.offsetY).toString() + "px",
@@ -175,7 +175,7 @@ class ActionPanel implements IComponent
 
             this.dragging.placeholder.remove();
             this.dragging = null;
-            DomHelper.applyStyle(div, {
+            DomHelper.apply_style(div, {
                 position: "static",
                 width: "auto",
                 zIndex: 0,
@@ -197,7 +197,7 @@ class ActionPanel implements IComponent
             );
             this.dragging.placeholder.style.order = get_dragging_order().toString();
 
-            DomHelper.applyStyle(div, {
+            DomHelper.apply_style(div, {
                 position: "fixed",
                 top: (e.clientY - this.dragging.offsetY).toString() + "px",
                 left: (e.clientX - this.dragging.offsetX).toString() + "px",
@@ -207,7 +207,7 @@ class ActionPanel implements IComponent
         // Hover effect.
         div.addEventListener("mouseenter", () =>
         {
-            DomHelper.applyStyle(div, {
+            DomHelper.apply_style(div, {
                 backgroundColor: "#b0b0b0",
             });
             this.board_display.highlight(action.action.move.from);
@@ -215,7 +215,7 @@ class ActionPanel implements IComponent
 
         div.addEventListener("mouseleave", () =>
         {
-            DomHelper.applyStyle(div, {
+            DomHelper.apply_style(div, {
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
@@ -225,7 +225,7 @@ class ActionPanel implements IComponent
         return div;
     }
 
-    getMainUnit(action: DisplayAction): Unit 
+    get_main_unit(action: DisplayAction): Unit 
     {
         return this.game.context.present.board.unit.at(action.action.move.from)!;
     }
@@ -239,9 +239,9 @@ class ActionPanel implements IComponent
         return null;
     }
 
-    renderUnit(unit: Unit): HTMLElement
+    render_unit(unit: Unit): HTMLElement
     {
-        const canvas = DomHelper.createCanvas({
+        const canvas = DomHelper.create_canvas({
             zoom: "0.7",
         });
         canvas.width = g.settings.grid_size + 10;
@@ -262,7 +262,7 @@ class ActionPanel implements IComponent
         return canvas;
     }
 
-    getActionTypeText(type: DisplayActionType): string
+    get_action_type_text(type: DisplayActionType): string
     {
         switch (type)
         {
