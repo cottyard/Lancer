@@ -203,25 +203,25 @@ class Module
 
 let g: Module = new Module();
 
-function notify_changes_for_object(event: string, object: any): any
-{
-    let handler = {
-        get: (target: any, key: any): any => {
-            if(typeof target[key] == "object" && target[key] != null) 
-            {
-                return new Proxy(target[key], handler)
-            }
-            return target[key];
-        },
-        set: (target: any, prop: any, value: any) => {
-            target[prop] = value;
-            g.event_box.emit(event, object);
-            return true;
-        }
-      }
+// function notify_changes_for_object(event: string, object: any): any
+// {
+//     let handler = {
+//         get: (target: any, key: any): any => {
+//             if(typeof target[key] == "object" && target[key] != null) 
+//             {
+//                 return new Proxy(target[key], handler)
+//             }
+//             return target[key];
+//         },
+//         set: (target: any, prop: any, value: any) => {
+//             target[prop] = value;
+//             g.event_box.emit(event, object);
+//             return true;
+//         }
+//       }
       
-      return new Proxy(object, handler);
-}
+//       return new Proxy(object, handler);
+// }
 
 function beep(): void
 {

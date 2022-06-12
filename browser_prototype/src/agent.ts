@@ -58,3 +58,42 @@ class LocalAgent extends ServerAgent
         g.event_box.emit("refresh board", null);
     }
 }
+
+class OnlineAgent extends ServerAgent
+{
+    private current_game_id: string | null = null;
+    private latest_game_id: string | null = null;
+
+    submit_move(move: PlayerMove): void 
+    {
+        if (this.current_game_id)
+        {
+            this.context.status = GameContextStatus.Submitting;
+            g.event_box.emit("refresh ui", null);
+            //let milliseconds_consumed: number = new Date().getTime() - this.round_begin_time.getTime();
+            Net.submit_move(this.current_game_id, move, 0, (_: string) =>
+            {
+                this.context.status = GameContextStatus.WaitForOpponent;
+                g.event_box.emit("refresh ui", null);
+            });
+        }
+
+        g.event_box.emit("refresh ui", null);
+    }
+
+    new_game(): void 
+    {
+        Net.new_game(
+            this.context.players_name[this.context.player], 
+            (session: string) =>
+            {
+                console.log('new session:', session);
+                this.context.status = GameContextStatus.InQueue;
+                this.latest_game_id = null;
+                this.current_game_id = null;
+                g.event_box.emit("refresh ui", null);
+            });
+        
+        g.event_box.emit("refresh ui", null);
+    }
+}

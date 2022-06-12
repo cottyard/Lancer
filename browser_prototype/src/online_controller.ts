@@ -1,29 +1,3 @@
-interface IOnlineController
-{
-    status: GameStatus;
-    seconds_before_submit: number;
-    enable_sound: boolean;
-    adequate_supply(): boolean;
-    is_playing(): boolean;
-    is_in_queue(): boolean;
-    is_finished(): boolean;
-    is_not_started(): boolean;
-    is_first_round(): boolean;
-    new_game(): void;
-    set_name(name: string): void;
-    get_name(): string;
-    submit_move(): void;
-
-
-    on_new_status(listener: Function): void;
-    on_new_session(listener: Function): void;
-    on_loading(listener: Function): void;
-    on_move(listener: Function): void;
-    new_session(player_name: string): void;
-
-    load_session(session: string, player_name: string): void;
-}
-
 // class OnlineController implements IOnlineController
 // {
 //     readonly round_time = 60;
@@ -177,38 +151,6 @@ interface IOnlineController
 //             this.submit_move();
 //         }
 //     }
-
-
-
-//     load_session(session: string, player_name: string)
-//     {
-//         this.player_name = player_name;
-//         this.context.load_session(session, player_name);
-//     }
-
-
-
-    
-    // new_session(player_name: string)
-    // {
-    //     new_game(player_name, (session: string) =>
-    //     {
-    //         this.load_session(session, player_name);
-    //         for (let listener of this.session_listeners)
-    //         {
-    //             listener(session);
-    //         }
-    //     });
-    // }
-
-    // load_session(session: string, player_name: string)
-    // {
-    //     this.session_id = session;
-    //     this.current_player_name = player_name;
-    //     this.latest_game_id = null;
-    //     this.current_game_id = null;
-    // }
-
 
     // update_game()
     // {

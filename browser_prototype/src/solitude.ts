@@ -31,7 +31,6 @@ function ui_solitude()
     g.ui_components.push(button_bar);
 
     g.event_box.subscribe('refresh ui', _ => {
-        console.log("render");
         for (let c of g.ui_components)
         {
             c.render();
@@ -39,7 +38,6 @@ function ui_solitude()
     });
 
     g.event_box.subscribe('refresh board', _ => {
-        console.log("round");
         board_display.show_present();
     });
 
