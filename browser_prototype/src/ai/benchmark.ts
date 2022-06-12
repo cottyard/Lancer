@@ -90,6 +90,8 @@ class AI
 
         while (cost > supply)
         {
+            console.log('round ', round.round_count)
+            console.log('cost ', cost, ' supply ', supply)
             stage.pop_move();
             cost = stage.cost(round.board);
         }

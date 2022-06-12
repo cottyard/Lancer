@@ -112,6 +112,7 @@
 
         if (density != null)
         {
+            density = Math.floor(density * 10 + 1);
             this.ctx.setLineDash(
                 [10 + border_width * density,
                 border_width * (10 - density)]);

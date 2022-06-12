@@ -11,66 +11,49 @@ class Rule
     static readonly resource_grid_supplies: number[] = 
         [1, 1, 1, 1, 2, 1, 1, 1, 1];
     
-    static readonly resource_capturing_rounds = 3
-    static readonly resource_neutralizing_rounds = 2
+    static readonly resource_capturing_speed = 2;
+    static readonly resource_decapturing_speed = 3;
+    static readonly resource_neutralizing_speed = 1;
 
     static updated_resource_status(status: ResourceStatus, unit: Unit | null): ResourceStatus
     {
-        if (status instanceof CapturedState)
+        if (unit)
         {
-            if (unit && unit.owner != status.by)
+            if (status.neutral())
             {
-                return new NeutralizingState(
-                    opponent(unit.owner), 
-                    Rule.resource_neutralizing_rounds);
-            }
-        }
-        else if (status instanceof NeutralState)
-        {
-            if (unit)
-            {
-                return new CapturingState(
-                    unit.owner, 
-                    Rule.resource_capturing_rounds);
-            }
-        }
-        else if (status instanceof CapturingState)
-        {
-            if (unit && unit.owner == status.by)
-            {
-                if (status.remaining_duration <= 1)
-                {
-                    return new CapturedState(status.by);
-                }
-                else
-                {
-                    return new CapturingState(status.by, status.remaining_duration - 1);
-                }
+                return new ResourceStatus(unit.owner, Rule.resource_capturing_speed);
             }
             else
             {
-                return new NeutralState();
-            }
-        }
-        else if (status instanceof NeutralizingState)
-        {
-            if (unit && unit.owner != status.owner)
-            {
-                if (status.remaining_duration <= 1)
+                if (status.player == unit.owner)
                 {
-                    return new NeutralState();
+                    return new ResourceStatus(
+                        status.player, 
+                        min(status.progress + Rule.resource_capturing_speed, 
+                            ResourceStatus.full));
                 }
                 else
                 {
-                    return new NeutralizingState(status.owner, status.remaining_duration - 1);
+                    return new ResourceStatus(
+                        status.player, 
+                        max(status.progress - Rule.resource_decapturing_speed, 
+                            0));
                 }
+            }
+        }
+        else
+        {
+            if (status.captured())
+            {
+                return status;
             }
             else
             {
-                return new CapturedState(status.owner);
+                return new ResourceStatus(
+                    status.player, 
+                    max(status.progress - Rule.resource_neutralizing_speed, 0));
             }
         }
-        return status;
     }
 
     static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction

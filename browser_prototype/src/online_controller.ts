@@ -106,11 +106,7 @@
 //     }
 
 
-//     on_new_session(session_id: string)
-//     {
-//         console.log('new session:', session_id);
-//         this.status = OnlineGameStatus.InQueue;
-//     }
+
 
 //     start_count_down()
 //     {
@@ -213,47 +209,4 @@
     //     });
     // }
 
-    // query_session(session_status: string)
-    // {
-    //     let status = JSON.parse(session_status);
-    //     console.log('latest game:', status['latest']);
-    //     this.latest_game_id = status['latest'];
-
-    //     if (!this.latest_game_id)
-    //     {
-    //         return;
-    //     }
-
-    //     let updated = false;
-
-    //     for (let player of Player.both())
-    //     {
-    //         let current_moved = this.player_moved[player];
-    //         let moved = status['player_moved'][player];
-
-    //         if (current_moved != moved)
-    //         {
-    //             this.player_moved[player] = moved;
-    //             updated = true;
-    //         }
-
-    //         let current_time = this.consumed_milliseconds(player);
-    //         let time = status['player_time'][player];
-    //         if (current_time != time)
-    //         {
-    //             this._consumed_milliseconds[player] = time;
-    //             updated = true;
-    //         }
-    //     }
-
-    //     if (updated)
-    //     {
-    //         for (let listener of this.status_listeners)
-    //         {
-    //             listener();
-    //         }
-    //     }
-
-    //     this.update_game();
-    // }
 

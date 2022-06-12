@@ -329,30 +329,22 @@ class BoardDisplay implements IBoardDisplay
                                       : g.const.STYLE_RED_LIGHT;
         }
 
-        for (let i = 0; i < Rule.resource_grids.length; ++i)
+        for (let i = 0; i < this.displaying_resources.length; ++i)
         {
             let coord = Rule.resource_grids[i];
             let status = this.displaying_resources[i];
-            let style = g.const.STYLE_BLACKISH;
-            let progress = 10;
+            let style;
+            let progress;
 
-            if (status instanceof CapturedState)
+            if (status.neutral())
             {
-                style = get_resource_style(status.by);
-            }
-            else if (status instanceof NeutralizingState)
-            {
-                style = get_resource_style(status.owner);
-                progress = 10.0 * status.remaining_duration / Rule.resource_neutralizing_rounds;
-            }
-            else if (status instanceof CapturingState)
-            {
-                style = get_resource_style(status.by);
-                progress = (1 - status.remaining_duration / Rule.resource_capturing_rounds) * 10;
+                style = g.const.STYLE_BLACKISH;
+                progress = 0;
             }
             else
             {
-                progress = 0
+                style = get_resource_style(status.player);
+                progress = status.progress / ResourceStatus.full;
             }
 
             this.canvas.paint_resource(coord, style, progress);

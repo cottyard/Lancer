@@ -91,3 +91,13 @@ function extract<T>(array: T[], filter: (a: T) => a is T): T[]
     array.splice(0, array.length, ...remaining);
     return extracted;
 }
+
+function max(n1: number, n2: number): number
+{
+    return n1 > n2 ? n1 : n2;
+}
+
+function min(n1: number, n2: number): number
+{
+    return n1 < n2 ? n1 : n2;
+}

@@ -10,37 +10,40 @@ enum GameStatus
     Tied
 }
 
-class CapturingState
+class ResourceStatus implements ISerializable
 {
-    constructor(public readonly by: Player, public readonly remaining_duration: number)
+    static readonly full: number = 6;
+
+    constructor(public player: Player,
+                public progress: number = ResourceStatus.full)
     {
+    }
+
+    captured(): boolean
+    {
+        return this.progress == ResourceStatus.full;
+    }
+
+    neutral(): boolean
+    {
+        return this.progress == 0;
+    }
+
+    serialize(): string
+    {
+        return JSON.stringify([this.player, this.progress]);
+    }
+
+    static deserialize(payload: string): ResourceStatus
+    {
+        let [player, progress] = JSON.parse(payload);
+        return new ResourceStatus(player, progress);
     }
 }
 
-class CapturedState
+class GameRound implements ISerializable
 {
-    constructor(public readonly by: Player)
-    {
-    }
-}
-
-class NeutralizingState
-{
-    constructor(public readonly owner: Player, public readonly remaining_duration: number)
-    {
-    }
-}
-
-class NeutralState
-{
-}
-
-type ResourceStatus = CapturingState | CapturedState 
-                    | NeutralizingState | NeutralState
-
-class GameRound
-{
-    constructor(
+    private constructor(
         readonly round_count: number,
         readonly board: GameBoard,
         readonly supplies: Players<number>,
@@ -120,6 +123,8 @@ class GameRound
         let action = Rule.validate_player_move(this.board, move);
         if (action.cost() > this.supplies[action.player])
         {
+            console.log(move.player);
+            console.log(action.cost(), ' > ', this.supplies[action.player])
             throw new InsufficientSupply();
         }
         return action;
@@ -136,7 +141,7 @@ class GameRound
         for (let i = 0; i < this.resources.length; ++i)
         {
             let status = this.resources[i];
-            if (status instanceof CapturedState && status.by == player)
+            if (status.captured() && status.player == player)
             {
                 resource_income += Rule.resource_grid_supplies[i];
             }
@@ -172,9 +177,15 @@ class GameRound
         this.set_out(board);
         
         let resources: ResourceStatus[] = [
-            new CapturedState(Player.P2), new CapturedState(Player.P2), new CapturedState(Player.P2),
-            new NeutralState(), new NeutralState(), new NeutralState(),
-            new CapturedState(Player.P1), new CapturedState(Player.P1), new CapturedState(Player.P1)
+            new ResourceStatus(Player.P2), 
+            new ResourceStatus(Player.P2),
+            new ResourceStatus(Player.P2),
+            new ResourceStatus(Player.P2, 0),
+            new ResourceStatus(Player.P2, 0),
+            new ResourceStatus(Player.P2, 0),
+            new ResourceStatus(Player.P1), 
+            new ResourceStatus(Player.P1),
+            new ResourceStatus(Player.P1),
         ]; 
         
         return new GameRound(
@@ -201,41 +212,62 @@ class GameRound
             }, null, [], []);
     }
 
-    // static deserialize(payload: string): GameRound
-    // {
-    //     let [round_count, player_supply_map, board_payload, player_actions, victims] = JSON.parse(payload);
+    serialize(): string 
+    {
+        return '';
+    }
 
-    //     let last_round_actions = {
-    //         [Player.P1]: new PlayerAction(Player.P1),
-    //         [Player.P2]: new PlayerAction(Player.P2)
-    //     };
+    static deserialize(payload: string): GameRound
+    {
+        let [round_count, players_supply, board_payload, 
+             players_actions, victims, resources] = JSON.parse(payload);
 
-    //     for (let player_action_payload of player_actions)
-    //     {
-    //         let player_action = PlayerAction.deserialize(player_action_payload);
-    //         last_round_actions[player_action.player] = player_action;
-    //     }
+        let last_round_actions = {
+            [Player.P1]: new PlayerAction(Player.P1),
+            [Player.P2]: new PlayerAction(Player.P2)
+        };
 
-    //     let supplies = {
-    //         [Player.P1]: 0,
-    //         [Player.P2]: 0
-    //     };
+        for (let player_action_payload of players_actions)
+        {
+            let player_action = PlayerAction.deserialize(player_action_payload);
+            last_round_actions[player_action.player] = player_action;
+        }
 
-    //     for (let player in player_supply_map)
-    //     {
-    //         supplies[deserialize_player(player)] = player_supply_map[player];
-    //     }
+        let supplies = {
+            [Player.P1]: 0,
+            [Player.P2]: 0
+        };
 
-    //     let martyrs: Martyr[] = [];
-    //     for (let victim of victims)
-    //     {
-    //         let coord = Coordinate.deserialize(victim);
+        for (let player in players_supply)
+        {
+            supplies[deserialize_player(player)] = players_supply[player];
+        }
 
-    //         // TODO: temporarily stub all deserialized martyr as Soldier
-    //         martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
-    //     }
+        let martyrs: Martyr[] = [];
+        for (let victim of victims)
+        {
+            let coord = Coordinate.deserialize(victim);
 
-    //     let board = <SerializableBoard<Unit>> create_serializable_board_ctor(UnitConstructor).deserialize(board_payload);
-    //     return new GameRound(round_count, new GameBoard(board), supplies, last_round_actions, martyrs);
-    // }
+            // TODO: temporarily stub all deserialized martyr as Soldier
+            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
+        }
+
+        let board = <SerializableBoard<Unit>> create_serializable_board_ctor(
+            UnitConstructor).deserialize(board_payload);
+
+        let resource_states: ResourceStatus[] = [];
+        
+        for (let r of resources)
+        {
+            resource_states.push(ResourceStatus.deserialize(r));
+        }
+
+        return new GameRound(
+            round_count, 
+            new GameBoard(board), 
+            supplies, 
+            last_round_actions, 
+            martyrs, 
+            resource_states);
+    }
 }

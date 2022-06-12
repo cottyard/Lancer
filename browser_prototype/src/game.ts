@@ -13,7 +13,6 @@ enum GameContextStatus
 
 interface IGameContext
 {
-    game_id: string;
     player: Player;
     last: GameRound | null;
     present: GameRound;
@@ -39,7 +38,6 @@ class GameContext implements IGameContext
     }
 
     constructor(
-        public game_id: string,
         public player: Player,
         public players_name: Players<string>)
     {

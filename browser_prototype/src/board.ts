@@ -137,14 +137,16 @@ class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T>
     }
 }
 
-interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _> extends IDeserializable<SerializableBoard<T>>
+interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _> 
+    extends IDeserializable<SerializableBoard<T>>
 {
     new(): SerializableBoard<T>;
     deserialize(payload: string): SerializableBoard<T>;
 }
 
-function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, C extends IDeserializable<T>>(
-    unit_ctor: C): SerializableBoardConstructor<T, C>
+function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
+                                        C extends IDeserializable<T>>
+    (unit_ctor: C): SerializableBoardConstructor<T, C>
 {
     return class _ extends SerializableBoard<T>
     {

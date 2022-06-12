@@ -4,7 +4,6 @@ function ui_solitude()
     g.initialize();
 
     let context = new GameContext(
-        "local game",
         Player.P1,
         {
             [Player.P1]: 'player 1',
