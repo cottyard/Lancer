@@ -22,6 +22,7 @@ interface IGameContext
     players_moved: Players<boolean>;
 
     new_round(round: GameRound): void;
+    clear(): void;
 }
 
 class GameContext implements IGameContext
@@ -46,6 +47,11 @@ class GameContext implements IGameContext
     new_round(round: GameRound): void 
     {
         this.rounds.push(round);
+    }
+
+    clear(): void 
+    {
+        this.rounds = [ GameRound.new_showcase() ];
     }
 
     get last(): GameRound | null
@@ -130,6 +136,8 @@ class GameUiFacade implements IGameUiFacade
 
     new_game(): void
     {
+        this.context.clear();
+        this.staging_area.reset();
         this.server_agent.new_game();
     }
 
