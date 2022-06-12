@@ -370,54 +370,83 @@ class PlayerMove implements ISerializable
 
 class Action implements ICopyable<Action>
 {
-    constructor(public move: Move, public type: ActionType, public unit_type: UnitConstructor)
+    constructor(public move: Move, public type: ActionType, public unit: Unit)
     {
     }
 
     copy(): Action
     {
-        return new Action(this.move.copy(), this.type, this.unit_type);
+        return new Action(this.move.copy(), this.type, this.unit.copy());
     }
 
     cost(): number
     {
-        function move_cost(unit_type: UnitConstructor, move: Move)
-        {
-            if (unit_type == Archer)
-            {
-                return 2;
-            }
-
-            if (move.which_skill()!.is_leap())
-            {
-                return 3;
-            }
-            else
-            {
-                return 2;
-            }
-        }
-
         switch (this.type)
         {
             case ActionType.Defend:
                 return 2;
             case ActionType.Move:
-                return move_cost(this.unit_type, this.move);
+                return this.move_cost(this.unit, this.move);
             case ActionType.Upgrade:
-                return 5;
+                return this.upgrade_cost(this.unit);
             case ActionType.Attack:
-                return move_cost(this.unit_type, this.move) + 1;
+                return this.move_cost(this.unit, this.move) + 1;
+        }
+    }
+
+    private move_cost(unit: Unit, move: Move): number
+    {
+        if (unit.level == 1)
+        {
+            return 2;
+        }
+        else if (unit.level == 3)
+        {
+            return 3;
+        }
+
+        if (move.which_skill()!.is_leap())
+        {
+            return 3;
+        }
+        else
+        {
+            return 2;
+        }
+    }
+
+    private upgrade_cost(unit: Unit): number
+    {
+        let level = unit.level;
+        
+        if (unit.is_promotion_ready())
+        {
+            level++;
+        }
+
+        switch(level)
+        {
+            case 1:
+                return 5;
+            case 2:
+                return 6;
+            case 3:
+                return 7;
+            default:
+                throw new Error("Wrong level");
         }
     }
 
     static deserialize(payload: string): Action
     {
         let action_type: string;
-        let unit_type: string;
         let move_literal: string;
-        [action_type, unit_type, move_literal] = JSON.parse(payload);
-        return new Action(Move.deserialize(move_literal), parseInt(action_type), g.unit_type_by_name.get(unit_type)!);
+        let unit: string;
+        [action_type, move_literal, unit] = JSON.parse(payload);
+        return new Action(
+            Move.deserialize(move_literal), 
+            parseInt(action_type), 
+            UnitConstructor.deserialize(unit));
     }
 }
 

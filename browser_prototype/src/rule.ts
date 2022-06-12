@@ -140,23 +140,23 @@ class Rule
             let target = board.unit.at(move.to);
             if (target == null)
             {
-                return new Action(move, ActionType.Move, unit.type());
+                return new Action(move, ActionType.Move, unit);
             }
 
             if (unit.owner == target.owner)
             {
-                return new Action(move, ActionType.Defend, unit.type());
+                return new Action(move, ActionType.Defend, unit);
             }
             else
             {
-                return new Action(move, ActionType.Attack, unit.type());
+                return new Action(move, ActionType.Attack, unit);
             }
         }
         else
         {
             if (unit.potential().has(skill))
             {
-                return new Action(move, ActionType.Upgrade, unit.type());
+                return new Action(move, ActionType.Upgrade, unit);
             }
             else
             {
@@ -386,21 +386,21 @@ class Rule
 
             let surviver = u1.duel(u2);
 
-            let ceased = [];
+            let fallen = [];
             if (surviver == null)
             {
                 player_actions[Player.P1].extract((a): a is Action => a == a1);
                 player_actions[Player.P2].extract((a): a is Action => a == a2);
-                ceased.push(a1, a2);
+                fallen.push(a1, a2);
             }
             else
             {
                 let action = clash[opponent(surviver.owner)];
                 player_actions[surviver.owner].extract((a): a is Action => a == action);
-                ceased.push(action);
+                fallen.push(action);
             }
 
-            for (let action of ceased)
+            for (let action of fallen)
             {
                 let martyr = board.remove(action.move.from)!;
                 martyrs.push(new Martyr(new Quester(martyr, action.move.from)));
@@ -410,17 +410,21 @@ class Rule
         return martyrs;
     }
 
-    static process_battle_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>): Martyr[]
+    static process_battle_phase(board: Board<Unit>, 
+                                player_actions: Players<PlayerAction>, 
+                                force_board: FullBoard<Force>): Martyr[]
     {
         for (let player_action of Player.values(player_actions))
         {
-            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Attack || a.type == ActionType.Move))
+            for (let action of player_action.extract((a): a is Action => 
+                    a.type == ActionType.Attack || a.type == ActionType.Move))
             {
                 let target = action.move.to;
                 if (force_board.at(target).arriver[player_action.player] == null)
                 {
                     let unit = board.remove(action.move.from)!;
-                    force_board.at(target).arriver[player_action.player] = new Quester(unit, action.move.from);
+                    force_board.at(target).arriver[player_action.player] = 
+                        new Quester(unit, action.move.from);
                 }
                 else
                 {
@@ -434,40 +438,40 @@ class Rule
 
         function settle_battle(force: Force, where: Coordinate)
         {
-            let q1 = force.arriver[Player.P1];
-            let q2 = force.arriver[Player.P2];
+            let quester_1 = force.arriver[Player.P1];
+            let quester_2 = force.arriver[Player.P2];
 
-            if (q1 == null && q2 == null)
+            if (quester_1 == null && quester_2 == null)
             {
                 return;
             }
 
-            let r1 = force.reinforcers[Player.P1].length;
-            let r2 = force.reinforcers[Player.P2].length;
+            let helper_1 = force.reinforcers[Player.P1].length;
+            let helper_2 = force.reinforcers[Player.P2].length;
 
-            let conqueror: Unit | null;
+            let survived: Unit | null;
 
-            if (q1 && q2)
+            if (quester_1 && quester_2)
             {
-                if (r1 == r2)
+                if (helper_1 == helper_2)
                 {
-                    conqueror = q1.unit.duel(q2.unit);
-                    if (conqueror)
+                    survived = quester_1.unit.duel(quester_2.unit);
+                    if (survived)
                     {
-                        let fallen = force.arriver[opponent(conqueror.owner)]!;
+                        let fallen = force.arriver[opponent(survived.owner)]!;
                         martyrs.push(new Martyr(fallen));
                     }
                     else
                     {
                         martyrs.push(
-                            new Martyr(q1),
-                            new Martyr(q2));
+                            new Martyr(quester_1),
+                            new Martyr(quester_2));
                     }
                 }
                 else
                 {
-                    conqueror = r1 > r2 ? q1.unit : q2.unit;
-                    let defeated = r1 > r2 ? q2 : q1;
+                    survived = helper_1 > helper_2 ? quester_1.unit : quester_2.unit;
+                    let defeated = helper_1 > helper_2 ? quester_2 : quester_1;
                     martyrs.push(new Martyr(defeated));
                 }
             }
@@ -476,22 +480,22 @@ class Rule
                 let invader: Quester;
                 let accomplice: number;
                 let resistance: number;
-                if (q1)
+                if (quester_1)
                 {
-                    invader = q1;
-                    accomplice = r1;
-                    resistance = r2;
+                    invader = quester_1;
+                    accomplice = helper_1;
+                    resistance = helper_2;
                 }
                 else
                 {
-                    invader = q2!;
-                    accomplice = r2;
-                    resistance = r1;
+                    invader = quester_2!;
+                    accomplice = helper_2;
+                    resistance = helper_1;
                 }
 
                 if (accomplice >= resistance)
                 {
-                    conqueror = invader.unit;
+                    survived = invader.unit;
                     let resident = board.at(where);
                     if (resident)
                     {
@@ -500,14 +504,14 @@ class Rule
                 }
                 else
                 {
-                    conqueror = null;
+                    survived = null;
                     martyrs.push(new Martyr(invader));
                 }
             }
 
-            if (conqueror)
+            if (survived)
             {
-                board.put(where, conqueror);
+                board.put(where, survived);
             }
         }
 
