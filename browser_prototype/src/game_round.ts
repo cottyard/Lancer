@@ -123,8 +123,6 @@ class GameRound implements ISerializable
         let action = Rule.validate_player_move(this.board, move);
         if (action.cost() > this.supplies[action.player])
         {
-            console.log(action.player);
-            console.log(action.cost(), ' > ', this.supplies[action.player])
             throw new InsufficientSupply();
         }
         return action;

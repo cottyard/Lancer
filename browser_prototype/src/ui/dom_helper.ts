@@ -1,3 +1,8 @@
+interface IComponent
+{
+    render(): void;
+}
+
 type Style =  {[key: string]: string | number};
 
 class DomHelper

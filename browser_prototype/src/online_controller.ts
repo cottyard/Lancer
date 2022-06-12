@@ -72,27 +72,6 @@
 //             this.render_ctrl.freeze_selection();
 //         }
 
-//         if (this._status != value)
-//         {
-//             if (value == OnlineGameStatus.WaitForOpponent)
-//             {
-//                 if (this.status != OnlineGameStatus.Submitting)
-//                 {
-//                     return;
-//                 }
-//             }
-
-//             this._status = value;
-//             this.render_ctrl.refresh();
-//         }
-//     }
-
-//     get status(): OnlineGameStatus
-//     {
-//         return this._status;
-//     }
-
-
 
 
 //     start_count_down()
