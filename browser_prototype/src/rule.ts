@@ -145,7 +145,14 @@ class Rule
 
             if (unit.owner == target.owner)
             {
-                return new Action(move, ActionType.Defend, unit);
+                if (target.type() != King)
+                {
+                    return new Action(move, ActionType.Defend, unit);
+                }
+                else
+                {
+                    throw new InvalidMove("cannot defend King");
+                }
             }
             else
             {

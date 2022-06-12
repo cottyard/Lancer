@@ -90,8 +90,8 @@ class AI
             cost = stage.cost(round.board);
         }
 
-        console.log('round ', round.round_count)
-        console.log('cost ', cost, ' supply ', supply)
+        // console.log('round ', round.round_count)
+        // console.log('cost ', cost, ' supply ', supply)
 
         return stage.move;
     }
