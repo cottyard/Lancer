@@ -15,29 +15,29 @@ class ResourceStatus implements ISerializable
     static readonly full: number = 6;
 
     constructor(public player: Player,
-                public progress: number = ResourceStatus.full)
+                public captured: boolean,
+                public progress: number = -1)
     {
-    }
-
-    captured(): boolean
-    {
-        return this.progress == ResourceStatus.full;
+        if (this.progress == -1)
+        {
+            this.progress = captured ? ResourceStatus.full : 0;
+        }
     }
 
     neutral(): boolean
     {
-        return this.progress == 0;
+        return !this.captured && this.progress == 0;
     }
 
     serialize(): string
     {
-        return JSON.stringify([this.player, this.progress]);
+        return JSON.stringify([this.player, this.progress, this.captured]);
     }
 
     static deserialize(payload: string): ResourceStatus
     {
-        let [player, progress] = JSON.parse(payload);
-        return new ResourceStatus(player, progress);
+        let [player, progress, captured] = JSON.parse(payload);
+        return new ResourceStatus(player, progress, captured);
     }
 }
 
@@ -123,7 +123,7 @@ class GameRound implements ISerializable
         let action = Rule.validate_player_move(this.board, move);
         if (action.cost() > this.supplies[action.player])
         {
-            console.log(move.player);
+            console.log(action.player);
             console.log(action.cost(), ' > ', this.supplies[action.player])
             throw new InsufficientSupply();
         }
@@ -141,7 +141,7 @@ class GameRound implements ISerializable
         for (let i = 0; i < this.resources.length; ++i)
         {
             let status = this.resources[i];
-            if (status.captured() && status.player == player)
+            if (status.captured && status.player == player)
             {
                 resource_income += Rule.resource_grid_supplies[i];
             }
@@ -177,15 +177,15 @@ class GameRound implements ISerializable
         this.set_out(board);
         
         let resources: ResourceStatus[] = [
-            new ResourceStatus(Player.P2), 
-            new ResourceStatus(Player.P2),
-            new ResourceStatus(Player.P2),
-            new ResourceStatus(Player.P2, 0),
-            new ResourceStatus(Player.P2, 0),
-            new ResourceStatus(Player.P2, 0),
-            new ResourceStatus(Player.P1), 
-            new ResourceStatus(Player.P1),
-            new ResourceStatus(Player.P1),
+            new ResourceStatus(Player.P2, true), 
+            new ResourceStatus(Player.P2, true),
+            new ResourceStatus(Player.P2, true),
+            new ResourceStatus(Player.P2, false),
+            new ResourceStatus(Player.P2, false),
+            new ResourceStatus(Player.P2, false),
+            new ResourceStatus(Player.P1, true), 
+            new ResourceStatus(Player.P1, true),
+            new ResourceStatus(Player.P1, true),
         ]; 
         
         return new GameRound(

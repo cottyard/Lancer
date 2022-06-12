@@ -98,6 +98,7 @@ class ButtonBar implements IButtonBar
             }
             else
             {
+                this.submit_button.disabled = this.view_last_round;
                 this.submit_button.innerText = "Submit Move";
             }
 
@@ -230,7 +231,7 @@ class ButtonBar implements IButtonBar
                     this.view_last_round_handle = setTimeout(() =>
                     {
                         this.board_display.show_last();
-                    }, 200);
+                    }, 150);
                 }
             };
             this.last_round_button.onmouseleave = () =>

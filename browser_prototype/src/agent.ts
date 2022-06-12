@@ -16,7 +16,7 @@ abstract class ServerAgent implements IServerAgent
 
 class LocalAgent extends ServerAgent
 {
-    submit_move(move: PlayerMove): void 
+    submit_move(move: PlayerMove): void
     {
         let moves = Players.create((p) => new PlayerMove(p));
         moves[move.player] = move;
@@ -55,8 +55,8 @@ class LocalAgent extends ServerAgent
                 throw new Error("Unknown status");
         }
 
+        g.event_box.emit("show last round", null);
         g.event_box.emit("refresh ui", null);
-        g.event_box.emit("refresh board", null);
     }
 
     new_game(): void 

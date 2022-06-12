@@ -47,13 +47,7 @@
 
 //         this.render_ctrl.refresh_all();
 
-//         // this.query_handle = setInterval(() =>
-//         // {
-//         //     if (this.session_id)
-//         //     {
-//         //         query_match(this.session_id, this.query_session.bind(this));
-//         //     }
-//         // }, 2000);
+
 //     }
 
 //     submit_move(): void
@@ -65,14 +59,7 @@
 
 //     set status(value: OnlineGameStatus)
 //     {
-//         if ([
-//             OnlineGameStatus.WaitForPlayer,
-//             OnlineGameStatus.Victorious,
-//             OnlineGameStatus.Defeated,
-//             OnlineGameStatus.Tied].indexOf(value) > -1)
-//         {
-//             this.render_ctrl.components.button_bar.view_last_round = this.context.present.round_count > 0;
-//         }
+
 
 //         if (value == OnlineGameStatus.WaitForPlayer)
 //         {
@@ -148,65 +135,4 @@
 //         }
 //     }
 
-    // update_game()
-    // {
-    //     if (!this.latest_game_id)
-    //     {
-    //         return;
-    //     }
-
-    //     if (this.latest_game_id == this.current_game_id)
-    //     {
-    //         return;
-    //     }
-
-    //     for (let listener of this.loading_listeners)
-    //     {
-    //         listener();
-    //     }
-
-    //     fetch_game(this.latest_game_id, (serialized_game) =>
-    //     {
-    //         let [game_payload, game_id, game_status, player_name_map, player_time_map] = JSON.parse(serialized_game);
-    //         console.log('loading game', game_id);
-
-    //         if (this.current_game_id == game_id)
-    //         {
-    //             return;
-    //         }
-
-    //         this.current_game_id = game_id;
-
-    //         let name_valid = false;
-    //         for (let p in player_name_map)
-    //         {
-    //             let player = deserialize_player(p);
-    //             let name = player_name_map[p];
-    //             this.player_names[player] = name;
-
-    //             if (this.current_player_name == name)
-    //             {
-    //                 this.player = player;
-    //                 name_valid = true;
-    //             }
-    //         }
-
-    //         if (!name_valid)
-    //         {
-    //             throw new Error("player name not found in game");
-    //         }
-
-    //         for (let p in player_time_map)
-    //         {
-    //             let player = deserialize_player(p);
-    //             let consumed = player_time_map[p];
-    //             this._consumed_milliseconds[player] = consumed;
-    //         }
-
-    //         this._status = game_status;
-    //         let game = GameRound.deserialize(game_payload);
-    //         this.next(game);
-    //     });
-    // }
-
-
+  

@@ -14,6 +14,7 @@ class Rule
     static readonly resource_capturing_speed = 2;
     static readonly resource_decapturing_speed = 3;
     static readonly resource_neutralizing_speed = 1;
+    static readonly resource_recovering_speed = 1;
 
     static updated_resource_status(status: ResourceStatus, unit: Unit | null): ResourceStatus
     {
@@ -21,21 +22,54 @@ class Rule
         {
             if (status.neutral())
             {
-                return new ResourceStatus(unit.owner, Rule.resource_capturing_speed);
+                return new ResourceStatus(unit.owner, false, Rule.resource_capturing_speed);
             }
-            else
+            else if (status.captured)
             {
                 if (status.player == unit.owner)
                 {
                     return new ResourceStatus(
                         status.player, 
+                        true,
                         min(status.progress + Rule.resource_capturing_speed, 
                             ResourceStatus.full));
                 }
                 else
                 {
+                    if (status.progress - Rule.resource_decapturing_speed <= 0)
+                    {
+                        return new ResourceStatus(status.player, false);
+                    }
+                    else
+                    {
+                        return new ResourceStatus(
+                            status.player, 
+                            true,
+                            status.progress - Rule.resource_decapturing_speed);
+                    }
+                }
+            }
+            else
+            {
+                if (status.player == unit.owner)
+                {
+                    if (status.progress + Rule.resource_capturing_speed >= ResourceStatus.full)
+                    {
+                        return new ResourceStatus(status.player, true);
+                    }
+                    else
+                    {
+                        return new ResourceStatus(
+                            status.player,
+                            false,
+                            status.progress + Rule.resource_capturing_speed);
+                    }
+                }
+                else
+                {
                     return new ResourceStatus(
                         status.player, 
+                        false,
                         max(status.progress - Rule.resource_decapturing_speed, 
                             0));
                 }
@@ -43,14 +77,19 @@ class Rule
         }
         else
         {
-            if (status.captured())
+            if (status.captured)
             {
-                return status;
+                return new ResourceStatus(
+                    status.player,
+                    true,
+                    min(status.progress + Rule.resource_recovering_speed, 
+                        ResourceStatus.full));
             }
             else
             {
                 return new ResourceStatus(
-                    status.player, 
+                    status.player,
+                    false,
                     max(status.progress - Rule.resource_neutralizing_speed, 0));
             }
         }

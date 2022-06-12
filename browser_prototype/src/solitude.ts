@@ -40,5 +40,10 @@ function ui_solitude()
         board_display.show_present();
     });
 
+    g.event_box.subscribe("show last round", _ => {
+        board_display.show_last();
+        button_bar.view_last_round = true;
+    });
+
     g.event_box.emit("refresh ui", null);
 }

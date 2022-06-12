@@ -23,7 +23,7 @@ class BoardDisplay implements IBoardDisplay
     show_threats: boolean = true;
     _selection_frozen: boolean = false;
 
-    private _show_last_round: boolean = false;
+    show_last_round: boolean = false;
     displaying_board: GameBoard;
     displaying_actions: Players<PlayerAction>;
 
@@ -85,11 +85,6 @@ class BoardDisplay implements IBoardDisplay
         this.canvas.paint_grid_indicator(coord);
     }
 
-    set show_last_round(value: boolean)
-    {
-        this._show_last_round = value && this.game.context.last != null;
-    }
-
     update_displaying_items()
     {
         if (this.show_last_round)
@@ -106,11 +101,6 @@ class BoardDisplay implements IBoardDisplay
             this.displaying_board = this.game.context.present.board;
             this.displaying_resources = this.game.context.present.resources;
         }
-    }
-
-    get show_last_round()
-    {
-        return this._show_last_round;
     }
 
     show_last()

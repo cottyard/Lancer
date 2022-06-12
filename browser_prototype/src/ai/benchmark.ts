@@ -80,21 +80,18 @@ class AI
             }
             let random_move = all[Math.floor(Math.random() * all.length)];
 
-            let res = stage.prepare_move(round.board, random_move);
-            if (res == "overridden")
-            {
-                break;
-            }
+            stage.prepare_move(round.board, random_move);
             cost = stage.cost(round.board);
         }
-
+        
         while (cost > supply)
         {
-            console.log('round ', round.round_count)
-            console.log('cost ', cost, ' supply ', supply)
             stage.pop_move();
             cost = stage.cost(round.board);
         }
+
+        console.log('round ', round.round_count)
+        console.log('cost ', cost, ' supply ', supply)
 
         return stage.move;
     }
