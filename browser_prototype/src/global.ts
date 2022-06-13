@@ -1,4 +1,5 @@
-import { ActionType, Archer, Barbarian, King, Knight, Lancer, Player, Rider, SkillSet, Soldier, Spearman, Swordsman, UnitConstructor, Warrior } from "./entity";
+import { EventBox } from "./event";
+import { IComponent } from "./ui/dom_helper";
 
 class Module
 {
@@ -12,12 +13,7 @@ class Module
     readonly grid_count: number = 9;
     readonly skill_range: number = 2;
     readonly skillset_size: number = this.skill_range * 2 + 1;
-    readonly layout_1st: UnitConstructor[] = [Archer, Rider, Archer, Rider, King, Rider, Archer, Rider, Archer];
-    readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
-    readonly all_unit_types: UnitConstructor[] = [
-        King, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Spearman, Swordsman, Warrior
-    ];
-    unit_type_by_name = new Map<string, UnitConstructor>();
+    
     readonly const = {
         'STYLE_GREY': "rgb(228, 228, 228)",
         'STYLE_BLACKISH': "#555",
@@ -42,156 +38,7 @@ class Module
         'grid_size': this.cvs_size / 9,
         'piece_font': "40px Courier New",
         'server_url': window.location.href,
-        'player_color_map': {
-            [Player.P1]: this.const.STYLE_RED_LIGHT,
-            [Player.P2]: this.const.STYLE_BLUE_LIGHT
-        }
     };
-    
-    action_style = new Map<ActionType, string>();
-
-    readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
-    {
-        'King':
-        `-----
-        --x--
-        -x-x-
-        --x--
-        -----`,
-
-        'Rider':
-        `-x-x-
-        x---x
-        -----
-        x---x
-        -x-x-`,
-
-        'Lancer':
-        `-xxx-
-        x---x
-        x---x
-        x---x
-        -xxx-`,
-
-        'Knight':
-        `-x-x-
-        xx-xx
-        -----
-        xx-xx
-        -x-x-`,
-        
-        'Soldier':
-        `-----
-        --x--
-        -x-x-
-        --x--
-        -----`,
-        
-        'Swordsman':
-        `-----
-        -xxx-
-        -x-x-
-        -xxx-
-        -----`,
-        
-        'Spearman':
-        `--x--
-        --x--
-        xx-xx
-        --x--
-        --x--`,
-        
-        'Archer':
-        `--x--
-        -----
-        x---x
-        -----
-        --x--`,
-        
-        'Barbarian':
-        `-----
-        -x-x-
-        -----
-        -x-x-
-        -----`,
-        
-        'Warrior':
-        `--x--
-        -x-x-
-        x---x
-        -x-x-
-        --x--`,
-    };
-
-    readonly inborn_skills_literal: { [unit_name: string]: string | undefined; } =
-    {
-        'King':
-        `-----
-        --x--
-        -x-x-
-        --x--
-        -----`,
-        
-        'Rider':
-        `-x-x-
-        -----
-        -----
-        -----
-        -----`,
-        
-        'Soldier':
-        `-----
-        --x--
-        -----
-        --x--
-        -----`,
-        
-        'Archer':
-        `--x--
-        -----
-        -----
-        -----
-        --x--`,
-        
-        'Barbarian':
-        `-----
-        -x-x-
-        -----
-        -----
-        -----`
-    };
-
-    readonly perfect_skills: SkillSet[] = [];
-    readonly inborn_skills: SkillSet[] = [];
-
-    initialize()
-    {
-        this.all_unit_types.forEach((type: UnitConstructor) =>
-        {
-            this.unit_type_by_name.set(type.name, type);
-
-            let literal = this.perfect_skills_literal[type.name];
-            if (!literal)
-            {
-                throw new Error(`${ type.name } not found`);
-            }
-            this.perfect_skills[type.id] = SkillSet.from_literal(literal);
-
-            let inborn = this.inborn_skills_literal[type.name];
-
-            if (inborn)
-            {
-                this.inborn_skills[type.id] = SkillSet.from_literal(inborn);
-            }
-        });
-
-        this.action_style = new Map<ActionType, string>([
-            [ActionType.Attack, g.const.STYLE_RED_LIGHT],
-            [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-            [ActionType.Move, g.const.STYLE_BLACK],
-            [ActionType.Upgrade, g.const.STYLE_CYAN],
-        ]);
-    }
 }
 
 export let g: Module = new Module();

@@ -1,6 +1,7 @@
 import { Board } from "../board";
-import { Coordinate, Player, Unit } from "../entity";
+import { Coordinate, Players, Unit } from "../entity";
 import { g } from "../global";
+import { using } from "../language/language";
 import { Heat } from "../rule";
 import { DisplayAction, DisplayActionType, DisplayPlayerAction } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
@@ -174,7 +175,7 @@ export class GameCanvas
             let offset = 5;
             let size = 3;
 
-            for (let player of Player.both())
+            for (let player of Players.both())
             {
                 let h = heat.friendly(player);
                 let repeat = h;
@@ -190,7 +191,7 @@ export class GameCanvas
                 {
                     renderer.circle(
                         new Position(offset, size * 2.5 * i),
-                        size, 1, g.settings.player_color_map[player]);
+                        size, 1, Players.color[player]);
                 }
                 offset += 8;
             }

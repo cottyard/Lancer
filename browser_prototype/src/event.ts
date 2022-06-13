@@ -1,4 +1,4 @@
-class EventBox
+export class EventBox
 {
     private subscribers: {
         [event: string]: ((data: any) => any)[]

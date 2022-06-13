@@ -1,7 +1,7 @@
-import { Player } from "../entity";
+import { Player, Players } from "../entity";
 import { IGameUiFacade } from "../game";
-import { g } from "../global";
 import { IBoardDisplay } from "./board_display";
+import { IComponent, DomHelper } from "./dom_helper";
 
 export class StatusBar implements IComponent
 {
@@ -23,7 +23,7 @@ export class StatusBar implements IComponent
             height: "40px"
         });
 
-        for (let player of Player.both())
+        for (let player of Players.both())
         {
             this.dom_element.appendChild(this.player_status(
                 player,
@@ -86,8 +86,9 @@ export class StatusBar implements IComponent
             fontWeight: is_me ? "bold" : "normal",
         });
         div.appendChild(DomHelper.create_text(name, {
-            color: g.settings.player_color_map[player]
+            color: Players.color[player]
         }));
+        //🍞
         div.appendChild(DomHelper.create_text("🍞", {
         }));
 

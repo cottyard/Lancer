@@ -11,7 +11,6 @@ import { StatusBar } from "./ui/status_bar";
 export function ui_solitude()
 {
     clear_intervals();
-    g.initialize();
 
     let context = new GameContext(
         Player.P1,
@@ -57,3 +56,5 @@ export function ui_solitude()
 
     g.event_box.emit("refresh ui", null);
 }
+
+window.onload = ui_solitude;

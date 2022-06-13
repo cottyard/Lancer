@@ -1,5 +1,6 @@
 import { IGameUiFacade, GameContextStatus } from "../game";
 import { IBoardDisplay } from './board_display'
+import { DomHelper, IComponent } from "./dom_helper";
 
 interface IButtonBar extends IComponent
 {

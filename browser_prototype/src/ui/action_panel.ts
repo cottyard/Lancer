@@ -1,10 +1,12 @@
 import { Move, Unit } from '../entity';
 import { IGameUiFacade } from '../game'
 import { g } from '../global';
+import { using } from '../language/language';
 import { DisplayAction, DisplayActionType, 
     DisplayPlayerAction, IBoardDisplay } from './board_display'
 import { Position } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
+import { DomHelper, IComponent } from './dom_helper';
 import { Renderer } from './renderer';
 
 export class ActionPanel implements IComponent

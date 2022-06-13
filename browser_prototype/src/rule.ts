@@ -1,11 +1,14 @@
 import { Board, FullBoard } from "./board";
-import { Action, ActionType, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Skill, Unit, UnitConstructor } from "./entity";
+import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
 import { ResourceStatus } from "./game_round";
+import { min, max } from "./language/language";
 
 class InvalidMove extends Error { }
 
 export class Rule
 {
+    static readonly layout_1st: UnitConstructor[] = [Archer, Rider, Archer, Rider, King, Rider, Archer, Rider, Archer];
+    static readonly layout_2nd: UnitConstructor[] = [Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian, Soldier, Barbarian];
     static readonly resource_grids: Coordinate[] = [
         new Coordinate(1, 1), new Coordinate(4, 1), new Coordinate(7, 1),
         new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4),
@@ -319,7 +322,7 @@ export class Rule
 
     static process_upgrade_phase(board: Board<Unit>, player_actions: Players<PlayerAction>)
     {
-        for (let player_action of Player.values(player_actions))
+        for (let player_action of Players.values(player_actions))
         {
             for (let action of player_action.extract((a): a is Action => a.type == ActionType.Upgrade))
             {
@@ -347,7 +350,7 @@ export class Rule
 
     static process_defend_phase(board: Board<Unit>, player_actions: Players<PlayerAction>, force_board: FullBoard<Force>)
     {
-        for (let player_action of Player.values(player_actions))
+        for (let player_action of Players.values(player_actions))
         {
             for (let action of player_action.extract((a): a is Action => a.type == ActionType.Defend))
             {
@@ -367,7 +370,7 @@ export class Rule
         };
         let clashes: ClashPair[] = [];
 
-        for (let player_action of Player.values(player_actions))
+        for (let player_action of Players.values(player_actions))
         {
             for (let action of player_action.actions)
             {
@@ -425,7 +428,7 @@ export class Rule
                                 player_actions: Players<PlayerAction>, 
                                 force_board: FullBoard<Force>): Martyr[]
     {
-        for (let player_action of Player.values(player_actions))
+        for (let player_action of Players.values(player_actions))
         {
             for (let action of player_action.extract((a): a is Action => 
                     a.type == ActionType.Attack || a.type == ActionType.Move))

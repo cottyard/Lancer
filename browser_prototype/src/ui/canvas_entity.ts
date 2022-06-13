@@ -1,5 +1,6 @@
-import { Unit, UnitConstructor, Rider, Soldier, Archer, Barbarian, King, Warrior, Spearman, Swordsman, Lancer, Knight, Skill } from "../entity";
+import { Unit, UnitConstructor, Rider, Soldier, Archer, Barbarian, King, Warrior, Spearman, Swordsman, Lancer, Knight, Skill, Players } from "../entity";
 import { g } from "../global";
+import { HashMap } from "../language/language";
 import { Angle, Direction, HaloDirection, Position } from "./canvas";
 import { Renderer } from "./renderer";
 
@@ -40,7 +41,7 @@ export abstract class CanvasUnit
 
     constructor(protected unit: Unit)
     {
-        this.color = g.settings.player_color_map[this.unit.owner];
+        this.color = Players.color[this.unit.owner];
     }
 
     paint(renderer: Renderer): void

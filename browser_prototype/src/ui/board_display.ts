@@ -5,6 +5,8 @@ import { CanvasUnitFactory } from './canvas_entity';
 import { GameBoard, Rule } from '../rule';
 import { Action, ActionType, Coordinate, Move, Player, PlayerAction, Players } from '../entity';
 import { g } from '../global';
+import { HashSet } from '../language/language';
+import { IComponent } from './dom_helper';
 
 export interface IBoardDisplay extends IComponent
 {
@@ -151,7 +153,7 @@ export class BoardDisplay implements IBoardDisplay
         }
 
         this.update_displaying_items();
-        for (let player_action of Array.from(Player.values(this.displaying_actions)))
+        for (let player_action of Array.from(Players.values(this.displaying_actions)))
         {
             this.canvas.paint_actions(
                 new DisplayPlayerAction(player_action), this.displaying_board.unit);

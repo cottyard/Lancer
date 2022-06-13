@@ -141,7 +141,7 @@ export class OnlineAgent extends ServerAgent
 
         let updated = false;
 
-        for (let player of Player.both())
+        for (let player of Players.both())
         {
             let current_moved = this.context.players_moved[player];
             let moved = status['player_moved'][player];

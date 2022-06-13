@@ -1,4 +1,5 @@
 ﻿import { g } from "../global";
+import { IDisposable } from "../language/language";
 import { Angle, Direction, Position, PositionDelta } from "./canvas";
 
 export class Renderer implements IDisposable

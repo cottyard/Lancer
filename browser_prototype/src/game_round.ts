@@ -1,6 +1,7 @@
 import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
-import { Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Soldier, Unit, UnitConstructor } from "./entity";
+import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Soldier, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
+import { ISerializable } from "./language/language";
 import { GameBoard, Martyr, Quester, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }
@@ -72,7 +73,7 @@ export class GameRound implements ISerializable
             [Player.P2]: 0
         };
 
-        for (let player of Player.both())
+        for (let player of Players.both())
         {
             supplies[player] = this.supplies[player] 
                              + this.supply_income(player)
@@ -155,10 +156,10 @@ export class GameRound implements ISerializable
     static set_out(board: Board<Unit>): void
     {
         let board_layout: [number, UnitConstructor[], Player][] = [
-            [0, g.layout_1st, Player.P2],
-            [1, g.layout_2nd, Player.P2],
-            [g.board_size_y - 1, g.layout_1st, Player.P1],
-            [g.board_size_y - 2, g.layout_2nd, Player.P1]
+            [0, Rule.layout_1st, Player.P2],
+            [1, Rule.layout_2nd, Player.P2],
+            [g.board_size_y - 1, Rule.layout_1st, Player.P1],
+            [g.board_size_y - 2, Rule.layout_2nd, Player.P1]
         ];
 
         let row, setting, player;
@@ -204,7 +205,7 @@ export class GameRound implements ISerializable
     {
         let board_ctor = create_serializable_board_ctor<Unit, UnitConstructor>(UnitConstructor);
         let board = new board_ctor();
-        let random_unit = g.all_unit_types[Math.floor(Math.random() * g.all_unit_types.length)];
+        let random_unit = all_unit_types[Math.floor(Math.random() * all_unit_types.length)];
         let random_player = Math.floor(Math.random() * 2) + 1;
         board.put(new Coordinate(4, 4), Unit.spawn_perfect(random_player, random_unit));
         return new GameRound(

@@ -1,4 +1,5 @@
 import { g } from "./global";
+import { IHashable, ISerializable, ICopyable, extract, IDeserializable } from "./language/language";
 
 class InvalidParameter extends Error { }
 
@@ -240,8 +241,19 @@ export enum Player
     P2 = 2
 }
 
-export module Player
+export type Players<T> =
+    {
+        [Player.P1]: T,
+        [Player.P2]: T,
+    };
+
+export module Players
 {
+    export const color = {
+        [Player.P1]: g.const.STYLE_RED_LIGHT,
+        [Player.P2]: g.const.STYLE_BLUE_LIGHT
+    }
+    
     export function* both()
     {
         yield Player.P1;
@@ -253,16 +265,7 @@ export module Player
         yield players[Player.P1];
         yield players[Player.P2];
     }
-}
 
-export type Players<T> =
-    {
-        [Player.P1]: T,
-        [Player.P2]: T,
-    };
-
-export module Players
-{
     export function create<T>(ctor: (p: Player) => T): Players<T>
     {
         return {
@@ -460,6 +463,13 @@ export enum ActionType
     Attack = 4
 }
 
+export const action_style = new Map<ActionType, string>([
+    [ActionType.Attack, g.const.STYLE_RED_LIGHT],
+    [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+    [ActionType.Move, g.const.STYLE_BLACK],
+    [ActionType.Upgrade, g.const.STYLE_CYAN],
+]);
+
 export class PlayerAction
 {
     constructor(public player: Player, public actions: Action[] = [])
@@ -502,7 +512,7 @@ export abstract class Unit implements ISerializable, ICopyable<Unit>
 
     constructor(public owner: Player, current: SkillSet | null = null)
     {
-        this.perfect = g.perfect_skills[this.type().id];
+        this.perfect = perfect_skills[this.type().id];
         this.current = current == null ? new SkillSet() : current;
     }
 
@@ -520,7 +530,7 @@ export abstract class Unit implements ISerializable, ICopyable<Unit>
 
     endow_inborn(): void
     {
-        let inborn = g.inborn_skills[this.type().id];
+        let inborn = inborn_skills[this.type().id];
         if (!inborn)
         {
             return;
@@ -613,7 +623,7 @@ export abstract class Unit implements ISerializable, ICopyable<Unit>
     {
         for (let c of ctors)
         {
-            if (g.perfect_skills[c.id].has(skill))
+            if (perfect_skills[c.id].has(skill))
             {
                 return c;
             }
@@ -640,7 +650,7 @@ export const UnitConstructor: UnitConstructor = class _ extends Unit
         let display: string, owner: string, current: string;
         [display, owner, current] = <[string, string, string]> JSON.parse(payload);
 
-        let type = g.unit_type_by_name.get(display);
+        let type = unit_type_by_name.get(display);
         if (!type)
         {
             throw new Error('Unit.deserialize: no constructor');
@@ -686,7 +696,7 @@ abstract class BasicUnit extends UnitConstructor
         {
             for (let future_type of this.promotion_options)
             {
-                potentials = potentials.union(g.perfect_skills[future_type.id]);
+                potentials = potentials.union(perfect_skills[future_type.id]);
             }
         }
 
@@ -775,3 +785,142 @@ export class King extends UnitConstructor
     static readonly id = 10;
     readonly level = 1;
 }
+
+export const all_unit_types: UnitConstructor[] = [
+    King, Rider, Soldier, Archer, Barbarian, Lancer, Knight, Spearman, Swordsman, Warrior
+];
+
+const unit_type_by_name = new Map<string, UnitConstructor>();
+
+const perfect_skills: SkillSet[] = [];
+const inborn_skills: SkillSet[] = [];
+
+const perfect_skills_literal: { [unit_name: string]: string | undefined; } =
+{
+    'King':
+    `-----
+    --x--
+    -x-x-
+    --x--
+    -----`,
+
+    'Rider':
+    `-x-x-
+    x---x
+    -----
+    x---x
+    -x-x-`,
+
+    'Lancer':
+    `-xxx-
+    x---x
+    x---x
+    x---x
+    -xxx-`,
+
+    'Knight':
+    `-x-x-
+    xx-xx
+    -----
+    xx-xx
+    -x-x-`,
+    
+    'Soldier':
+    `-----
+    --x--
+    -x-x-
+    --x--
+    -----`,
+    
+    'Swordsman':
+    `-----
+    -xxx-
+    -x-x-
+    -xxx-
+    -----`,
+    
+    'Spearman':
+    `--x--
+    --x--
+    xx-xx
+    --x--
+    --x--`,
+    
+    'Archer':
+    `--x--
+    -----
+    x---x
+    -----
+    --x--`,
+    
+    'Barbarian':
+    `-----
+    -x-x-
+    -----
+    -x-x-
+    -----`,
+    
+    'Warrior':
+    `--x--
+    -x-x-
+    x---x
+    -x-x-
+    --x--`,
+};
+
+const inborn_skills_literal: { [unit_name: string]: string | undefined; } =
+{
+    'King':
+    `-----
+    --x--
+    -x-x-
+    --x--
+    -----`,
+    
+    'Rider':
+    `-x-x-
+    -----
+    -----
+    -----
+    -----`,
+    
+    'Soldier':
+    `-----
+    --x--
+    -----
+    --x--
+    -----`,
+    
+    'Archer':
+    `--x--
+    -----
+    -----
+    -----
+    --x--`,
+    
+    'Barbarian':
+    `-----
+    -x-x-
+    -----
+    -----
+    -----`
+};
+
+all_unit_types.forEach((type: UnitConstructor) =>
+{
+    unit_type_by_name.set(type.name, type);
+
+    let literal = perfect_skills_literal[type.name];
+    if (!literal)
+    {
+        throw new Error(`${ type.name } not found`);
+    }
+    perfect_skills[type.id] = SkillSet.from_literal(literal);
+
+    let inborn = inborn_skills_literal[type.name];
+
+    if (inborn)
+    {
+        inborn_skills[type.id] = SkillSet.from_literal(inborn);
+    }
+});

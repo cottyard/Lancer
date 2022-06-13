@@ -1,11 +1,11 @@
-interface IComponent
+export interface IComponent
 {
     render(): void;
 }
 
 type Style =  {[key: string]: string | number};
 
-class DomHelper
+export class DomHelper
 {
     static create_canvas(style: Style = {}): HTMLCanvasElement
     {

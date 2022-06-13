@@ -2,3 +2,4 @@
 .vscode
 *.js.map
 __pycache__
+node_modules

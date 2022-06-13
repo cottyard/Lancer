@@ -1,9 +1,9 @@
-interface IDisposable
+export interface IDisposable
 {
     dispose(): void;
 }
 
-function using<T extends IDisposable>(resource: T, func: (resource: T) => void)
+export function using<T extends IDisposable>(resource: T, func: (resource: T) => void)
 {
     try
     {
@@ -14,12 +14,12 @@ function using<T extends IDisposable>(resource: T, func: (resource: T) => void)
     }
 }
 
-interface IHashable
+export interface IHashable
 {
     hash(): string;
 }
 
-class HashMap<K extends IHashable, V>
+export class HashMap<K extends IHashable, V>
 {
     private map = new Map<string, V>();
     constructor(init: [K, V][] = [])
@@ -42,7 +42,7 @@ class HashMap<K extends IHashable, V>
     }
 }
 
-class HashSet<V extends IHashable>
+export class HashSet<V extends IHashable>
 {
     private map = new Map<string, V>();
     constructor(init: V[] = [])
@@ -69,22 +69,22 @@ class HashSet<V extends IHashable>
     }
 }
 
-interface IDeserializable<T>
+export interface IDeserializable<T>
 {
     deserialize(payload: string): T;
 }
 
-interface ISerializable
+export interface ISerializable
 {
     serialize(): string;
 }
 
-interface ICopyable<T>
+export interface ICopyable<T>
 {
     copy(): T;
 }
 
-function extract<T>(array: T[], filter: (a: T) => a is T): T[]
+export function extract<T>(array: T[], filter: (a: T) => a is T): T[]
 {
     let extracted = array.filter(filter);
     let remaining = array.filter((a) => !filter(a));
@@ -92,12 +92,12 @@ function extract<T>(array: T[], filter: (a: T) => a is T): T[]
     return extracted;
 }
 
-function max(n1: number, n2: number): number
+export function max(n1: number, n2: number): number
 {
     return n1 > n2 ? n1 : n2;
 }
 
-function min(n1: number, n2: number): number
+export function min(n1: number, n2: number): number
 {
     return n1 < n2 ? n1 : n2;
 }
