@@ -1,4 +1,12 @@
-class GameCanvas 
+import { Board } from "../board";
+import { Coordinate, Player, Unit } from "../entity";
+import { g } from "../global";
+import { Heat } from "../rule";
+import { DisplayAction, DisplayActionType, DisplayPlayerAction } from "./board_display";
+import { CanvasUnit } from "./canvas_entity";
+import { Renderer } from "./renderer";
+
+export class GameCanvas
 {
     background: HTMLCanvasElement;
     static: HTMLCanvasElement;
@@ -267,7 +275,7 @@ class GameCanvas
         {
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
-            const color = g.display_action_style.get(a.type)!;
+            const color = DisplayAction.display_action_style.get(a.type)!;
             const skill = a.action.move.which_skill()!;
             const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
@@ -395,7 +403,7 @@ class GameCanvas
     }
 }
 
-class Position
+export class Position
 {
     x: number;
     y: number;
@@ -422,7 +430,7 @@ class Position
     }
 }
 
-class PositionDelta
+export class PositionDelta
 {
     dx: number;
     dy: number;
@@ -439,7 +447,7 @@ class PositionDelta
     }
 }
 
-class Direction
+export class Direction
 {
     constructor(public value: number)
     {
@@ -466,14 +474,14 @@ class Direction
     }
 }
 
-class RadianDirection
+export class RadianDirection
 {
     constructor(public value: number)
     {
     }
 }
 
-class HaloDirection
+export class HaloDirection
 {
     static Up = new Direction(-90);
     static Down = new Direction(90);
@@ -493,7 +501,7 @@ class HaloDirection
     static DownRightRight = new Direction(22.5);
 };
 
-class Angle
+export class Angle
 {
     start: Direction;
     end: Direction;

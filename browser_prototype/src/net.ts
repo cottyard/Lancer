@@ -1,6 +1,9 @@
+import { PlayerMove } from "./entity";
+import { g } from "./global";
+
 type callback = (res: string) => void;
 
-class Net
+export class Net
 {
     static remote_post(url: string, next: callback, data: string | null = null): void
     {

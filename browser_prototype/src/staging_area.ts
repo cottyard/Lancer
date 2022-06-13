@@ -1,4 +1,7 @@
-interface IPlayerMoveStagingArea
+import { PlayerMove, PlayerAction, Move, Player } from "./entity";
+import { GameBoard, Rule } from "./rule";
+
+export interface IPlayerMoveStagingArea
 {
     move: PlayerMove;
     action(board: GameBoard): PlayerAction;
@@ -10,7 +13,7 @@ interface IPlayerMoveStagingArea
     reset(): void;
 }
 
-class PlayerMoveStagingArea implements IPlayerMoveStagingArea
+export class PlayerMoveStagingArea implements IPlayerMoveStagingArea
 {
     move: PlayerMove;
     constructor(player: Player)

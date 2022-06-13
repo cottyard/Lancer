@@ -1,4 +1,13 @@
-class ActionPanel implements IComponent
+import { Move, Unit } from '../entity';
+import { IGameUiFacade } from '../game'
+import { g } from '../global';
+import { DisplayAction, DisplayActionType, 
+    DisplayPlayerAction, IBoardDisplay } from './board_display'
+import { Position } from './canvas';
+import { CanvasUnitFactory } from './canvas_entity';
+import { Renderer } from './renderer';
+
+export class ActionPanel implements IComponent
 {
     dragging: null | {
         action: DisplayAction,
@@ -64,7 +73,7 @@ class ActionPanel implements IComponent
         div.appendChild(DomHelper.create_text(
             this.get_action_type_text(action.type),
             {
-                color: g.display_action_style.get(action.type) || "black",
+                color: DisplayAction.display_action_style.get(action.type) || "black",
                 'font-weight': 'bold',
                 padding: "10px"
             }

@@ -1,10 +1,13 @@
+import { IGameUiFacade, GameContextStatus } from "../game";
+import { IBoardDisplay } from './board_display'
+
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
     update_text(): void;
 }
 
-class ButtonBar implements IButtonBar
+export class ButtonBar implements IButtonBar
 {
     submit_button: HTMLButtonElement | null = null;
     last_round_button: HTMLButtonElement | null = null;

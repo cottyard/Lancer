@@ -1,4 +1,9 @@
-class AI
+import { Player, PlayerMove } from "../entity";
+import { GameRound } from "../game_round";
+import { Rule } from "../rule";
+import { PlayerMoveStagingArea } from "../staging_area";
+
+export class AI
 {
     // static core_benchmark()
     // {

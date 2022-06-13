@@ -1,6 +1,10 @@
+import { Board, FullBoard } from "./board";
+import { Action, ActionType, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Skill, Unit, UnitConstructor } from "./entity";
+import { ResourceStatus } from "./game_round";
+
 class InvalidMove extends Error { }
 
-class Rule
+export class Rule
 {
     static readonly resource_grids: Coordinate[] = [
         new Coordinate(1, 1), new Coordinate(4, 1), new Coordinate(7, 1),
@@ -527,7 +531,7 @@ class Rule
     }
 }
 
-class GameBoard
+export class GameBoard
 {
     heat: FullBoard<Heat>;
     constructor(public unit: Board<Unit>)
@@ -536,7 +540,7 @@ class GameBoard
     }
 }
 
-class Heat
+export class Heat
 {
     map = [0, 0, 0];
 
@@ -562,14 +566,14 @@ class Force
     arriver: (Quester | null)[] = [null, null, null];
 }
 
-class Martyr
+export class Martyr
 {
     constructor(public quester: Quester)
     {
     }
 }
 
-class Quester
+export class Quester
 {
     constructor(public unit: Unit, public from_grid: Coordinate)
     {

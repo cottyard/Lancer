@@ -1,4 +1,14 @@
-function ui_solitude()
+import { LocalAgent } from "./agent";
+import { Player } from "./entity";
+import { GameContext, GameUiFacade } from "./game";
+import { clear_intervals, g } from "./global";
+import { PlayerMoveStagingArea } from "./staging_area";
+import { ActionPanel } from "./ui/action_panel";
+import { BoardDisplay } from "./ui/board_display";
+import { ButtonBar } from "./ui/button_bar";
+import { StatusBar } from "./ui/status_bar";
+
+export function ui_solitude()
 {
     clear_intervals();
     g.initialize();

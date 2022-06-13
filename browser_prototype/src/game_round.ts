@@ -1,8 +1,13 @@
-class InsufficientSupply extends Error { }
+import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
+import { Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Soldier, Unit, UnitConstructor } from "./entity";
+import { g } from "./global";
+import { GameBoard, Martyr, Quester, Rule } from "./rule";
+
+export class InsufficientSupply extends Error { }
 
 const supply_basic_incremental: number = 7;
 
-enum GameStatus
+export enum GameStatus
 {
     Ongoing,
     WonByPlayer1,
@@ -10,7 +15,7 @@ enum GameStatus
     Tied
 }
 
-class ResourceStatus implements ISerializable
+export class ResourceStatus implements ISerializable
 {
     static readonly full: number = 6;
 
@@ -41,7 +46,7 @@ class ResourceStatus implements ISerializable
     }
 }
 
-class GameRound implements ISerializable
+export class GameRound implements ISerializable
 {
     private constructor(
         readonly round_count: number,

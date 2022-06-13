@@ -1,6 +1,8 @@
+import { g } from "./global";
+
 class InvalidParameter extends Error { }
 
-class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
+export class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
 {
     constructor(public x: number, public y: number)
     {
@@ -50,7 +52,7 @@ class Coordinate implements IHashable, ISerializable, ICopyable<Coordinate>
     }
 }
 
-class Skill implements IHashable
+export class Skill implements IHashable
 {
     constructor(public x: number, public y: number)
     {
@@ -82,7 +84,7 @@ class Skill implements IHashable
     }
 }
 
-class SkillSet implements ISerializable, ICopyable<SkillSet>
+export class SkillSet implements ISerializable, ICopyable<SkillSet>
 {
     private map: boolean[];
 
@@ -232,13 +234,13 @@ class SkillSet implements ISerializable, ICopyable<SkillSet>
     }
 }
 
-enum Player
+export enum Player
 {
     P1 = 1,
     P2 = 2
 }
 
-module Player
+export module Player
 {
     export function* both()
     {
@@ -253,13 +255,13 @@ module Player
     }
 }
 
-type Players<T> =
+export type Players<T> =
     {
         [Player.P1]: T,
         [Player.P2]: T,
     };
 
-module Players
+export module Players
 {
     export function create<T>(ctor: (p: Player) => T): Players<T>
     {
@@ -270,22 +272,22 @@ module Players
     }
 }
 
-function opponent(player: Player)
+export function opponent(player: Player)
 {
     return player == Player.P1 ? Player.P2 : Player.P1;
 }
 
-function deserialize_player(payload: string): Player
+export function deserialize_player(payload: string): Player
 {
     return <Player> Player[<keyof typeof Player>('P' + payload)];
 }
 
-function serialize_player(player: Player)
+export function serialize_player(player: Player)
 {
     return JSON.stringify(player);
 }
 
-class Move implements ISerializable, ICopyable<Move>, IHashable
+export class Move implements ISerializable, ICopyable<Move>, IHashable
 {
     constructor(public from: Coordinate, public to: Coordinate)
     {
@@ -331,7 +333,7 @@ class Move implements ISerializable, ICopyable<Move>, IHashable
     }
 }
 
-class PlayerMove implements ISerializable
+export class PlayerMove implements ISerializable
 {
     constructor(public player: Player, public moves: Move[] = [])
     {
@@ -368,7 +370,7 @@ class PlayerMove implements ISerializable
     }
 }
 
-class Action implements ICopyable<Action>
+export class Action implements ICopyable<Action>
 {
     constructor(public move: Move, public type: ActionType, public unit: Unit)
     {
@@ -450,7 +452,7 @@ class Action implements ICopyable<Action>
     }
 }
 
-enum ActionType
+export enum ActionType
 {
     Upgrade = 1,
     Defend = 2,
@@ -458,7 +460,7 @@ enum ActionType
     Attack = 4
 }
 
-class PlayerAction
+export class PlayerAction
 {
     constructor(public player: Player, public actions: Action[] = [])
     {
@@ -491,7 +493,7 @@ class PlayerAction
     }
 }
 
-abstract class Unit implements ISerializable, ICopyable<Unit>
+export abstract class Unit implements ISerializable, ICopyable<Unit>
 {
     readonly perfect: SkillSet;
     current: SkillSet;
@@ -620,7 +622,7 @@ abstract class Unit implements ISerializable, ICopyable<Unit>
     }
 }
 
-interface UnitConstructor extends IDeserializable<Unit>
+export interface UnitConstructor extends IDeserializable<Unit>
 {
     new(owner: Player, current: SkillSet | null): Unit;
     deserialize(payload: string): Unit;
@@ -628,7 +630,7 @@ interface UnitConstructor extends IDeserializable<Unit>
     discriminator: string;
 }
 
-const UnitConstructor: UnitConstructor = class _ extends Unit
+export const UnitConstructor: UnitConstructor = class _ extends Unit
 {
     static readonly id = 0;
     static discriminator = '';
@@ -648,24 +650,24 @@ const UnitConstructor: UnitConstructor = class _ extends Unit
     }
 };
 
-interface BasicUnitConstructor extends UnitConstructor
+export interface BasicUnitConstructor extends UnitConstructor
 {
     new(owner: Player, current: SkillSet | null): BasicUnit;
     discriminator: 'BasicUnitConstructor';
 }
 
-interface AdvancedUnitConstructor extends UnitConstructor
+export interface AdvancedUnitConstructor extends UnitConstructor
 {
     new(owner: Player, current: SkillSet | null): AdvancedUnit;
     discriminator: 'AdvancedUnitConstructor';
 }
 
-function is_basic_unit_ctor(ctor: UnitConstructor): ctor is BasicUnitConstructor 
+export function is_basic_unit_ctor(ctor: UnitConstructor): ctor is BasicUnitConstructor 
 {
     return 'discriminator' in ctor && ctor['discriminator'] == 'BasicUnitConstructor';
 }
 
-function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor 
+export function is_advanced_unit_ctor(ctor: UnitConstructor): ctor is AdvancedUnitConstructor 
 {
     return 'discriminator' in ctor && ctor['discriminator'] == 'AdvancedUnitConstructor';
 }
@@ -700,75 +702,75 @@ abstract class AdvancedUnit extends UnitConstructor
     }
 }
 
-const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends AdvancedUnit
+export const AdvancedUnitConstructor: AdvancedUnitConstructor = class _ extends AdvancedUnit
 {
     static discriminator: 'AdvancedUnitConstructor' = 'AdvancedUnitConstructor';
 };
 
-const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
+export const BasicUnitConstructor: BasicUnitConstructor = class _ extends BasicUnit
 {
     static discriminator: 'BasicUnitConstructor' = 'BasicUnitConstructor';
 };
 
-class Rider extends BasicUnitConstructor
+export class Rider extends BasicUnitConstructor
 {
     static readonly id = 1;
     readonly promotion_options = [Lancer, Knight];
     readonly level = 2;
 }
 
-class Soldier extends BasicUnitConstructor
+export class Soldier extends BasicUnitConstructor
 {
     static readonly id = 2;
     readonly promotion_options = [Swordsman, Spearman];
     readonly level = 1;
 }
 
-class Archer extends BasicUnitConstructor
+export class Archer extends BasicUnitConstructor
 {
     static readonly id = 3;
     readonly promotion_options = [Warrior, Spearman];
     readonly level = 1;
 }
 
-class Barbarian extends BasicUnitConstructor
+export class Barbarian extends BasicUnitConstructor
 {
     static readonly id = 4;
     readonly promotion_options = [Warrior, Swordsman];
     readonly level = 1;
 }
 
-class Lancer extends AdvancedUnitConstructor
+export class Lancer extends AdvancedUnitConstructor
 {
     static readonly id = 5;
     readonly level = 3;
 }
 
-class Knight extends AdvancedUnitConstructor
+export class Knight extends AdvancedUnitConstructor
 {
     static readonly id = 6;
     readonly level = 3;
 }
 
-class Swordsman extends AdvancedUnitConstructor
+export class Swordsman extends AdvancedUnitConstructor
 {
     static readonly id = 7;
     readonly level = 2;
 }
 
-class Spearman extends AdvancedUnitConstructor
+export class Spearman extends AdvancedUnitConstructor
 {
     static readonly id = 8;
     readonly level = 2;
 }
 
-class Warrior extends AdvancedUnitConstructor
+export class Warrior extends AdvancedUnitConstructor
 {
     static readonly id = 9;
     readonly level = 2;
 }
 
-class King extends UnitConstructor
+export class King extends UnitConstructor
 {
     static readonly id = 10;
     readonly level = 1;

@@ -1,4 +1,12 @@
-interface IBoardDisplay extends IComponent
+import { ResourceStatus } from '../game_round'
+import { IGameUiFacade } from '../game'
+import { GameCanvas } from './canvas';
+import { CanvasUnitFactory } from './canvas_entity';
+import { GameBoard, Rule } from '../rule';
+import { Action, ActionType, Coordinate, Move, Player, PlayerAction, Players } from '../entity';
+import { g } from '../global';
+
+export interface IBoardDisplay extends IComponent
 {
     displaying_board: GameBoard;
     show_last_round: boolean;
@@ -11,7 +19,7 @@ interface IBoardDisplay extends IComponent
     unfreeze_selection(): void;
 }
 
-class BoardDisplay implements IBoardDisplay
+export class BoardDisplay implements IBoardDisplay
 {
     canvas: GameCanvas;
 
@@ -347,7 +355,7 @@ class BoardDisplay implements IBoardDisplay
     }
 }
 
-enum DisplayActionType
+export enum DisplayActionType
 {
     Upgrade = 1,
     Defend = 2,
@@ -357,14 +365,24 @@ enum DisplayActionType
     AttackAssist = 8
 }
 
-class DisplayAction
+export class DisplayAction
 {
+    //display_action_style = new Map<DisplayActionType, string>();
+    static display_action_style = new Map<DisplayActionType, string>([
+        [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
+        [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+        [DisplayActionType.Move, g.const.STYLE_BLACK],
+        [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
+        [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
+        [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
+    ]);
+
     constructor(public player: Player, public type: DisplayActionType, public action: Action)
     {
     }
 }
 
-class DisplayPlayerAction
+export class DisplayPlayerAction
 {
     player: Player;
     actions: DisplayAction[];

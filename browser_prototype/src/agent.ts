@@ -1,4 +1,11 @@
-interface IServerAgent
+import { AI } from "./ai/benchmark";
+import { deserialize_player, opponent, Player, PlayerMove, Players } from "./entity";
+import { GameContextStatus, IGameContext } from "./game";
+import { GameRound, GameStatus } from "./game_round";
+import { g } from "./global";
+import { Net } from "./net";
+
+export interface IServerAgent
 {
     submit_move(move: PlayerMove): void;
     new_game(): void;
@@ -14,7 +21,7 @@ abstract class ServerAgent implements IServerAgent
     abstract new_game(): void
 }
 
-class LocalAgent extends ServerAgent
+export class LocalAgent extends ServerAgent
 {
     submit_move(move: PlayerMove): void
     {
@@ -68,7 +75,7 @@ class LocalAgent extends ServerAgent
     }
 }
 
-class OnlineAgent extends ServerAgent
+export class OnlineAgent extends ServerAgent
 {
     private session_id: string | null = null;
     private current_game_id: string | null = null;

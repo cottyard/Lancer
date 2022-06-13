@@ -1,6 +1,11 @@
+import { Unit, UnitConstructor, Rider, Soldier, Archer, Barbarian, King, Warrior, Spearman, Swordsman, Lancer, Knight, Skill } from "../entity";
+import { g } from "../global";
+import { Angle, Direction, HaloDirection, Position } from "./canvas";
+import { Renderer } from "./renderer";
+
 type CanvasUnitConstructor = new (unit: Unit) => CanvasUnit;
 
-let CanvasUnitFactory = function (unit: Unit): CanvasUnit
+export let CanvasUnitFactory = function (unit: Unit): CanvasUnit
 {
     let cmap = new Map<UnitConstructor, CanvasUnitConstructor>([
         [Rider, CanvasRider],
@@ -23,7 +28,7 @@ let CanvasUnitFactory = function (unit: Unit): CanvasUnit
     return new constructor(unit);
 };
 
-abstract class CanvasUnit
+export abstract class CanvasUnit
 {
     color: string;
 

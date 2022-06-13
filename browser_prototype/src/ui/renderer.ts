@@ -1,4 +1,7 @@
-﻿class Renderer implements IDisposable
+﻿import { g } from "../global";
+import { Angle, Direction, Position, PositionDelta } from "./canvas";
+
+export class Renderer implements IDisposable
 {
     transform_matrix: DOMMatrix | null = null;
     alpha: number = 1;

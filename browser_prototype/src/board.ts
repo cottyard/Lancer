@@ -1,4 +1,7 @@
-class FullBoard<T>
+import { Coordinate, Move } from "./entity";
+import { g } from "./global";
+
+export class FullBoard<T>
 {
     protected board: (T)[][];
 
@@ -53,7 +56,7 @@ class FullBoard<T>
     }
 }
 
-class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopyable<Board<T>>
+export class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopyable<Board<T>>
 {
     constructor(initializer: () => (T | null) = () => null)
     {
@@ -113,7 +116,7 @@ class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopy
     }
 }
 
-class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T> implements ISerializable
+export class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T> implements ISerializable
 {
     serialize(): string
     {
@@ -144,7 +147,7 @@ interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _
     deserialize(payload: string): SerializableBoard<T>;
 }
 
-function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
+export function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
                                         C extends IDeserializable<T>>
     (unit_ctor: C): SerializableBoardConstructor<T, C>
 {

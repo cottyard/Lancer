@@ -1,3 +1,5 @@
+import { ActionType, Archer, Barbarian, King, Knight, Lancer, Player, Rider, SkillSet, Soldier, Spearman, Swordsman, UnitConstructor, Warrior } from "./entity";
+
 class Module
 {
     ui_components: IComponent[] = [];
@@ -45,7 +47,7 @@ class Module
             [Player.P2]: this.const.STYLE_BLUE_LIGHT
         }
     };
-    display_action_style = new Map<DisplayActionType, string>();
+    
     action_style = new Map<ActionType, string>();
 
     readonly perfect_skills_literal: { [unit_name: string]: string | undefined; } =
@@ -183,15 +185,6 @@ class Module
             }
         });
 
-        this.display_action_style = new Map<DisplayActionType, string>([
-            [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
-            [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-            [DisplayActionType.Move, g.const.STYLE_BLACK],
-            [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
-            [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
-            [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
-        ]);
-
         this.action_style = new Map<ActionType, string>([
             [ActionType.Attack, g.const.STYLE_RED_LIGHT],
             [ActionType.Defend, g.const.STYLE_GREEN_LIGHT],
@@ -201,7 +194,7 @@ class Module
     }
 }
 
-let g: Module = new Module();
+export let g: Module = new Module();
 
 // function notify_changes_for_object(event: string, object: any): any
 // {
@@ -223,7 +216,7 @@ let g: Module = new Module();
 //       return new Proxy(object, handler);
 // }
 
-function beep(): void
+export function beep(): void
 {
     let v = g.audio_context.createOscillator();
     let u = g.audio_context.createGain();
@@ -236,7 +229,7 @@ function beep(): void
     v.stop(g.audio_context.currentTime + 0.05);
 }
 
-function clear_intervals()
+export function clear_intervals()
 {
     let interval_id = setInterval(() => { }, 10000);
     for (let i = 1; i <= interval_id; i++)

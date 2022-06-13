@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        "outFile": "../target/lancer.js",
+        "module": "commonjs",
+        "outDir": "../build",
         "rootDir": ".",
         "removeComments": true,
         "sourceMap": true,

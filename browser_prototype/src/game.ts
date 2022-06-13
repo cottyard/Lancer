@@ -1,4 +1,9 @@
-enum GameContextStatus
+import { IServerAgent } from "./agent";
+import { Move, Player, PlayerAction, Players } from "./entity";
+import { GameRound } from "./game_round";
+import { IPlayerMoveStagingArea } from "./staging_area";
+
+export enum GameContextStatus
 {
     NotStarted,
     InQueue,
@@ -11,7 +16,7 @@ enum GameContextStatus
     Tied
 }
 
-interface IGameContext
+export interface IGameContext
 {
     player: Player;
     last: GameRound | null;
@@ -25,7 +30,7 @@ interface IGameContext
     clear(): void;
 }
 
-class GameContext implements IGameContext
+export class GameContext implements IGameContext
 {
     private rounds: GameRound[] = [ GameRound.new_showcase() ];
 
@@ -69,7 +74,7 @@ class GameContext implements IGameContext
     }
 }
 
-interface IGameUiFacade
+export interface IGameUiFacade
 {
     context: IGameContext;
     player_name: string;
@@ -90,7 +95,7 @@ interface IGameUiFacade
     new_game(): void;
 }
 
-class GameUiFacade implements IGameUiFacade
+export class GameUiFacade implements IGameUiFacade
 {
     public player_name: string = "Anonymous";
 

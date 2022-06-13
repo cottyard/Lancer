@@ -1,4 +1,9 @@
-class StatusBar implements IComponent
+import { Player } from "../entity";
+import { IGameUiFacade } from "../game";
+import { g } from "../global";
+import { IBoardDisplay } from "./board_display";
+
+export class StatusBar implements IComponent
 {
     constructor(
         public dom_element: HTMLDivElement,
