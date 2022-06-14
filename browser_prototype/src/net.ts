@@ -72,7 +72,7 @@ export class Net
     
     static new_game(player_name: string, next: callback)
     {
-        this.remote_post(`match/${ player_name }`, next);
+        this.remote_post(`session/join-as/${ player_name }`, next);
     }
     
     static submit_move(game_id: string, player_move: PlayerMove, milliseconds_consumed: number, next: callback)

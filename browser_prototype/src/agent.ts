@@ -111,21 +111,22 @@ export class OnlineAgent extends ServerAgent
         g.event_box.emit("refresh ui", null);
     }
 
-    new_game(): void 
+    new_game(): void
     {
         Net.new_game(
             this.context.players_name[this.context.player], 
             (session: string) =>
             {
-                console.log('new session:', session);
+                let session_id = JSON.parse(session);
+                console.log('new session:', session_id);
                 this.context.status = GameContextStatus.InQueue;
-                this.session_id = session;
+                this.session_id = session_id;
                 this.latest_game_id = null;
                 this.current_game_id = null;
                 g.event_box.emit("refresh ui", null);
             });
         
-        g.event_box.emit("refresh ui", null);
+        // g.event_box.emit("refresh ui", null);
     }
 
     process_session_status(session_status: string)
@@ -139,37 +140,37 @@ export class OnlineAgent extends ServerAgent
             return;
         }
 
-        let updated = false;
+        // let updated = false;
 
-        for (let player of Players.both())
-        {
-            let current_moved = this.context.players_moved[player];
-            let moved = status['player_moved'][player];
+        // for (let player of Players.both())
+        // {
+        //     let current_moved = this.context.players_moved[player];
+        //     let moved = status['player_moved'][player];
 
-            if (current_moved != moved)
-            {
-                this.context.players_moved[player] = moved;
-                updated = true;
-            }
+        //     if (current_moved != moved)
+        //     {
+        //         this.context.players_moved[player] = moved;
+        //         updated = true;
+        //     }
 
-            let current_time = this.context.consumed_msecs[player];
-            let time = status['player_time'][player];
-            if (current_time != time)
-            {
-                this.context.consumed_msecs[player] = time;
-                updated = true;
-            }
-        }
+        //     let current_time = this.context.consumed_msecs[player];
+        //     let time = status['player_time'][player];
+        //     if (current_time != time)
+        //     {
+        //         this.context.consumed_msecs[player] = time;
+        //         updated = true;
+        //     }
+        // }
 
-        if (updated)
-        {
-            g.event_box.emit("refresh ui", null);
-        }
+        // if (updated)
+        // {
+        //     g.event_box.emit("refresh ui", null);
+        // }
 
-        if (this.latest_game_id != this.current_game_id)
-        {
-            this.load_game_round(this.latest_game_id);
-        }
+        // if (this.latest_game_id != this.current_game_id)
+        // {
+        //     this.load_game_round(this.latest_game_id);
+        // }
     }
 
     load_game_round(game_id: string)

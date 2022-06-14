@@ -1,4 +1,4 @@
-import { LocalAgent } from "./agent";
+import { OnlineAgent } from "./agent";
 import { Player } from "./entity";
 import { GameContext, GameUiFacade } from "./game";
 import { clear_intervals, g } from "./global";
@@ -22,7 +22,7 @@ export function ui_solitude()
     let facade = new GameUiFacade(
         context, 
         new PlayerMoveStagingArea(Player.P1),
-        new LocalAgent(context));
+        new OnlineAgent(context));
 
     let board_display = new BoardDisplay(facade);
 
