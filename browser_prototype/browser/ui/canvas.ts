@@ -1,8 +1,8 @@
-import { Board } from "../board";
-import { Coordinate, Players, Unit } from "../entity";
-import { g } from "../global";
-import { using } from "../language/language";
-import { Heat } from "../rule";
+import { Board } from "../../common/board";
+import { Coordinate, Players, Unit } from "../../common/entity";
+import { g } from "../../common/global";
+import { using } from "../../common/language";
+import { Heat } from "../../common/rule";
 import { DisplayAction, DisplayActionType, DisplayPlayerAction } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
 import { Renderer } from "./renderer";

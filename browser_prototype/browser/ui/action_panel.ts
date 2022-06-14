@@ -1,13 +1,14 @@
-import { Move, Unit } from '../entity';
+import { Move, Unit } from '../../common/entity';
 import { IGameUiFacade } from '../game'
-import { g } from '../global';
-import { using } from '../language/language';
+import { g } from '../../common/global';
+import { using } from '../../common/language';
 import { DisplayAction, DisplayActionType, 
     DisplayPlayerAction, IBoardDisplay } from './board_display'
 import { Position } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
 import { DomHelper, IComponent } from './dom_helper';
 import { Renderer } from './renderer';
+import { event_box } from './ui';
 
 export class ActionPanel implements IComponent
 {
@@ -122,7 +123,7 @@ export class ActionPanel implements IComponent
             this.game.staging_area.delete_moves(
                 (m: Move): m is Move => m.equals(action.action.move));
             e.cancelBubble = true;
-            g.event_box.emit("refresh ui", null);
+            event_box.emit("refresh ui", null);
         });
 
         // Drag support.
@@ -231,7 +232,7 @@ export class ActionPanel implements IComponent
                 backgroundColor: g.const.STYLE_GREY,
             });
             mouseup();
-            g.event_box.emit("refresh ui", null);
+            event_box.emit("refresh ui", null);
         });
 
         return div;

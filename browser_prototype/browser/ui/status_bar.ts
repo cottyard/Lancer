@@ -1,4 +1,4 @@
-import { Player, Players } from "../entity";
+import { Player, Players } from "../../common/entity";
 import { IGameUiFacade } from "../game";
 import { IBoardDisplay } from "./board_display";
 import { IComponent, DomHelper } from "./dom_helper";

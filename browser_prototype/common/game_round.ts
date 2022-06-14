@@ -1,7 +1,7 @@
 import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
 import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Soldier, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
-import { ISerializable } from "./language/language";
+import { ISerializable } from "./language";
 import { GameBoard, Martyr, Quester, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }

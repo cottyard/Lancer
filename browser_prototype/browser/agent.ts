@@ -1,9 +1,9 @@
 import { AI } from "./ai/benchmark";
-import { deserialize_player, opponent, Player, PlayerMove, Players } from "./entity";
+import { deserialize_player, opponent, Player, PlayerMove, Players } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
-import { GameRound, GameStatus } from "./game_round";
-import { g } from "./global";
+import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
+import { event_box } from "./ui/ui";
 
 export interface IServerAgent
 {
@@ -62,16 +62,16 @@ export class LocalAgent extends ServerAgent
                 throw new Error("Unknown status");
         }
 
-        g.event_box.emit("show last round", null);
-        g.event_box.emit("refresh ui", null);
+        event_box.emit("show last round", null);
+        event_box.emit("refresh ui", null);
     }
 
     new_game(): void 
     {
         this.context.new_round(GameRound.new_game());
         this.context.status = GameContextStatus.WaitForPlayer;
-        g.event_box.emit("refresh ui", null);
-        g.event_box.emit("refresh board", null);
+        event_box.emit("refresh ui", null);
+        event_box.emit("refresh board", null);
     }
 }
 
@@ -99,16 +99,16 @@ export class OnlineAgent extends ServerAgent
         if (this.current_game_id)
         {
             this.context.status = GameContextStatus.Submitting;
-            g.event_box.emit("refresh ui", null);
+            event_box.emit("refresh ui", null);
             //let milliseconds_consumed: number = new Date().getTime() - this.round_begin_time.getTime();
             Net.submit_move(this.current_game_id, move, 0, (_: string) =>
             {
                 this.context.status = GameContextStatus.WaitForOpponent;
-                g.event_box.emit("refresh ui", null);
+                event_box.emit("refresh ui", null);
             });
         }
 
-        g.event_box.emit("refresh ui", null);
+        event_box.emit("refresh ui", null);
     }
 
     new_game(): void
@@ -123,10 +123,10 @@ export class OnlineAgent extends ServerAgent
                 this.session_id = session_id;
                 this.latest_game_id = null;
                 this.current_game_id = null;
-                g.event_box.emit("refresh ui", null);
+                event_box.emit("refresh ui", null);
             });
         
-        // g.event_box.emit("refresh ui", null);
+        // event_box.emit("refresh ui", null);
     }
 
     process_session_status(session_status: string)
@@ -164,7 +164,7 @@ export class OnlineAgent extends ServerAgent
 
         // if (updated)
         // {
-        //     g.event_box.emit("refresh ui", null);
+        //     event_box.emit("refresh ui", null);
         // }
 
         // if (this.latest_game_id != this.current_game_id)
@@ -176,7 +176,7 @@ export class OnlineAgent extends ServerAgent
     load_game_round(game_id: string)
     {
         this.context.status = GameContextStatus.Loading;
-        g.event_box.emit("refresh ui", null);
+        event_box.emit("refresh ui", null);
 
         Net.fetch_game(game_id, (serialized_game) =>
         {
@@ -196,8 +196,8 @@ export class OnlineAgent extends ServerAgent
 
             this.current_game_id = game_id;
 
-            g.event_box.emit("refresh ui", null);
-            g.event_box.emit("refresh board", null);
+            event_box.emit("refresh ui", null);
+            event_box.emit("refresh board", null);
         });
     }
 }

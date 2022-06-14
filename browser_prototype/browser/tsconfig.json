@@ -3,7 +3,7 @@
         "target": "ES6",
         "module": "commonjs",
         "outDir": "../target/script",
-        "rootDir": ".",
+        "rootDir": "..",
         "removeComments": true,
         "sourceMap": true,
         "noUnusedLocals": true,

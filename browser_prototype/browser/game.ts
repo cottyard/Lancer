@@ -1,6 +1,6 @@
 import { IServerAgent } from "./agent";
-import { Move, Player, PlayerAction, Players } from "./entity";
-import { GameRound } from "./game_round";
+import { Move, Player, PlayerAction, Players } from "../common/entity";
+import { GameRound } from "../common/game_round";
 import { IPlayerMoveStagingArea } from "./staging_area";
 
 export enum GameContextStatus

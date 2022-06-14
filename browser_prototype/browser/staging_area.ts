@@ -1,5 +1,5 @@
-import { PlayerMove, PlayerAction, Move, Player } from "./entity";
-import { GameBoard, Rule } from "./rule";
+import { PlayerMove, PlayerAction, Move, Player } from "../common/entity";
+import { GameBoard, Rule } from "../common/rule";
 
 export interface IPlayerMoveStagingArea
 {

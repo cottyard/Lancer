@@ -1,5 +1,6 @@
-import { PlayerMove } from "./entity";
-import { g } from "./global";
+import { PlayerMove } from "../common/entity";
+
+const server_url = window.location.href;
 
 type callback = (res: string) => void;
 
@@ -10,7 +11,7 @@ export class Net
         (function try_post()
         {
             let req = new XMLHttpRequest();
-            req.open('POST', `${ g.settings.server_url }${ url }`);
+            req.open('POST', `${ server_url }${ url }`);
             req.timeout = 8000;
     
             req.onreadystatechange = () =>
@@ -43,7 +44,7 @@ export class Net
     static remote_get(url: string, next: callback): void
     {
         let req = new XMLHttpRequest();
-        req.open('GET', `${ g.settings.server_url }${ url }`);
+        req.open('GET', `${ server_url }${ url }`);
         req.timeout = 8000;
     
         req.onreadystatechange = () =>

@@ -1,5 +1,5 @@
 import { g } from "./global";
-import { IHashable, ISerializable, ICopyable, extract, IDeserializable } from "./language/language";
+import { IHashable, ISerializable, ICopyable, extract, IDeserializable } from "./language";
 
 class InvalidParameter extends Error { }
 
@@ -488,7 +488,7 @@ export class PlayerAction
     {
         let s = JSON.parse(payload);
         let player = deserialize_player(s.shift());
-        let actions = [];
+        let actions: Action[] = [];
         for (let action_literal of s)
         {
             actions.push(Action.deserialize(action_literal));

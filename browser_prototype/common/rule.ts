@@ -1,7 +1,7 @@
 import { Board, FullBoard } from "./board";
 import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
 import { ResourceStatus } from "./game_round";
-import { min, max } from "./language/language";
+import { min, max } from "./language";
 
 class InvalidMove extends Error { }
 
@@ -223,7 +223,7 @@ export class Rule
 
     static reachable_by_skills(coord: Coordinate, skills: Skill[]): Coordinate[]
     {
-        let coordinates = [];
+        let coordinates: Coordinate[] = [];
         for (let skill of skills)
         {
             let c = coord.add(skill.x, skill.y);
@@ -400,7 +400,7 @@ export class Rule
 
             let surviver = u1.duel(u2);
 
-            let fallen = [];
+            let fallen: Action[] = [];
             if (surviver == null)
             {
                 player_actions[Player.P1].extract((a): a is Action => a == a1);

@@ -1,12 +1,12 @@
 import { OnlineAgent } from "./agent";
-import { Player } from "./entity";
+import { Player } from "../common/entity";
 import { GameContext, GameUiFacade } from "./game";
-import { clear_intervals, g } from "./global";
 import { PlayerMoveStagingArea } from "./staging_area";
 import { ActionPanel } from "./ui/action_panel";
 import { BoardDisplay } from "./ui/board_display";
 import { ButtonBar } from "./ui/button_bar";
 import { StatusBar } from "./ui/status_bar";
+import { clear_intervals, event_box, ui_components } from "./ui/ui";
 
 export function ui_solitude()
 {
@@ -33,28 +33,28 @@ export function ui_solitude()
     let button_bar = new ButtonBar(
         <HTMLDivElement> document.getElementById('button-bar'), board_display, facade);
 
-    g.ui_components.push(board_display);
-    g.ui_components.push(action_panel);
-    g.ui_components.push(status_bar);
-    g.ui_components.push(button_bar);
+    ui_components.push(board_display);
+    ui_components.push(action_panel);
+    ui_components.push(status_bar);
+    ui_components.push(button_bar);
 
-    g.event_box.subscribe('refresh ui', _ => {
-        for (let c of g.ui_components)
+    event_box.subscribe('refresh ui', _ => {
+        for (let c of ui_components)
         {
             c.render();
         }
     });
 
-    g.event_box.subscribe('refresh board', _ => {
+    event_box.subscribe('refresh board', _ => {
         board_display.show_present();
     });
 
-    g.event_box.subscribe("show last round", _ => {
+    event_box.subscribe("show last round", _ => {
         board_display.show_last();
         button_bar.view_last_round = true;
     });
 
-    g.event_box.emit("refresh ui", null);
+    event_box.emit("refresh ui", null);
 }
 
 window.onload = ui_solitude;

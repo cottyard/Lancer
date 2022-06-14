@@ -2,10 +2,9 @@
   "name": "ts-server",
   "version": "1.0.0",
   "description": "",
-  "main": "source/server.ts",
+  "main": "server.ts",
   "scripts": {
-    "dev": "nodemon source/server.ts",
-    "build": "rm -rf build/ && prettier --write source/ && tsc"
+    "dev": "nodemon server.ts"
   },
   "author": "",
   "license": "ISC",

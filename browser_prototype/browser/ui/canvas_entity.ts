@@ -1,6 +1,6 @@
-import { Unit, UnitConstructor, Rider, Soldier, Archer, Barbarian, King, Warrior, Spearman, Swordsman, Lancer, Knight, Skill, Players } from "../entity";
-import { g } from "../global";
-import { HashMap } from "../language/language";
+import { Unit, UnitConstructor, Rider, Soldier, Archer, Barbarian, King, Warrior, Spearman, Swordsman, Lancer, Knight, Skill, Players } from "../../common/entity";
+import { g } from "../../common/global";
+import { HashMap } from "../../common/language";
 import { Angle, Direction, HaloDirection, Position } from "./canvas";
 import { Renderer } from "./renderer";
 

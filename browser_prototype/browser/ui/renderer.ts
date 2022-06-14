@@ -1,5 +1,5 @@
-﻿import { g } from "../global";
-import { IDisposable } from "../language/language";
+﻿import { g } from "../../common/global";
+import { IDisposable } from "../../common/language";
 import { Angle, Direction, Position, PositionDelta } from "./canvas";
 
 export class Renderer implements IDisposable

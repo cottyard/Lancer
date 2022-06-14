@@ -1,12 +1,13 @@
-import { ResourceStatus } from '../game_round'
+import { ResourceStatus } from '../../common/game_round'
 import { IGameUiFacade } from '../game'
 import { GameCanvas } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
-import { GameBoard, Rule } from '../rule';
-import { Action, ActionType, Coordinate, Move, Player, PlayerAction, Players } from '../entity';
-import { g } from '../global';
-import { HashSet } from '../language/language';
+import { GameBoard, Rule } from '../../common/rule';
+import { Action, ActionType, Coordinate, Move, Player, PlayerAction, Players } from '../../common/entity';
+import { g } from '../../common/global';
+import { HashSet } from '../../common/language';
 import { IComponent } from './dom_helper';
+import { event_box } from './ui';
 
 export interface IBoardDisplay extends IComponent
 {
@@ -297,7 +298,7 @@ export class BoardDisplay implements IBoardDisplay
         this.show_threats = true;
         this.update_options(this.current);
         
-        g.event_box.emit("refresh ui", null);
+        event_box.emit("refresh ui", null);
     }
 
     update_options(coord: Coordinate)

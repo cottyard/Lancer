@@ -1,6 +1,6 @@
 import { Coordinate, Move } from "./entity";
 import { g } from "./global";
-import { ICopyable, IDeserializable, ISerializable } from "./language/language";
+import { ICopyable, IDeserializable, ISerializable } from "./language";
 
 export class FullBoard<T>
 {

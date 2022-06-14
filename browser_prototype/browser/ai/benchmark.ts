@@ -1,6 +1,6 @@
-import { Player, PlayerMove } from "../entity";
-import { GameRound } from "../game_round";
-import { Rule } from "../rule";
+import { Player, PlayerMove } from "../../common/entity";
+import { GameRound } from "../../common/game_round";
+import { Rule } from "../../common/rule";
 import { PlayerMoveStagingArea } from "../staging_area";
 
 export class AI
