@@ -1,7 +1,15 @@
-import http from 'http';
+//import http from 'http';
 import express, { Express } from 'express';
 import morgan from 'morgan';
 import routes from './routes/main';
+
+import https from 'https'
+import fs from 'fs'
+
+const options = {
+    key: fs.readFileSync(process.env.KEY_FILE!),
+    cert: fs.readFileSync(process.env.CERT_FILE!),
+}
 
 const app: Express = express();
 
@@ -29,6 +37,9 @@ app.use((req, res, next) => {
     });
 });
 
-const httpServer = http.createServer(app);
-const PORT: any = process.env.PORT ?? 8080;
-httpServer.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
+// const httpServer = http.createServer(app);
+ const PORT: any = process.env.PORT ?? 8000;
+// httpServer.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
+
+https.createServer(options, app).listen(
+    8000, () => console.log(`The server is running on port ${PORT}`));
