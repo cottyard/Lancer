@@ -23,7 +23,21 @@ span {
 }
 
 #status-bar {
-    margin: 10px 0
+    margin: 10px 0;
+    padding: 0 50px;
+    box-sizing: border-box;
+    width: 80%;
+    align-self: safe-center;
+    justify-self: stretch;
+}
+
+#button-bar {
+    margin: 10px 0;
+    padding: 0 50px;
+    box-sizing: border-box;
+    width: 80%;
+    align-self: safe-center;
+    justify-self: stretch;
 }
 
 #action-panel {
