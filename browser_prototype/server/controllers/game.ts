@@ -216,7 +216,7 @@ const get_session_status = async (req: Request, res: Response, next: NextFunctio
             [Player.P2]: false
         },
         players_name: session.players_name,
-        players_time: session.players_time
+        players_time: {...session.players_time}
     }
 
     let move_stash = move_stash_store[game_round.id];
