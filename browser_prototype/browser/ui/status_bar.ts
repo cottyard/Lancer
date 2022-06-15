@@ -121,7 +121,7 @@ export class StatusBar implements IComponent
         }
 
         let consumed = this.game.context.consumed_msec[player];
-        if (!this.game.context.players_moved[player])
+        if (this.game.context.is_waiting() && !this.game.context.players_moved[player])
         {
             consumed += Date.now() - this.game.context.round_begin_time;
         }
