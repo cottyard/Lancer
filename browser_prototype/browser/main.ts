@@ -8,7 +8,7 @@ import { ButtonBar } from "./ui/button_bar";
 import { StatusBar } from "./ui/status_bar";
 import { clear_intervals, event_box, ui_components } from "./ui/ui";
 
-export function ui_solitude()
+export function main()
 {
     clear_intervals();
 
@@ -18,10 +18,10 @@ export function ui_solitude()
             [Player.P1]: 'player 1',
             [Player.P2]: 'player 2'
         });
-
+    let staging_area = new PlayerMoveStagingArea(Player.P1);
     let facade = new GameUiFacade(
         context, 
-        new PlayerMoveStagingArea(Player.P1),
+        staging_area,
         new OnlineAgent(context));
 
     let board_display = new BoardDisplay(facade);
@@ -43,6 +43,10 @@ export function ui_solitude()
         {
             c.render();
         }
+        if (staging_area.move.player != context.player)
+        {
+            staging_area.reset(context.player);
+        }
     });
 
     event_box.subscribe('refresh board', _ => {
@@ -57,4 +61,4 @@ export function ui_solitude()
     event_box.emit("refresh ui", null);
 }
 
-window.onload = ui_solitude;
+window.onload = main;

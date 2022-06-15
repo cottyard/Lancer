@@ -1,7 +1,7 @@
-import { Board, FullBoard } from "./board";
+import { Board, FullBoard, SerializableBoard } from "./board";
 import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
 import { ResourceStatus } from "./game_round";
-import { min, max } from "./language";
+import { min, max, ISerializable } from "./language";
 
 class InvalidMove extends Error { }
 
@@ -537,7 +537,7 @@ export class Rule
 export class GameBoard
 {
     heat: FullBoard<Heat>;
-    constructor(public unit: Board<Unit>)
+    constructor(public unit: SerializableBoard<Unit>)
     {
         this.heat = Rule.get_heat(unit);
     }
@@ -569,16 +569,42 @@ class Force
     arriver: (Quester | null)[] = [null, null, null];
 }
 
-export class Martyr
+export class Martyr implements ISerializable
 {
     constructor(public quester: Quester)
     {
     }
+
+    serialize(): string 
+    {
+        return this.quester.serialize();
+    }
+
+    static deserialize(payload: string): Martyr
+    {
+        return new Martyr(Quester.deserialize(payload));
+    }
 }
 
-export class Quester
+export class Quester implements ISerializable
 {
     constructor(public unit: Unit, public from_grid: Coordinate)
     {
+    }
+
+    serialize(): string 
+    {
+        return JSON.stringify([
+            this.unit.serialize(),
+            this.from_grid.serialize()
+        ]);
+    }
+
+    static deserialize(payload: string): Quester
+    {
+        let [unit, from] = JSON.parse(payload);
+        return new Quester(
+            UnitConstructor.deserialize(unit), 
+            Coordinate.deserialize(from));
     }
 }

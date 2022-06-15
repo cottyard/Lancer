@@ -10,7 +10,7 @@ export interface IPlayerMoveStagingArea
     prepare_moves(board: GameBoard, moves: Move[]): boolean;
     delete_moves(filter: (move: Move) => move is Move): Move[];
     pop_move(): Move | null;
-    reset(): void;
+    reset(player: Player): void;
 }
 
 export class PlayerMoveStagingArea implements IPlayerMoveStagingArea
@@ -36,9 +36,9 @@ export class PlayerMoveStagingArea implements IPlayerMoveStagingArea
         return this.move.extract(which);
     }
 
-    reset() : void
+    reset(player: Player) : void
     {
-        this.move = new PlayerMove(this.move.player);
+        this.move = new PlayerMove(player);
     }
 
     pop_move(): Move | null

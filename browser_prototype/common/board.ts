@@ -57,7 +57,7 @@ export class FullBoard<T>
     }
 }
 
-export class Board<T extends ICopyable<T>> extends FullBoard<T | null> implements ICopyable<Board<T>>
+export class Board<T extends ICopyable<T>> extends FullBoard<T | null>
 {
     constructor(initializer: () => (T | null) = () => null)
     {
@@ -96,28 +96,10 @@ export class Board<T extends ICopyable<T>> extends FullBoard<T | null> implement
     {
         super.iterate_units(foreach);
     }
-
-    copy(): Board<T>
-    {
-        let board = new Board<T>();
-
-        for (let i = 0; i < g.board_size_x; i++)
-        {
-            for (let j = 0; j < g.board_size_y; j++)
-            {
-                let u = this.board[i][j];
-                if (u)
-                {
-                    board.board[i][j] = u.copy();
-                }
-            }
-        }
-
-        return board;
-    }
 }
 
-export class SerializableBoard<T extends ISerializable & ICopyable<T>> extends Board<T> implements ISerializable
+export class SerializableBoard<T extends ISerializable & ICopyable<T>> 
+    extends Board<T> implements ISerializable, ICopyable<SerializableBoard<T>>
 {
     serialize(): string
     {
@@ -139,6 +121,25 @@ export class SerializableBoard<T extends ISerializable & ICopyable<T>> extends B
         }
         return JSON.stringify(s);
     }
+
+    copy(): SerializableBoard<T>
+    {
+        let board = new SerializableBoard<T>();
+
+        for (let i = 0; i < g.board_size_x; i++)
+        {
+            for (let j = 0; j < g.board_size_y; j++)
+            {
+                let u = this.board[i][j];
+                if (u)
+                {
+                    board.board[i][j] = u.copy();
+                }
+            }
+        }
+
+        return board;
+    }
 }
 
 interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _> 
@@ -149,7 +150,7 @@ interface SerializableBoardConstructor<T extends ISerializable & ICopyable<T>, _
 }
 
 export function create_serializable_board_ctor<T extends ISerializable & ICopyable<T>, 
-                                        C extends IDeserializable<T>>
+                                               C extends IDeserializable<T>>
     (unit_ctor: C): SerializableBoardConstructor<T, C>
 {
     return class _ extends SerializableBoard<T>

@@ -76,9 +76,15 @@ export class Net
         this.remote_post(`session/join-as/${ player_name }`, next);
     }
     
-    static submit_move(game_id: string, player_move: PlayerMove, milliseconds_consumed: number, next: callback)
+    static submit_move(game_id: string, 
+                       player_move: PlayerMove, 
+                       milliseconds_consumed: number, 
+                       next: callback)
     {
-        this.remote_post(`game/${ game_id }/move?consumed=${ milliseconds_consumed }`, next, player_move.serialize());
+        this.remote_post(
+            `game/${ game_id }/move?consumed=${ milliseconds_consumed }`, 
+            next, 
+            player_move.serialize());
     }
     
     static query_match(session_id: string, next: callback)

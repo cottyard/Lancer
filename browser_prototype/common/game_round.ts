@@ -1,8 +1,8 @@
 import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
-import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Soldier, Unit, UnitConstructor } from "./entity";
+import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
 import { ISerializable } from "./language";
-import { GameBoard, Martyr, Quester, Rule } from "./rule";
+import { GameBoard, Martyr, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }
 
@@ -43,7 +43,7 @@ export class ResourceStatus implements ISerializable
     static deserialize(payload: string): ResourceStatus
     {
         let [player, progress, captured] = JSON.parse(payload);
-        return new ResourceStatus(player, progress, captured);
+        return new ResourceStatus(player, captured, progress);
     }
 }
 
@@ -218,7 +218,15 @@ export class GameRound implements ISerializable
 
     serialize(): string 
     {
-        return '';
+        return JSON.stringify([
+            this.round_count, 
+            this.supplies, 
+            this.board.unit.serialize(), 
+            this.last_actions == null? [] : [this.last_actions[Player.P1].serialize(),
+                                             this.last_actions[Player.P2].serialize()],
+            this.martyrs.map((martyr) => martyr.serialize()),
+            this.resources.map((r) => r.serialize())
+        ]);
     }
 
     static deserialize(payload: string): GameRound
@@ -247,14 +255,7 @@ export class GameRound implements ISerializable
             supplies[deserialize_player(player)] = players_supply[player];
         }
 
-        let martyrs: Martyr[] = [];
-        for (let victim of victims)
-        {
-            let coord = Coordinate.deserialize(victim);
-
-            // TODO: temporarily stub all deserialized martyr as Soldier
-            martyrs.push(new Martyr(new Quester(new Soldier(Player.P1, null), coord)));
-        }
+        let martyrs: Martyr[] = victims.map((v: string) => Martyr.deserialize(v));
 
         let board = <SerializableBoard<Unit>> create_serializable_board_ctor(
             UnitConstructor).deserialize(board_payload);

@@ -116,7 +116,7 @@ export class StatusBar implements IComponent
             }));
         }
 
-        let consumed = this.game.context.consumed_msecs[player];
+        let consumed = this.game.context.consumed_msec[player];
         if (consumed != undefined)
         {
             div.appendChild(DomHelper.create_text(

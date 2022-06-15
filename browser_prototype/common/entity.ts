@@ -373,7 +373,7 @@ export class PlayerMove implements ISerializable
     }
 }
 
-export class Action implements ICopyable<Action>
+export class Action implements ICopyable<Action>, ISerializable
 {
     constructor(public move: Move, public type: ActionType, public unit: Unit)
     {
@@ -442,6 +442,11 @@ export class Action implements ICopyable<Action>
         }
     }
 
+    serialize(): string 
+    {
+        return JSON.stringify([this.type, this.move.serialize(), this.unit.serialize()])
+    }
+
     static deserialize(payload: string): Action
     {
         let action_type: string;
@@ -470,7 +475,7 @@ export const action_style = new Map<ActionType, string>([
     [ActionType.Upgrade, g.const.STYLE_CYAN],
 ]);
 
-export class PlayerAction
+export class PlayerAction implements ISerializable
 {
     constructor(public player: Player, public actions: Action[] = [])
     {
@@ -484,22 +489,27 @@ export class PlayerAction
         }).reduce((a, b) => a + b, 0);
     }
 
+    extract(filter: (a: Action) => a is Action): Action[]
+    {
+        return extract(this.actions, filter);
+    }
+
+    serialize(): string 
+    {
+        return JSON.stringify([this.player, this.actions.map((a) => a.serialize())]);
+    }
+
     static deserialize(payload: string): PlayerAction
     {
         let s = JSON.parse(payload);
-        let player = deserialize_player(s.shift());
+        let player = deserialize_player(s[0]);
         let actions: Action[] = [];
-        for (let action_literal of s)
+        for (let action_literal of s[1])
         {
             actions.push(Action.deserialize(action_literal));
         }
 
         return new PlayerAction(player, actions);
-    }
-
-    extract(filter: (a: Action) => a is Action): Action[]
-    {
-        return extract(this.actions, filter);
     }
 }
 

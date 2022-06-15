@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Players, Player, PlayerMove } from '../../common/entity'
-import { GameRound } from '../../common/game_round'
+import { GameRound, GameStatus } from '../../common/game_round'
 
 type SessionId = string;
 type ServerGameRoundId = string;
@@ -25,30 +25,56 @@ class QueueItem
 }
 
 let match_queue: QueueItem[] = [];
-let players_move_store: { 
-    [server_game_round_id: ServerGameRoundId]: ServerPlayersMove 
-} = {};
+let move_stash_store: {[id: ServerGameRoundId]: PlayersMoveStash} = {};
 let session_store: {[id: SessionId]: Session} = {};
+let game_round_store: {[id: ServerGameRoundId]: ServerGameRound} = {};
 
 class ServerGameRound
 {
     id: ServerGameRoundId;
-    constructor(public round: GameRound)
+
+    constructor(private round: GameRound = GameRound.new_game())
     {
         this.id = server_game_round_id_generator.gen();
-        players_move_store[this.id] = new ServerPlayersMove();
+        move_stash_store[this.id] = new PlayersMoveStash();
+        game_round_store[this.id] = this;
+    }
+
+    status(): GameStatus
+    {
+        return this.round.status();
+    }
+
+    proceed(move: PlayersMoveStash): ServerGameRound | null
+    {
+        let next_round = this.round.proceed({
+            [Player.P1]: move.players_move[Player.P1]!,
+            [Player.P2]: move.players_move[Player.P2]!
+        });
+
+        if (!next_round)
+        {
+            console.log("error proceeding next round");
+            move.reset();
+            return null;
+        }
+
+        return new ServerGameRound(next_round);
+    }
+
+    serialize_round(): string
+    {
+        return this.round.serialize();
     }
 }
 
-class ServerPlayersMove
+class PlayersMoveStash
 {
-    players_move: Players<PlayerMove | null>;
+    players_move!: Players<PlayerMove | null>;
+    players_time!: Players<number>;
     constructor()
     {
-        this.players_move = {
-            [Player.P1]: null,
-            [Player.P2]: null
-        }
+        this.reset();
     }
 
     reset()
@@ -57,11 +83,16 @@ class ServerPlayersMove
             [Player.P1]: null,
             [Player.P2]: null
         }
+        this.players_time = {
+            [Player.P1]: 0,
+            [Player.P2]: 0
+        }
     }
 
-    update(player: Player, move: PlayerMove)
+    update(player: Player, move: PlayerMove, msec: number)
     {
         this.players_move[player] = move;
+        this.players_time[player] = msec;
     }
 
     all_players_moved(): boolean
@@ -73,10 +104,15 @@ class ServerPlayersMove
 
 class Session
 {
-    
-    private rounds: ServerGameRound[] = [ new ServerGameRound(GameRound.new_game()) ];
-    update_time: number = Date.now();
-    constructor(public id: SessionId, players_name: Players<string>)
+    private rounds: ServerGameRound[] = [ new ServerGameRound() ];
+    private update_time: number = Date.now();
+
+    players_time: Players<number> = {
+        [Player.P1]: 0,
+        [Player.P2]: 0
+    }
+
+    constructor(public id: SessionId, public players_name: Players<string>)
     {
         session_store[id] = this;
     }
@@ -86,78 +122,128 @@ class Session
         this.update_time = Date.now();
     }
 
+    expired(): boolean
+    {
+        if (Date.now() - this.update_time > 1000 * 3600 * 3)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    update(round: ServerGameRound, time: Players<number>)
+    {
+        this.rounds.push(round);
+        this.touch();
+        
+        for (let player of Players.both())
+        {
+            this.players_time[player] += time[player];
+        }
+    }
+
     current_game_round(): ServerGameRound
     {
         return this.rounds[this.rounds.length - 1];
     }
+
+    // is_ended(): boolean
+    // {
+    //     return this.current_game_round().round.status() != GameStatus.Ongoing;
+    // }
 
     static process_all()
     {
         for (let id in session_store)
         {
             let session = session_store[id];
-            if (!(session.current_game_round().id in players_move_store))
+            let round = session.current_game_round();
+            let move_stash = move_stash_store[round.id];
+            if (!move_stash.all_players_moved())
             {
                 continue;
             }
+            let next_round = round.proceed(move_stash);
+            if (next_round)
+            {
+                session.update(next_round, move_stash.players_time);
+            }
+        }
 
-
+        for (let id in session_store)
+        {
+            let session = session_store[id];
+            if (session.expired())
+            {
+                for (let round of session.rounds)
+                {
+                    delete move_stash_store[round.id];
+                    delete game_round_store[round.id];
+                }
+                delete session_store[id];
+            }
         }
     }
 }
 
-// class Session:
-//     def is_ended(self):
-//         return self.current_game().status != game.GameStatus.Ongoing
-//     @classmethod
-//     def process_sessions(cls):
-//         ended_sessions = []
-//         for session in cls.session_map.values():
-//             if session.current_game_id() not in game_player_move_map:
-//                 continue
-
-//             sg_player_move = game_player_move_map[session.current_game_id()]
-//             if not sg_player_move.all_players_moved():
-//                 continue
-            
-//             server_game = session.current_game()
-//             next_server_game = server_game.next(sg_player_move)
-
-//             if next_server_game is None:
-//                 # when this happen, there is a bug 
-//                 # with client move validation
-//                 sg_player_move.reset()
-//                 return
-            
-//             session.update(next_server_game.game_id)
-
-//             if session.is_ended():
-//                 ended_sessions.append(session)
-
-//         for session in ended_sessions:
-//             cls.ended_session_map[session.session_id] = session
-//             del cls.session_map[session.session_id]
-
-
 const get_game = async (req: Request, res: Response, next: NextFunction) => {
     let id: string = req.params.id;
-    return res.status(200).json({
-        message: null
-    });
+    let game_round = game_round_store[id];
+    if (!game_round)
+    {
+        return res.sendStatus(404);
+    }
+
+    return res.status(200).json(game_round.serialize_round());
 };
 
 const get_session_status = async (req: Request, res: Response, next: NextFunction) => {
     let id: string = req.params.id;
-    return res.status(200).json({
-        latest: id
-    });
+    let session = session_store[id];
+    if (!session)
+    {
+        return res.status(200).json('not started');
+    }
+
+    let game_round = session.current_game_round();
+    let result = {
+        latest: game_round.id,
+        players_moved: {
+            [Player.P1]: false,
+            [Player.P2]: false
+        },
+        players_name: session.players_name,
+        players_time: session.players_time
+    }
+
+    let move_stash = move_stash_store[game_round.id];
+
+    for (let player of Players.both())
+    {
+        if (move_stash.players_move[player] != null)
+        {
+            result.players_moved[player] = true;
+            result.players_time[player] += move_stash.players_time[player];
+        }
+    }
+
+    return res.status(200).json(result);
 };
 
 const submit_move = async (req: Request, res: Response, next: NextFunction) => {
     let id: string = req.params.id;
-    return res.status(200).json({
-        message: null
-    });
+    let msec: number = parseInt(<string>req.query.consumed);
+    let player_move = PlayerMove.deserialize(req.body);
+
+    console.log("Received move ", player_move.serialize());
+    move_stash_store[id].update(player_move.player, player_move, msec);
+
+    Session.process_all();
+
+    return res.status(200).json('done');
 };
 
 const join_new_session = async (req: Request, res: Response, next: NextFunction) => {
@@ -169,17 +255,14 @@ const join_new_session = async (req: Request, res: Response, next: NextFunction)
 
         if (item.player_name == name)
         {
-            return res.status(500).json(null);
+            return res.sendStatus(400);
         }
 
-        //create new session here
-        // let response = new NewSessionResponse(
-        //     item.session_id,
-        //     {
-        //         [Player.P1]: item.player_name,
-        //         [Player.P2]: name
-        //     }
-        // );
+        new Session(item.session_id, {
+            [Player.P1]: item.player_name,
+            [Player.P2]: name
+        });
+        
         return res.status(200).json(item.session_id);
     }
     else

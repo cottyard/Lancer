@@ -22,7 +22,7 @@ export interface IGameContext
     last: GameRound | null;
     present: GameRound;
     status: GameContextStatus;
-    consumed_msecs: Players<number>;
+    consumed_msec: Players<number>;
     players_name: Players<string>;
     players_moved: Players<boolean>;
 
@@ -38,7 +38,7 @@ export class GameContext implements IGameContext
 
     players_moved: Players<boolean> = Players.create(() => false);
 
-    consumed_msecs: Players<number> = {
+    consumed_msec: Players<number> = {
         [Player.P1]: 0,
         [Player.P2]: 0
     }
@@ -135,15 +135,15 @@ export class GameUiFacade implements IGameUiFacade
     submit_move(): void 
     {
         let m = this.staging_area.move;
-        this.staging_area.reset();
+        this.staging_area.reset(this.context.player);
         this.server_agent.submit_move(m);
     }
 
     new_game(): void
     {
         this.context.clear();
-        this.staging_area.reset();
-        this.server_agent.new_game();
+        this.staging_area.reset(this.context.player);
+        this.server_agent.new_game(this.player_name);
     }
 
     is_playing(): boolean
