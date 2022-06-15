@@ -28,6 +28,7 @@ export interface IGameContext
     staging_area: IPlayerMoveStagingArea;
     action: PlayerAction;
     cost: number;
+    round_begin_time: number;
     sufficient_fund(): boolean;
     prepare_move(move: Move): void;
     prepare_moves(moves: Move[]): void;
@@ -48,6 +49,7 @@ export class GameContext implements IGameContext
     status: GameContextStatus = GameContextStatus.NotStarted;
     players_moved: Players<boolean> = Players.create(() => false);
     staging_area: IPlayerMoveStagingArea;
+    round_begin_time: number = Date.now();
 
     consumed_msec: Players<number> = {
         [Player.P1]: 0,
@@ -81,6 +83,7 @@ export class GameContext implements IGameContext
     new_round(round: GameRound): void 
     {
         this.rounds.push(round);
+        this.round_begin_time = Date.now();
     }
 
     clear_all(): void 

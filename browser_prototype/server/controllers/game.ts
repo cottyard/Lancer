@@ -255,6 +255,7 @@ const join_new_session = async (req: Request, res: Response, next: NextFunction)
 
         if (item.player_name == name)
         {
+            match_queue.push(item);
             return res.sendStatus(400);
         }
 

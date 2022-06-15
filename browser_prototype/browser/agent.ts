@@ -85,7 +85,6 @@ export class OnlineAgent extends ServerAgent
     private session_id: string | null = null;
     private current_game_id: string | null = null;
     private latest_game_id: string | null = null;
-    private round_begin_time: number = 0;
     private player_name: string = "";
 
     constructor(context: IGameContext)
@@ -107,7 +106,7 @@ export class OnlineAgent extends ServerAgent
         {
             this.context.status = GameContextStatus.Submitting;
             event_box.emit("refresh ui", null);
-            let msec_consumed: number = Date.now() - this.round_begin_time;
+            let msec_consumed: number = Date.now() - this.context.round_begin_time;
             Net.submit_move(this.current_game_id, move, msec_consumed, (_: string) =>
             {
                 this.context.status = GameContextStatus.WaitForOpponent;
@@ -205,8 +204,6 @@ export class OnlineAgent extends ServerAgent
             }
             
             event_box.emit("refresh ui", null);
-
-            this.round_begin_time = Date.now();
         });
     }
 }

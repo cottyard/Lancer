@@ -10,6 +10,10 @@ export class StatusBar implements IComponent
         public board_display: IBoardDisplay,
         public game: IGameUiFacade)
     {
+        setInterval(() =>
+        {
+            this.render();
+        }, 1000);
     }
 
     render()
@@ -117,15 +121,17 @@ export class StatusBar implements IComponent
         }
 
         let consumed = this.game.context.consumed_msec[player];
-        if (consumed != undefined)
+        if (!this.game.context.players_moved[player])
         {
-            div.appendChild(DomHelper.create_text(
-                this.timestamp(consumed),
-                {
-                    marginLeft: "3px"
-                }
-            ));
+            consumed += Date.now() - this.game.context.round_begin_time;
         }
+        
+        div.appendChild(DomHelper.create_text(
+            this.timestamp(consumed),
+            {
+                marginLeft: "3px"
+            }
+        ));
 
         return div;
     }
