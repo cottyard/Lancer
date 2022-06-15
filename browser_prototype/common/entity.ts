@@ -405,18 +405,28 @@ export class Action implements ICopyable<Action>, ISerializable
         {
             return 2;
         }
-        else if (unit.level == 3)
+        else if (unit.level == 2)
         {
-            return 3;
-        }
+            let cost: number;
+            if (move.which_skill()!.is_leap())
+            {
+                cost = 3;
+            }
+            else
+            {
+                cost = 2;
+            }
 
-        if (move.which_skill()!.is_leap())
-        {
-            return 3;
+            if (unit.type() == Warrior)
+            {
+                cost--;
+            }
+
+            return cost;
         }
         else
         {
-            return 2;
+            return 3;
         }
     }
 
