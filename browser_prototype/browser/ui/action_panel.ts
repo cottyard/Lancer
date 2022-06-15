@@ -47,7 +47,7 @@ export class ActionPanel implements IComponent
     render()
     {
         this.dom_element.innerHTML = "";
-        new DisplayPlayerAction(this.game.action).actions.forEach(
+        new DisplayPlayerAction(this.game.context.action).actions.forEach(
             (action, index) =>
             {
                 this.dom_element.appendChild(this.render_action(action, index));
@@ -120,7 +120,7 @@ export class ActionPanel implements IComponent
         });
         cross.addEventListener("mousedown", (e: MouseEvent) =>
         {
-            this.game.staging_area.delete_moves(
+            this.game.context.staging_area.delete_moves(
                 (m: Move): m is Move => m.equals(action.action.move));
             e.cancelBubble = true;
             event_box.emit("refresh ui", null);
@@ -175,7 +175,7 @@ export class ActionPanel implements IComponent
 
             const dragging_move = this.dragging.action.action.move;
 
-            const ordered_moves = this.game.staging_area.move.moves
+            const ordered_moves = this.game.context.staging_area.move.moves
                 .map((move, index) =>
                 {
                     const order = move.equals(dragging_move) ? get_dragging_order() : index * 2;
@@ -184,7 +184,7 @@ export class ActionPanel implements IComponent
                 .sort((a, b) => a.order - b.order)
                 .map(({ move }) => move);
 
-            this.game.prepare_moves(ordered_moves);
+            this.game.context.prepare_moves(ordered_moves);
 
             this.dragging.placeholder.remove();
             this.dragging = null;

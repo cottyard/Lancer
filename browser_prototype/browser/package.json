@@ -3,6 +3,6 @@
     "tsify": "^5.0.4"
   },
   "scripts": {
-    "build": "browserify solitude.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js"
+    "build": "browserify main.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js"
   }
 }

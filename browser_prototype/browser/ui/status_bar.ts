@@ -30,7 +30,7 @@ export class StatusBar implements IComponent
                 this.game.context.players_name[player] || "",
                 this.game.context.present.supply(player) || 0,
                 this.game.context.present.supply_income(player),
-                this.game.cost,
+                this.game.context.cost,
                 player == this.game.context.player
             ));
 

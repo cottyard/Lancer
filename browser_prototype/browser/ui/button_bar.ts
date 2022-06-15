@@ -95,7 +95,7 @@ export class ButtonBar implements IButtonBar
 
         if (this.game.context.status == GameContextStatus.WaitForPlayer)
         {
-            if (!this.game.sufficient_fund())
+            if (!this.game.context.sufficient_fund())
             {
                 this.submit_button.disabled = true;
                 this.submit_button.innerText = "Insufficient supply";
@@ -137,12 +137,12 @@ export class ButtonBar implements IButtonBar
             height: "40px"
         });
 
-        if (!this.game.is_playing())
+        if (!this.game.context.is_playing())
         {
             let new_game = DomHelper.create_button();
             new_game.onclick = () => { this.game.new_game(); };
 
-            if (this.game.is_in_queue())
+            if (this.game.context.is_in_queue())
             {
                 new_game.innerText = "Finding opponent...";
                 new_game.disabled = true;
@@ -165,7 +165,7 @@ export class ButtonBar implements IButtonBar
             player_name.style.width = "80px";
             player_name.style.resize = "none";
 
-            if (this.game.is_in_queue())
+            if (this.game.context.is_in_queue())
             {
                 player_name.readOnly = true;
             }
@@ -174,13 +174,13 @@ export class ButtonBar implements IButtonBar
             this.dom_element.appendChild(player_name);
         }
 
-        if (this.game.is_playing())
+        if (this.game.context.is_playing())
         {
             let submit_button = DomHelper.create_button();
 
             if (this.game.context.status == GameContextStatus.WaitForPlayer)
             {
-                if (this.game.sufficient_fund())
+                if (this.game.context.sufficient_fund())
                 {
                     submit_button.onclick = () => { this.game.submit_move(); };
                 }
@@ -190,7 +190,7 @@ export class ButtonBar implements IButtonBar
             this.submit_button = submit_button;
         }
 
-        if (this.game.is_finished())
+        if (this.game.context.is_finished())
         {
             let text: string;
 
@@ -218,7 +218,7 @@ export class ButtonBar implements IButtonBar
             flexGrow: 1
         }));
 
-        if (!this.game.is_not_started() && !this.game.is_in_queue())
+        if (!this.game.context.is_not_started() && !this.game.context.is_in_queue())
         {
             this.last_round_button = DomHelper.create_button();
 
@@ -252,7 +252,7 @@ export class ButtonBar implements IButtonBar
                 }
             };
 
-            if (this.game.is_first_round())
+            if (this.game.context.is_first_round())
             {
                 this.last_round_button.disabled = true;
             }

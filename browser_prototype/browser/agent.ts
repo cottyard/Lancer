@@ -194,7 +194,16 @@ export class OnlineAgent extends ServerAgent
 
             this.current_game_id = game_id;
 
-            event_box.emit("show last round", null);
+            this.context.clear_staged_moves();
+            if (this.context.present.round_count == 0)
+            {
+                event_box.emit("refresh board", null);
+            }
+            else
+            {
+                event_box.emit("show last round", null);
+            }
+            
             event_box.emit("refresh ui", null);
 
             this.round_begin_time = Date.now();

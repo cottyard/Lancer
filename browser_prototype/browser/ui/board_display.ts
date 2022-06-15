@@ -108,7 +108,7 @@ export class BoardDisplay implements IBoardDisplay
         else
         {
             this.displaying_actions = Players.create((p) => new PlayerAction(p));
-            this.displaying_actions[this.game.context.player] = this.game.action;
+            this.displaying_actions[this.game.context.player] = this.game.context.action;
             this.displaying_board = this.game.context.present.board;
             this.displaying_resources = this.game.context.present.resources;
         }
@@ -291,7 +291,7 @@ export class BoardDisplay implements IBoardDisplay
 
         if (this.selected && !this.selection_frozen)
         {
-            this.game.prepare_move(new Move(this.selected, this.current));
+            this.game.context.prepare_move(new Move(this.selected, this.current));
         }
 
         this.selected = null;

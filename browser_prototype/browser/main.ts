@@ -1,7 +1,6 @@
 import { OnlineAgent } from "./agent";
 import { Player } from "../common/entity";
 import { GameContext, GameUiFacade } from "./game";
-import { PlayerMoveStagingArea } from "./staging_area";
 import { ActionPanel } from "./ui/action_panel";
 import { BoardDisplay } from "./ui/board_display";
 import { ButtonBar } from "./ui/button_bar";
@@ -18,10 +17,8 @@ export function main()
             [Player.P1]: 'player 1',
             [Player.P2]: 'player 2'
         });
-    let staging_area = new PlayerMoveStagingArea(Player.P1);
     let facade = new GameUiFacade(
         context, 
-        staging_area,
         new OnlineAgent(context));
 
     let board_display = new BoardDisplay(facade);
@@ -42,10 +39,6 @@ export function main()
         for (let c of ui_components)
         {
             c.render();
-        }
-        if (staging_area.move.player != context.player)
-        {
-            staging_area.reset(context.player);
         }
     });
 
