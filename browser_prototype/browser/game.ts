@@ -36,6 +36,7 @@ export interface IGameContext
     clear_all(): void;
     clear_staged_moves(): void;
     is_playing(): boolean;
+    is_waiting(): boolean;
     is_in_queue(): boolean;
     is_finished(): boolean;
     is_not_started(): boolean;
@@ -144,6 +145,14 @@ export class GameContext implements IGameContext
             GameContextStatus.Submitting,
             GameContextStatus.WaitForPlayer,
             GameContextStatus.Loading,
+        ].indexOf(this.status) > -1;
+    }
+
+    is_waiting(): boolean
+    {
+        return [
+            GameContextStatus.WaitForOpponent,
+            GameContextStatus.WaitForPlayer
         ].indexOf(this.status) > -1;
     }
 
