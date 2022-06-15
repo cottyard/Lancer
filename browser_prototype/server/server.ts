@@ -9,6 +9,9 @@ import fs from 'fs'
 const options = {
     key: fs.readFileSync(process.env.KEY_FILE!),
     cert: fs.readFileSync(process.env.CERT_FILE!),
+    requestCert: false,
+    hostname: 'www.cottyard.xyz',
+    port: 8000
 }
 
 const app: Express = express();
