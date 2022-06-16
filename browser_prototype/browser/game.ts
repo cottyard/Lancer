@@ -206,7 +206,6 @@ export class GameUiFacade implements IGameUiFacade
 
     new_game(): void
     {
-        this.context.clear_all();
         this.server_agent.new_game(this.player_name);
     }
 }

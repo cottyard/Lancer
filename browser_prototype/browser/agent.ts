@@ -127,6 +127,7 @@ export class OnlineAgent extends ServerAgent
                 let session_id = JSON.parse(session);
                 console.log('new session:', session_id);
                 this.context.status = GameContextStatus.InQueue;
+                this.context.clear_all();
                 this.session_id = session_id;
                 this.latest_game_id = null;
                 this.current_game_id = null;

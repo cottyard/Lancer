@@ -150,11 +150,6 @@ class Session
         return this.rounds[this.rounds.length - 1];
     }
 
-    // is_ended(): boolean
-    // {
-    //     return this.current_game_round().round.status() != GameStatus.Ongoing;
-    // }
-
     static process_all()
     {
         for (let id in session_store)
