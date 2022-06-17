@@ -133,18 +133,25 @@ export class BoardDisplay implements IBoardDisplay
             this.render_heat();
         }
 
-        this.update_displaying_items();
-        for (let player_action of Array.from(Players.values(this.displaying_actions)))
+        try
         {
-            this.canvas.paint_actions(
-                new DisplayPlayerAction(player_action), this.displaying_board.unit);
-        }
-        if (this.show_last_round)
-        {
-            for (let martyr of this.game.context.present.martyrs)
+            this.update_displaying_items();
+            for (let player_action of Array.from(Players.values(this.displaying_actions)))
             {
-                this.canvas.paint_victim_indicator(martyr.quester.from_grid);
+                this.canvas.paint_actions(
+                    new DisplayPlayerAction(player_action), this.displaying_board.unit);
             }
+            if (this.show_last_round)
+            {
+                for (let martyr of this.game.context.present.martyrs)
+                {
+                    this.canvas.paint_victim_indicator(martyr.quester.from_grid);
+                }
+            }
+        }
+        catch (e)
+        {
+            console.log("error rendering indicators", e);
         }
     }
 

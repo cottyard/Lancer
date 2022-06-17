@@ -62,10 +62,11 @@ export class LocalAgent extends ServerAgent
         }
         catch(e)
         {
-            return;
+            throw Error("received invalid move");
         }
 
         update_context_status(this.context);
+        this.context.clear_staged_moves();
 
         event_box.emit("show last round", null);
         event_box.emit("refresh ui", null);
@@ -73,10 +74,49 @@ export class LocalAgent extends ServerAgent
 
     new_game(): void 
     {
+        this.context.clear_all();
         this.context.new_round(GameRound.new_game());
         this.context.status = GameContextStatus.WaitForPlayer;
-        event_box.emit("refresh ui", null);
         event_box.emit("refresh board", null);
+        event_box.emit("refresh ui", null);
+    }
+}
+
+export class AiBattleAgent extends ServerAgent
+{
+    submit_move(move: PlayerMove): void
+    {
+        let moves = Players.create((p) => new PlayerMove(p));
+        let player = move.player;
+        let op = opponent(player);
+
+        moves[player] = AI.get_random_move(this.context.present, player);
+        moves[op] = AI.get_random_move(this.context.present, op);
+
+        try
+        {
+            let next = this.context.present.proceed(moves);
+            this.context.new_round(next);
+        }
+        catch(e)
+        {
+            throw Error("received invalid move");
+        }
+
+        update_context_status(this.context);
+        this.context.clear_staged_moves();
+        
+        event_box.emit("refresh board", null);
+        event_box.emit("refresh ui", null);
+    }
+
+    new_game(): void 
+    {
+        this.context.clear_all();
+        this.context.new_round(GameRound.new_game());
+        this.context.status = GameContextStatus.WaitForPlayer;
+        event_box.emit("refresh board", null);
+        event_box.emit("refresh ui", null);
     }
 }
 
