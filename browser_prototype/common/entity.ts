@@ -389,7 +389,7 @@ export class Action implements ICopyable<Action>, ISerializable
         switch (this.type)
         {
             case ActionType.Defend:
-                return 2;
+                return 1;
             case ActionType.Move:
                 return this.move_cost(this.unit, this.move);
             case ActionType.Upgrade:
