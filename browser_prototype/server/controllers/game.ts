@@ -28,6 +28,7 @@ let match_queue: QueueItem[] = [];
 let move_stash_store: {[id: ServerGameRoundId]: PlayersMoveStash} = {};
 let session_store: {[id: SessionId]: Session} = {};
 let game_round_store: {[id: ServerGameRoundId]: ServerGameRound} = {};
+let name_store: {[name: string]: SessionId} = {};
 
 class ServerGameRound
 {
@@ -134,6 +135,21 @@ class Session
         }
     }
 
+    recycle(): void
+    {
+        for (let player of Players.both())
+        {
+            delete name_store[this.players_name[player]];
+        }
+
+        for (let round of this.rounds)
+        {
+            delete move_stash_store[round.id];
+            delete game_round_store[round.id];
+        }
+        delete session_store[this.id];
+    }
+
     update(round: ServerGameRound, time: Players<number>)
     {
         this.rounds.push(round);
@@ -173,12 +189,7 @@ class Session
             let session = session_store[id];
             if (session.expired())
             {
-                for (let round of session.rounds)
-                {
-                    delete move_stash_store[round.id];
-                    delete game_round_store[round.id];
-                }
-                delete session_store[id];
+                session.recycle();
             }
         }
     }
@@ -244,6 +255,11 @@ const submit_move = async (req: Request, res: Response, next: NextFunction) => {
 const join_new_session = async (req: Request, res: Response, next: NextFunction) => {
     let name: string = req.params.name;
 
+    if (name in name_store)
+    {
+        return res.status(200).json(name_store[name]);
+    }
+
     if (match_queue.length > 0)
     {
         let item = match_queue.pop()!;
@@ -259,12 +275,14 @@ const join_new_session = async (req: Request, res: Response, next: NextFunction)
             [Player.P2]: name
         });
         
+        name_store[name] = item.session_id;
         return res.status(200).json(item.session_id);
     }
     else
     {
         let session_id = session_id_generator.gen();
         match_queue.push(new QueueItem(session_id, name));
+        name_store[name] = session_id;
         return res.status(200).json(session_id);
     }
 };
