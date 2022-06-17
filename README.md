@@ -1,4 +1,5 @@
-Lancer is the new Chess.
+Lancer is the same-time chess.
 
-Under browser_prototype/browser, `npm run build` to compile.
-Under browser_prototype/server, `npm run dev` to start server, or `tsc` to compile.
+Under browser_prototype/browser, `npm install browserify` and `npm install tsify` if you haven't already. Then `npm run build` to compile.
+
+Under browser_prototype/server, `npm install` to install all dependencies. `npm run dev` to start local server. Or `tsc` to compile first and `node build/server/server.js` to start server.
