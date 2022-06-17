@@ -71,26 +71,6 @@ export class BoardDisplay implements IBoardDisplay
         this.render_indicators();
     }
 
-    // test_run()
-    // {
-    //     this.canvas.paint_background();
-
-    //     this.context.present.board.put(new Coordinate(4,4), this.create_perfect(Player.P1, Lancer));
-    //     this.context.present.board.put(new Coordinate(5,5), this.create_perfect(Player.P1, Knight));
-    //     this.context.present.board.put(new Coordinate(3,5), this.create_perfect(Player.P1, Knight));
-    //     this.context.present.board.put(new Coordinate(5,7), this.create_perfect(Player.P2, Warrior));
-    //     this.context.present.board.put(new Coordinate(6,7), this.create_perfect(Player.P1, Spearman));
-    //     this.context.present.board.put(new Coordinate(7,7), this.create_perfect(Player.P1, Spearman));
-    //     this.context.present.board.put(new Coordinate(4,2), this.create_perfect(Player.P1, Soldier));
-    //     this.context.present.board.put(new Coordinate(4,1), this.create_perfect(Player.P2, Soldier));
-    //     this.context.present.board.put(new Coordinate(1,1), this.create_perfect(Player.P2, Soldier));
-    //     this.context.present.board.put(new Coordinate(4,8), new Swordsman(Player.P1));
-
-    //     this.context.present.board.put(new Coordinate(2,2), this.create_perfect(Player.P1, King));
-
-    //     this.run();
-    // }
-
     highlight(coord: Coordinate)
     {
         this.canvas.paint_grid_indicator(coord);

@@ -181,6 +181,11 @@ export class OnlineAgent extends ServerAgent
 
     load_game_round(game_id: string)
     {
+        if (this.context.status == GameContextStatus.Loading)
+        {
+            return;
+        }
+        
         this.context.status = GameContextStatus.Loading;
         event_box.emit("refresh ui", null);
 
