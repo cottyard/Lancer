@@ -113,8 +113,6 @@ export class OnlineAgent extends ServerAgent
                 event_box.emit("refresh ui", null);
             });
         }
-
-        event_box.emit("refresh ui", null);
     }
 
     new_game(name: string): void
@@ -153,16 +151,32 @@ export class OnlineAgent extends ServerAgent
         }
 
         let name_check = false;
+        let updated = false;
         for (let player of Players.both())
         {
-            this.context.players_name[player] = status['players_name'][player];
-            this.context.players_moved[player] = status['players_moved'][player];
-            this.context.consumed_msec[player] = status['players_time'][player];
-            
+            if (this.context.players_name[player] != status['players_name'][player])
+            {
+                this.context.players_name[player] = status['players_name'][player];
+                updated = true;
+            }
+            if (this.context.players_moved[player] != status['players_moved'][player])
+            {
+                this.context.players_moved[player] = status['players_moved'][player];
+                updated = true;
+            }
+            if (this.context.consumed_msec[player] != status['players_time'][player])
+            {
+                this.context.consumed_msec[player] = status['players_time'][player];
+                updated = true;
+            }
             if (this.player_name == this.context.players_name[player])
             {
-                this.context.player = player;
                 name_check = true;
+                if (this.context.player != player)
+                {
+                    this.context.player = player;
+                    updated = true;
+                }
             }
         }
 
@@ -171,7 +185,15 @@ export class OnlineAgent extends ServerAgent
             throw Error("player name not found");
         }
 
-        event_box.emit("refresh ui", null);
+        if (updated)
+        {
+            /* refresh ui only when context is updated here
+               because this method is called on a regular basis
+               refreshing the ui too often will interfere with the buttons
+               when the user clicks a button but it refreshes before mouse release
+               the click will become ineffective */
+            event_box.emit("refresh ui", null);
+        }
 
         if (this.latest_game_id != this.current_game_id)
         {
