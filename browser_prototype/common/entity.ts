@@ -444,9 +444,9 @@ export class Action implements ICopyable<Action>, ISerializable
             case 1:
                 return 5;
             case 2:
-                return 6;
+                return 10;
             case 3:
-                return 7;
+                return 15;
             default:
                 throw new Error("Wrong level");
         }

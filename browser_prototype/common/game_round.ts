@@ -6,8 +6,6 @@ import { GameBoard, Martyr, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }
 
-const supply_basic_incremental: number = 7;
-
 export enum GameStatus
 {
     Ongoing,
@@ -150,7 +148,7 @@ export class GameRound implements ISerializable
                 resource_income += Rule.resource_grid_supplies[i];
             }
         }
-        return supply_basic_incremental + resource_income;
+        return Rule.supply_basic + resource_income;
     }
 
     static set_out(board: Board<Unit>): void
@@ -195,8 +193,8 @@ export class GameRound implements ISerializable
         return new GameRound(
             0, new GameBoard(board),
             {
-                [Player.P1]: supply_basic_incremental,
-                [Player.P2]: supply_basic_incremental
+                [Player.P1]: Rule.supply_basic,
+                [Player.P2]: Rule.supply_basic
             }, null, [],
             resources);
     }
