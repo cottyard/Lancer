@@ -403,31 +403,37 @@ export class Action implements ICopyable<Action>, ISerializable
     {
         if (unit.level == 1)
         {
-            return 2;
+            return 1;
         }
-        else if (unit.level == 2)
+        
+        if (unit.level == 2)
         {
-            let cost: number;
-            if (move.which_skill()!.is_leap())
+            if (unit.type() == Rider)
             {
-                cost = 3;
+                return 2;
             }
             else
             {
-                cost = 2;
+                let cost: number;
+                if (move.which_skill()!.is_leap())
+                {
+                    cost = 3;
+                }
+                else
+                {
+                    cost = 2;
+                }
+    
+                if (unit.type() == Warrior)
+                {
+                    cost--;
+                }
+    
+                return cost;
             }
-
-            if (unit.type() == Warrior)
-            {
-                cost--;
-            }
-
-            return cost;
         }
-        else
-        {
-            return 3;
-        }
+        
+        return 3;
     }
 
     private upgrade_cost(unit: Unit): number
