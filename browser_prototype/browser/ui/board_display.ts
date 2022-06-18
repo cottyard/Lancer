@@ -335,7 +335,7 @@ export class BoardDisplay implements IBoardDisplay
                 progress = status.progress / ResourceStatus.full;
             }
 
-            this.canvas.paint_resource(coord, style, progress);
+            this.canvas.paint_resource(coord, style, progress, status.captured ? 3 : 2);
         }
         
         this.displaying_board.unit.iterate_units((unit, coord) =>

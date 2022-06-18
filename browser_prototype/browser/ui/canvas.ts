@@ -128,14 +128,14 @@ export class GameCanvas
         }
     }
 
-    paint_resource(coord: Coordinate, style: string, progress: number)
+    paint_resource(coord: Coordinate, style: string, progress: number, width: number)
     {
         let grid_size = g.settings.grid_size;
         using(new Renderer(this.st_ctx), (renderer) =>
         {
             renderer.rectangle_dashed(
                 new Position(coord.x * grid_size, coord.y * grid_size),
-                grid_size, grid_size, 2, style, progress);
+                grid_size, grid_size, width, style, progress);
         });
     }
 
@@ -146,7 +146,7 @@ export class GameCanvas
         let width = 6;
         using(new Renderer(this.am_ctx), (renderer) =>
         {
-            renderer.set_color(g.const.STYLE_RED);
+            renderer.set_color(g.const.STYLE_RED_LIGHT);
             renderer.translate(center.add(new PositionDelta(
                 g.settings.grid_size / 2 - 10,
                 -g.settings.grid_size / 2 + 10)));
