@@ -277,7 +277,7 @@ export class GameCanvas
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
             const color = DisplayAction.display_action_style.get(a.type)!;
-            const skill = a.action.move.which_skill()!;
+            const skill = a.action.move.which_skill();
             const shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;

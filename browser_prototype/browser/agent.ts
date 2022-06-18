@@ -1,9 +1,10 @@
-import { AI } from "./ai/benchmark";
+import { monkey } from "./ai/monkey";
 import { opponent, Player, PlayerMove, Players } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
 import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
 import { event_box } from "./ui/ui";
+import { gorilla } from "./ai/gorilla";
 
 export interface IServerAgent
 {
@@ -53,7 +54,7 @@ export class LocalAgent extends ServerAgent
         let moves = Players.create((p) => new PlayerMove(p));
         moves[move.player] = move;
         let op = opponent(move.player);
-        moves[op] = AI.get_random_move(this.context.present, op);
+        moves[op] = monkey(this.context.present, op);
 
         try
         {
@@ -62,7 +63,9 @@ export class LocalAgent extends ServerAgent
         }
         catch(e)
         {
-            throw Error("received invalid move");
+            console.log("received invalid move");
+            console.log(e);
+            return;
         }
 
         update_context_status(this.context);
@@ -84,14 +87,27 @@ export class LocalAgent extends ServerAgent
 
 export class AiBattleAgent extends ServerAgent
 {
+    constructor(context: IGameContext)
+    {
+        super(context);
+
+        // setInterval(() =>
+        // {
+        //     if (!this.context.is_not_started() && !this.context.is_finished())
+        //     {
+        //         this.submit_move(new PlayerMove(this.context.player));
+        //     }
+        // }, 1000);
+    }
+
     submit_move(move: PlayerMove): void
     {
         let moves = Players.create((p) => new PlayerMove(p));
         let player = move.player;
         let op = opponent(player);
 
-        moves[player] = AI.get_random_move(this.context.present, player);
-        moves[op] = AI.get_random_move(this.context.present, op);
+        moves[player] = gorilla(this.context.present, player);
+        moves[op] = monkey(this.context.present, op);
 
         try
         {
@@ -100,7 +116,9 @@ export class AiBattleAgent extends ServerAgent
         }
         catch(e)
         {
-            throw Error("received invalid move");
+            console.log("received invalid move");
+            console.log(e);
+            return;
         }
 
         update_context_status(this.context);
@@ -247,7 +265,7 @@ export class OnlineAgent extends ServerAgent
         {
             return;
         }
-        
+
         this.context.status = GameContextStatus.Loading;
         event_box.emit("refresh ui", null);
 

@@ -294,6 +294,7 @@ export class Move implements ISerializable, ICopyable<Move>, IHashable
 {
     constructor(public from: Coordinate, public to: Coordinate)
     {
+        this.which_skill();
     }
 
     equals(other: Move): boolean
@@ -301,18 +302,11 @@ export class Move implements ISerializable, ICopyable<Move>, IHashable
         return this.from.equals(other.from) && this.to.equals(other.to);
     }
 
-    which_skill(): Skill | null
+    which_skill(): Skill
     {
         let dx = this.to.x - this.from.x;
         let dy = this.to.y - this.from.y;
-        if (Skill.is_valid(dx, dy))
-        {
-            return new Skill(dx, dy);
-        }
-        else
-        {
-            return null;
-        }
+        return new Skill(dx, dy);
     }
 
     hash(): string
@@ -384,7 +378,7 @@ export class Action implements ICopyable<Action>, ISerializable
         return new Action(this.move.copy(), this.type, this.unit.copy());
     }
 
-    cost(): number
+    get cost(): number
     {
         switch (this.type)
         {
@@ -408,14 +402,14 @@ export class Action implements ICopyable<Action>, ISerializable
         
         if (unit.level == 2)
         {
-            if (unit.type() == Rider)
+            if (unit.type == Rider)
             {
                 return 2;
             }
             else
             {
                 let cost: number;
-                if (move.which_skill()!.is_leap())
+                if (move.which_skill().is_leap())
                 {
                     cost = 3;
                 }
@@ -424,7 +418,7 @@ export class Action implements ICopyable<Action>, ISerializable
                     cost = 2;
                 }
     
-                if (unit.type() == Warrior)
+                if (unit.type == Warrior)
                 {
                     cost--;
                 }
@@ -501,7 +495,7 @@ export class PlayerAction implements ISerializable
     {
         return this.actions.map((a) =>
         {
-            return a.cost();
+            return a.cost;
         }).reduce((a, b) => a + b, 0);
     }
 
@@ -531,20 +525,23 @@ export class PlayerAction implements ISerializable
 
 export abstract class Unit implements ISerializable, ICopyable<Unit>
 {
-    readonly perfect: SkillSet;
     current: SkillSet;
     readonly promotion_options: AdvancedUnitConstructor[] = [];
     readonly level: number = 0;
 
     constructor(public owner: Player, current: SkillSet | null = null)
     {
-        this.perfect = perfect_skills[this.type().id];
         this.current = current == null ? new SkillSet() : current;
+    }
+
+    get perfect(): SkillSet
+    {
+        return perfect_skills[this.type.id];
     }
 
     serialize(): string
     {
-        return JSON.stringify([this.type().name, this.owner, this.current.serialize()]);
+        return JSON.stringify([this.type.name, this.owner, this.current.serialize()]);
     }
 
     copy(): Unit
@@ -556,7 +553,7 @@ export abstract class Unit implements ISerializable, ICopyable<Unit>
 
     endow_inborn(): void
     {
-        let inborn = inborn_skills[this.type().id];
+        let inborn = inborn_skills[this.type.id];
         if (!inborn)
         {
             return;
@@ -564,7 +561,7 @@ export abstract class Unit implements ISerializable, ICopyable<Unit>
         this.current = this.owner == Player.P1 ? inborn.copy() : inborn.flip();
     }
 
-    type(): UnitConstructor
+    get type(): UnitConstructor
     {
         return <UnitConstructor> this.constructor;
     }
@@ -717,7 +714,7 @@ abstract class BasicUnit extends UnitConstructor
 
     potential(): SkillSet
     {
-        let potentials = super.potential();
+        let potentials = new SkillSet();
         if (this.is_promotion_ready())
         {
             for (let future_type of this.promotion_options)
@@ -725,8 +722,11 @@ abstract class BasicUnit extends UnitConstructor
                 potentials = potentials.union(perfect_skills[future_type.id]);
             }
         }
-
-        return potentials;
+        else
+        {
+            potentials = this.perfect;
+        }
+        return potentials.subtract(this.current);;
     }
 }
 

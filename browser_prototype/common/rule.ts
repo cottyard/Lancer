@@ -154,7 +154,7 @@ export class Rule
 
             if (unit.owner == target.owner)
             {
-                if (target.type() != King)
+                if (target.type != King)
                 {
                     return new Action(move, ActionType.Defend, unit);
                 }
@@ -189,7 +189,7 @@ export class Rule
             for (let c of Rule.reachable_by(board, coord))
             {
                 let grid = board.at(c);
-                if (grid && grid.type() == King && grid.owner == unit.owner)
+                if (grid && grid.type == King && grid.owner == unit.owner)
                 {
                     // King cannot be defended, so don't heat up there.
                     continue;
@@ -284,7 +284,6 @@ export class Rule
         {
             return [];
         }
-
         return Rule.reachable_by_skills(coord, unit.potential().as_list());
     }
 
@@ -296,8 +295,11 @@ export class Rule
             if (unit.owner == player)
             {
                 let reachable = this.reachable_by(board.unit, c);
+                reachable = reachable.filter((t) => {
+                    let u = board.unit.at(t);
+                    return !(u && u.type == King && u.owner == player);
+                });
                 let upgradable = this.upgradable_by(board.unit, c);
-
                 for (let dest of reachable.concat(upgradable))
                 {
                     all.push(new Move(c, dest));
@@ -335,7 +337,7 @@ export class Rule
             for (let action of player_action.extract((a): a is Action => a.type == ActionType.Upgrade))
             {
                 let unit = board.at(action.move.from)!;
-                let skill = action.move.which_skill()!;
+                let skill = action.move.which_skill();
                 if (unit.is_promotion_ready())
                 {
                     let promoted = unit.promote(skill);

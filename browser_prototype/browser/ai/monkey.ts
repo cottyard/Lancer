@@ -1,10 +1,42 @@
 import { Player, PlayerMove } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
 import { Rule } from "../../common/rule";
-import { PlayerMoveStagingArea } from "../staging_area";
 
-export class AI
+export function monkey(round: GameRound, player: Player): PlayerMove
 {
+    let all_moves = Rule.valid_moves(round.board, player);
+    let all_actions = all_moves.map((m) => Rule.validate_move(round.board, m, player));
+    let cost = 0;
+    let res = new PlayerMove(player);
+    let supply = round.supply(player);
+    let move_set = new Set();
+    
+    do
+    {
+        if (all_actions.length <= 0)
+        {
+            break;
+        }
+        let random_index = Math.floor(Math.random() * all_actions.length);
+        let action = all_actions[random_index];
+        all_actions.splice(random_index, 1);
+        if (action.cost + cost > supply)
+        {
+            break;
+        }
+        if (move_set.has(action.unit))
+        {
+            continue;
+        }
+        move_set.add(action.unit);
+        res.moves.push(action.move);
+        cost += action.cost;
+    } while (1);
+    return res;
+}
+
+// export class Benchmark
+// {
     // static core_benchmark()
     // {
     //     g.initialize();
@@ -69,35 +101,4 @@ export class AI
 
     //     return picked_moves;
     // }
-
-    static get_random_move(round: GameRound, player: Player): PlayerMove
-    {
-        let supply = round.supply(player);
-        let cost = 0;
-        let stage = new PlayerMoveStagingArea(player);
-
-        while (cost < supply)
-        {
-            let all = Rule.valid_moves(round.board, player);
-            if (!all)
-            {
-                break;
-            }
-            let random_move = all[Math.floor(Math.random() * all.length)];
-
-            stage.prepare_move(round.board, random_move);
-            cost = stage.cost(round.board);
-        }
-        
-        while (cost > supply)
-        {
-            stage.pop_move();
-            cost = stage.cost(round.board);
-        }
-
-        // console.log('round ', round.round_count)
-        // console.log('cost ', cost, ' supply ', supply)
-
-        return stage.move;
-    }
-}
+// }

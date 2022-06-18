@@ -21,10 +21,10 @@ export let CanvasUnitFactory = function (unit: Unit): CanvasUnit
         [Knight, CanvasKnight]
     ]);
 
-    let constructor = cmap.get(unit.type());
+    let constructor = cmap.get(unit.type);
     if (!constructor)
     {
-        throw new Error(`Canvas ${ unit.type().name } missing`);
+        throw new Error(`Canvas ${ unit.type.name } missing`);
     }
     return new constructor(unit);
 };

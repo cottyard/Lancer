@@ -96,7 +96,7 @@ export class ActionPanel implements IComponent
 
         // cost.
         div.appendChild(DomHelper.create_text(
-            "🍞" + action.action.cost().toString(),
+            "🍞" + action.action.cost.toString(),
             { 'font-weight': 'bold' }
         ));
 
