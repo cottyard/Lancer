@@ -16,7 +16,7 @@ export class ButtonBar implements IButtonBar
     private _view_last_round_on_hover = true;
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
-    private view_last_round_handle: number | null = null;
+    private view_last_round_handle: NodeJS.Timeout | null = null;
 
     constructor(
         public dom_element: HTMLDivElement,
