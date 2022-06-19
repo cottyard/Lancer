@@ -1,8 +1,13 @@
 {
   "dependencies": {
+    "@capacitor/android": "^3.6.0",
+    "@capacitor/core": "^3.6.0",
     "tsify": "^5.0.4"
   },
   "scripts": {
     "build": "browserify main.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^3.6.0"
   }
 }
