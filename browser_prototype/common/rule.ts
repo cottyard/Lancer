@@ -15,7 +15,7 @@ export class Rule
         new Coordinate(1, 7), new Coordinate(4, 7), new Coordinate(7, 7),
     ];
 
-    static readonly supply_basic: number = 9;
+    static readonly supply_basic: number = 7;
 
     static readonly resource_grid_supplies: number[] = 
         [1, 1, 1, 1, 2, 1, 1, 1, 1];

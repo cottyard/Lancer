@@ -908,7 +908,7 @@ const inborn_skills_literal: { [unit_name: string]: string | undefined; } =
     -----
     -----
     -----
-    -----`,
+    -x-x-`,
     
     'Soldier':
     `-----
