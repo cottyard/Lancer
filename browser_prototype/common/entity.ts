@@ -411,7 +411,7 @@ export class Action implements ICopyable<Action>, ISerializable
                 let cost: number;
                 if (move.which_skill().is_leap())
                 {
-                    cost = 3;
+                    cost = 4;
                 }
                 else
                 {
@@ -420,7 +420,7 @@ export class Action implements ICopyable<Action>, ISerializable
     
                 if (unit.type == Warrior)
                 {
-                    cost--;
+                    cost /= 2;
                 }
     
                 return cost;
@@ -446,11 +446,11 @@ export class Action implements ICopyable<Action>, ISerializable
             case 2:
                 if (unit.type == Rider)
                 {
-                    return 9;
+                    return 8;
                 }
                 else
                 {
-                    return 12;
+                    return 15;
                 }
             case 3:
                 return 15;
