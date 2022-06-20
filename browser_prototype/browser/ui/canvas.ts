@@ -143,12 +143,13 @@ export class GameCanvas
     {
         let center = GameCanvas.get_grid_center(coordinate);
         let size = 7;
-        let width = 6;
+        let width = 4;
         using(new Renderer(this.am_ctx), (renderer) =>
         {
             renderer.set_color(g.const.STYLE_RED);
             renderer.translate(center);
 
+            renderer.circle(new Position(0, 0), size * 1.414, width, g.const.STYLE_WHITE);
             renderer.line(
                 new Position(-size, -size),
                 new Position(size, size),
@@ -312,7 +313,7 @@ export class GameCanvas
                 rider_move = true;
             }
             else if (
-                (Math.abs(skill.y) == 1 && Math.abs(skill.x) == 0) ||
+                (Math.abs(skill.x) == 1 && Math.abs(skill.y) == 0) ||
                 (Math.abs(skill.x) == 0 && Math.abs(skill.y) == 1))
             {
                 adjacent_move = true;
@@ -379,7 +380,7 @@ export class GameCanvas
             {
                 if (adjacent_move)
                 {
-                    shrink -= 3;
+                    shrink -= 4;
                 }
                 using(new Renderer(this.am_ctx), (renderer) =>
                 {
