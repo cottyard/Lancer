@@ -1,6 +1,7 @@
 import { PlayerMove } from "../common/entity";
 
 type callback = (res: string) => void;
+type timeout_callback = () => void;
 
 export class Net
 {
@@ -39,7 +40,7 @@ export class Net
         })();
     }
     
-    static remote_get(url: string, next: callback): void
+    static remote_get(url: string, next: callback, timeout: timeout_callback): void
     {
         let req = new XMLHttpRequest();
         req.open('GET', `${ url }`);
@@ -64,6 +65,7 @@ export class Net
         req.ontimeout = () =>
         {
             console.log('timeout:', url);
+            timeout();
         };
     
         req.send();
@@ -87,12 +89,18 @@ export class Net
     
     static query_match(session_id: string, next: callback)
     {
-        this.remote_get(`session/${ session_id }/status`, next);
+        let q = this.query_match.bind(this);
+        this.remote_get(`session/${ session_id }/status`, next, () => {
+            q(session_id, next);
+        });
     }
     
     static fetch_game(game_id: string, next: callback)
     {
-        this.remote_get(`game/${ game_id }`, next);
+        let f = this.fetch_game.bind(this);
+        this.remote_get(`game/${ game_id }`, next, () => {
+            f(game_id, next);
+        });
     }
 }
 
