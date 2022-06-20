@@ -436,7 +436,7 @@ export class Action implements ICopyable<Action>, ISerializable
         
         if (unit.is_promotion_ready())
         {
-            level++;
+            return 15;
         }
 
         switch(level)
@@ -448,12 +448,16 @@ export class Action implements ICopyable<Action>, ISerializable
                 {
                     return 8;
                 }
+                else if (unit.type == Warrior)
+                {
+                    return 10;
+                }
                 else
                 {
-                    return 15;
+                    return 12;
                 }
             case 3:
-                return 15;
+                return 12;
             default:
                 throw new Error("Wrong level");
         }
