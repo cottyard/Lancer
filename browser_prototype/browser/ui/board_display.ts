@@ -278,7 +278,12 @@ export class BoardDisplay implements IBoardDisplay
 
         if (this.selected && !this.selection_frozen)
         {
-            this.game.context.prepare_move(new Move(this.selected, this.current));
+            try 
+            {
+                let m = new Move(this.selected, this.current);
+                this.game.context.prepare_move(m);
+            }
+            catch {};
         }
 
         this.selected = null;
