@@ -27,12 +27,12 @@ export class Net
             req.onerror = () =>
             {
                 console.log('post error:', url);
+                try_post();
             };
     
             req.ontimeout = () =>
             {
                 console.log('post timeout:', url);
-                console.log('retrying...');
                 try_post();
             };
     
