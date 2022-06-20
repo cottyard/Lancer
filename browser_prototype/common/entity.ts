@@ -442,9 +442,16 @@ export class Action implements ICopyable<Action>, ISerializable
         switch(level)
         {
             case 1:
-                return 5;
+                return 6;
             case 2:
-                return 10;
+                if (unit.type == Rider)
+                {
+                    return 9;
+                }
+                else
+                {
+                    return 12;
+                }
             case 3:
                 return 15;
             default:
