@@ -276,10 +276,11 @@ export class GameCanvas
             const to = GameCanvas.get_grid_center(a.action.move.to);
             const color = DisplayAction.display_action_style.get(a.type)!;
             const skill = a.action.move.which_skill();
-            const shrink = g.settings.grid_size / 2 - 5;
+            let shrink = g.settings.grid_size / 2 - 5;
             const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
             let go_around = false;
             let rider_move = false;
+            let adjacent_move = false;
 
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) &&
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
@@ -309,6 +310,12 @@ export class GameCanvas
                 (Math.abs(skill.x) == 2 && Math.abs(skill.y) == 1))
             {
                 rider_move = true;
+            }
+            else if (
+                (Math.abs(skill.y) == 1 && Math.abs(skill.x) == 0) ||
+                (Math.abs(skill.x) == 0 && Math.abs(skill.y) == 1))
+            {
+                adjacent_move = true;
             }
 
             if (go_around)
@@ -370,6 +377,10 @@ export class GameCanvas
             }
             else
             {
+                if (adjacent_move)
+                {
+                    shrink -= 3;
+                }
                 using(new Renderer(this.am_ctx), (renderer) =>
                 {
                     renderer.arrow(
