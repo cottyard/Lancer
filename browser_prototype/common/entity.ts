@@ -432,34 +432,31 @@ export class Action implements ICopyable<Action>, ISerializable
 
     private upgrade_cost(unit: Unit): number
     {
-        let level = unit.level;
-        
         if (unit.is_promotion_ready())
         {
             return 15;
         }
 
-        switch(level)
+        switch(unit.type)
         {
-            case 1:
+            case Soldier:
                 return 6;
-            case 2:
-                if (unit.type == Rider)
-                {
-                    return 8;
-                }
-                else if (unit.type == Warrior)
-                {
-                    return 10;
-                }
-                else
-                {
-                    return 12;
-                }
-            case 3:
+            case Barbarian:
+            case Archer:
+                return 5;
+            case Rider:
+                return 8;
+            case Warrior:
+                return 8;
+            case Swordsman:
+            case Spearman:
+                return 15;
+            case Lancer:
+                return 8;
+            case Knight:
                 return 12;
             default:
-                throw new Error("Wrong level");
+                throw new Error("Wrong type");
         }
     }
 
