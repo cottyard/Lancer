@@ -154,14 +154,7 @@ export class Rule
 
             if (unit.owner == target.owner)
             {
-                if (target.type != King)
-                {
-                    return new Action(move, ActionType.Defend, unit);
-                }
-                else
-                {
-                    throw new InvalidMove("cannot defend King");
-                }
+                return new Action(move, ActionType.Defend, unit);
             }
             else
             {
@@ -188,12 +181,6 @@ export class Rule
         {
             for (let c of Rule.reachable_by(board, coord))
             {
-                let grid = board.at(c);
-                if (grid && grid.type == King && grid.owner == unit.owner)
-                {
-                    // King cannot be defended, so don't heat up there.
-                    continue;
-                }
                 heat.at(c).heatup(unit.owner);
             }
         });
