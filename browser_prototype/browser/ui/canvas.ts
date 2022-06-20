@@ -146,10 +146,8 @@ export class GameCanvas
         let width = 6;
         using(new Renderer(this.am_ctx), (renderer) =>
         {
-            renderer.set_color(g.const.STYLE_RED_LIGHT);
-            renderer.translate(center.add(new PositionDelta(
-                g.settings.grid_size / 2 - 10,
-                -g.settings.grid_size / 2 + 10)));
+            renderer.set_color(g.const.STYLE_RED);
+            renderer.translate(center);
 
             renderer.line(
                 new Position(-size, -size),
