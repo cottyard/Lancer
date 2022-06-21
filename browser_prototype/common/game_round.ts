@@ -156,8 +156,8 @@ export class GameRound implements ISerializable
         return new GameRound(
             0, new GameBoard(board),
             {
-                [Player.P1]: Rule.supply_basic,
-                [Player.P2]: Rule.supply_basic
+                [Player.P1]: Rule.supply_basic * 2,
+                [Player.P2]: Rule.supply_basic * 2
             }, null, [],
             resources);
     }
