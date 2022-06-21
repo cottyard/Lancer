@@ -1,39 +1,31 @@
 import { Player, PlayerMove } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
 import { Rule } from "../../common/rule";
+import { PlayerMoveStagingArea } from "../staging_area";
 
 export function monkey(round: GameRound, player: Player): PlayerMove
 {
     let all_moves = Rule.valid_moves(round.board, player);
-    let all_actions = Rule.validate_player_move(
-        round.board, new PlayerMove(player, all_moves)).actions;
-    let cost = 0;
-    let res = new PlayerMove(player);
     let supply = round.supply(player);
-    let move_set = new Set();
+    let staging_area = new PlayerMoveStagingArea(player);
     
     do
     {
-        if (all_actions.length <= 0)
+        if (all_moves.length <= 0)
         {
             break;
         }
-        let random_index = Math.floor(Math.random() * all_actions.length);
-        let action = all_actions[random_index];
-        all_actions.splice(random_index, 1);
-        if (action.cost + cost > supply)
+        let random_index = Math.floor(Math.random() * all_moves.length);
+        let m = all_moves[random_index];
+        all_moves.splice(random_index, 1);
+        staging_area.prepare_move(round.board, m);
+        if (staging_area.cost(round.board) > supply)
         {
+            staging_area.pop_move();
             break;
         }
-        if (move_set.has(action.unit))
-        {
-            continue;
-        }
-        move_set.add(action.unit);
-        res.moves.push(action.move);
-        cost += action.cost;
     } while (1);
-    return res;
+    return staging_area.move;
 }
 
 // export class Benchmark
