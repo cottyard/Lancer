@@ -145,6 +145,7 @@ export class OnlineAgent extends ServerAgent
     private latest_game_id: string | null = null;
     private player_name: string = "";
     private timer_handle: NodeJS.Timeout | null = null;
+    private observer_mode: boolean = false;
 
     constructor(context: IGameContext)
     {
@@ -187,6 +188,11 @@ export class OnlineAgent extends ServerAgent
 
     new_game(name: string): void
     {
+        if (name.startsWith('ob:'))
+        {
+            this.observer_mode = true;
+            name = name.slice(3);
+        }
         this.player_name = name;
         Net.new_game(
             name, 
@@ -300,9 +306,9 @@ export class OnlineAgent extends ServerAgent
             {
                 event_box.emit("show last round", null);
             }
-            
-            event_box.emit("refresh ui", null);
+
             this.start_count_down();
+            event_box.emit("refresh ui", null);
         });
     }
 
@@ -329,8 +335,13 @@ export class OnlineAgent extends ServerAgent
 
     start_count_down()
     {
+        if (this.observer_mode)
+        {
+            return;
+        }
         this.stop_count_down();
         this.timer_handle = setInterval(this.timer.bind(this), 1000);
+        this.timer();
     }
 
     stop_count_down()
