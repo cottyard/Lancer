@@ -178,17 +178,9 @@ export class GameRound implements ISerializable
         let board = new board_ctor();
         this.set_out(board);
         
-        let resources: ResourceStatus[] = [
-            new ResourceStatus(Player.P2, true), 
-            new ResourceStatus(Player.P2, true),
-            new ResourceStatus(Player.P2, true),
-            new ResourceStatus(Player.P2, false),
-            new ResourceStatus(Player.P2, false),
-            new ResourceStatus(Player.P2, false),
-            new ResourceStatus(Player.P1, true), 
-            new ResourceStatus(Player.P1, true),
-            new ResourceStatus(Player.P1, true),
-        ]; 
+        let resources: ResourceStatus[] = Rule.resource_grids_initial_status.map((status) => {
+            return ResourceStatus.deserialize(status.serialize());
+        });
         
         return new GameRound(
             0, new GameBoard(board),

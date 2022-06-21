@@ -14,7 +14,17 @@ export class Rule
         new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4),
         new Coordinate(1, 7), new Coordinate(4, 7), new Coordinate(7, 7),
     ];
-
+    static readonly resource_grids_initial_status =[
+        new ResourceStatus(Player.P2, true), 
+        new ResourceStatus(Player.P2, true),
+        new ResourceStatus(Player.P2, true),
+        new ResourceStatus(Player.P2, false),
+        new ResourceStatus(Player.P2, false),
+        new ResourceStatus(Player.P2, false),
+        new ResourceStatus(Player.P1, true), 
+        new ResourceStatus(Player.P1, true),
+        new ResourceStatus(Player.P1, true),
+    ];
     static readonly supply_basic: number = 6;
 
     static readonly resource_grid_supplies: number[] = 
