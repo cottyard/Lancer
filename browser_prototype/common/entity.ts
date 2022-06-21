@@ -427,7 +427,7 @@ export class Action implements ICopyable<Action>, ISerializable
             }
         }
         
-        return 3;
+        return 4;
     }
 
     private upgrade_cost(unit: Unit): number
@@ -445,14 +445,14 @@ export class Action implements ICopyable<Action>, ISerializable
             case Archer:
                 return 5;
             case Rider:
-                return 8;
+                return 9;
             case Warrior:
                 return 8;
             case Swordsman:
             case Spearman:
                 return 15;
             case Lancer:
-                return 8;
+                return 9;
             case Knight:
                 return 12;
             default:
