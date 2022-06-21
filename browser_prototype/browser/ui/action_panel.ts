@@ -2,18 +2,18 @@ import { Move, Unit } from '../../common/entity';
 import { IGameUiFacade } from '../game'
 import { g } from '../../common/global';
 import { using } from '../../common/language';
-import { DisplayAction, DisplayActionType, 
-    DisplayPlayerAction, IBoardDisplay } from './board_display'
+import { DisplayPlayerAction, display_action_style, IBoardDisplay } from './board_display'
 import { Position } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
 import { DomHelper, IComponent } from './dom_helper';
 import { Renderer } from './renderer';
 import { event_box } from './ui';
+import { DetailAction, DetailActionType } from '../../common/rule';
 
 export class ActionPanel implements IComponent
 {
     dragging: null | {
-        action: DisplayAction,
+        action: DetailAction,
         offsetX: number,
         offsetY: number,
         clientY: number,
@@ -54,7 +54,7 @@ export class ActionPanel implements IComponent
             });
     }
 
-    render_action(action: DisplayAction, index: number): HTMLElement
+    render_action(action: DetailAction, index: number): HTMLElement
     {
         const div = DomHelper.create_div({
             display: "flex",
@@ -76,7 +76,7 @@ export class ActionPanel implements IComponent
         div.appendChild(DomHelper.create_text(
             this.get_action_type_text(action.type),
             {
-                color: DisplayAction.display_action_style.get(action.type) || "black",
+                color: display_action_style.get(action.type) || "black",
                 'font-weight': 'bold',
                 padding: "10px"
             }
@@ -238,14 +238,14 @@ export class ActionPanel implements IComponent
         return div;
     }
 
-    get_main_unit(action: DisplayAction): Unit 
+    get_main_unit(action: DetailAction): Unit 
     {
         return this.game.context.present.board.unit.at(action.action.move.from)!;
     }
 
-    getTargetUnit(action: DisplayAction): Unit | null
+    getTargetUnit(action: DetailAction): Unit | null
     {
-        if (action.type === DisplayActionType.Attack || action.type === DisplayActionType.Defend)
+        if (action.type === DetailActionType.Attack || action.type === DetailActionType.Defend)
         {
             return this.game.context.present.board.unit.at(action.action.move.to);
         }
@@ -275,21 +275,21 @@ export class ActionPanel implements IComponent
         return canvas;
     }
 
-    get_action_type_text(type: DisplayActionType): string
+    get_action_type_text(type: DetailActionType): string
     {
         switch (type)
         {
-            case DisplayActionType.Upgrade:
+            case DetailActionType.Upgrade:
                 return "upgrading";
-            case DisplayActionType.Defend:
+            case DetailActionType.Defend:
                 return "defends";
-            case DisplayActionType.Move:
+            case DetailActionType.Move:
                 return "moving";
-            case DisplayActionType.Attack:
+            case DetailActionType.Attack:
                 return "attacks";
-            case DisplayActionType.MoveAssist:
+            case DetailActionType.MoveAssist:
                 return "assisting";
-            case DisplayActionType.AttackAssist:
+            case DetailActionType.AttackAssist:
                 return "assisting";
         }
     }

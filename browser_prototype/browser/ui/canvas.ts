@@ -2,8 +2,8 @@ import { Board } from "../../common/board";
 import { Coordinate, Players, Unit } from "../../common/entity";
 import { g } from "../../common/global";
 import { using } from "../../common/language";
-import { Heat } from "../../common/rule";
-import { DisplayAction, DisplayActionType, DisplayPlayerAction } from "./board_display";
+import { DetailAction, DetailActionType, Heat } from "../../common/rule";
+import { DisplayPlayerAction, display_action_style } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
 import { Renderer } from "./renderer";
 
@@ -275,10 +275,10 @@ export class GameCanvas
         {
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
-            const color = DisplayAction.display_action_style.get(a.type)!;
+            const color = display_action_style.get(a.type)!;
             const skill = a.action.move.which_skill();
             let shrink = g.settings.grid_size / 2 - 5;
-            const width = (a.type == DisplayActionType.Attack || a.type == DisplayActionType.Move) ? 5 : 3;
+            const width = (a.type == DetailActionType.Attack || a.type == DetailActionType.Move) ? 5 : 3;
             let go_around = false;
             let rider_move = false;
             let adjacent_move = false;
@@ -298,7 +298,7 @@ export class GameCanvas
                     go_around = true;
                 }
                 else if (
-                    player_action.actions.reduce<boolean>((previous: boolean, current: DisplayAction) =>
+                    player_action.actions.reduce<boolean>((previous: boolean, current: DetailAction) =>
                     {
                         return previous || current.action.move.from.equals(_middleground);
                     }, false))

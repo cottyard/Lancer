@@ -1,7 +1,7 @@
 import { Board, FullBoard, SerializableBoard } from "./board";
 import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
 import { ResourceStatus } from "./game_round";
-import { min, max, ISerializable } from "./language";
+import { min, max, ISerializable, HashMap, HashSet } from "./language";
 
 class InvalidMove extends Error { }
 
@@ -116,26 +116,74 @@ export class Rule
 
     static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction
     {
-        let moves = player_move.moves;
-        let move_set = new Set();
-        for (let move of moves)
+        let actions = player_move.moves.map((move: Move) =>
         {
-            if (move_set.has(move.from.hash()))
+            return Rule.validate_move(board, move, player_move.player);
+        });
+
+        let info = new HashMap<Coordinate, DetailAction>();
+
+        let detailed = get_detailed(actions);
+        for (let i in actions)
+        {
+            if (info.has(actions[i].move.from))
             {
                 throw new InvalidMove("unit moved more than once");
             }
-            move_set.add(move.from.hash());
+            info.put(actions[i].move.from, detailed[i]);
         }
 
-        return new PlayerAction(
-            player_move.player,
-            moves.map((move: Move) =>
+        for (let action of actions)
+        {
+            if (this.should_convert_action_type_to_move(action, info, action))
             {
-                return Rule.validate_move(board, move, player_move.player);
-            }));
+                action.type = ActionType.Move;
+            }
+        }
+
+        return new PlayerAction(player_move.player, actions);
     }
 
-    static validate_move(board: GameBoard, move: Move, player: Player): Action
+    private static should_convert_action_type_to_move(
+        action: Action, info: HashMap<Coordinate, DetailAction>, origin: Action): boolean
+    {
+        //each defend action chain must point to a staionary unit
+        if (action.type != ActionType.Defend)
+        {
+            return false;
+        }
+        let to_grid = action.move.to;
+        if (info.has(to_grid))
+        {
+            let chained: DetailAction = info.get(to_grid)!;
+            switch(chained.type)
+            {
+                case DetailActionType.Move:
+                case DetailActionType.Attack:
+                    return true;
+                case DetailActionType.Upgrade:
+                case DetailActionType.MoveAssist:
+                case DetailActionType.AttackAssist:
+                    return false;
+                case DetailActionType.Defend:
+                    if (chained.action != origin) // prevent circular defence
+                    {
+                        return this.should_convert_action_type_to_move(
+                            chained.action, info, origin);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private static validate_move(board: GameBoard, move: Move, player: Player): Action
     {
         let unit = board.unit.at(move.from);
         if (unit == null)
@@ -614,4 +662,62 @@ export class Quester implements ISerializable
             UnitConstructor.deserialize(unit), 
             Coordinate.deserialize(from));
     }
+}
+
+export enum DetailActionType
+{
+    Upgrade = 1,
+    Defend = 2,
+    Move = 3,
+    Attack = 4,
+    MoveAssist = 5,
+    AttackAssist = 6
+}
+
+export class DetailAction
+{
+    constructor(public action: Action, public type: DetailActionType)
+    {
+    }
+}
+
+export function get_detailed(actions: Action[]): DetailAction[]
+{
+    let first_arriver = new HashSet<Coordinate>();
+    return actions.map((a: Action) =>
+    {
+        let type: DetailActionType;
+        switch (a.type)
+        {
+            case ActionType.Attack:
+                type = DetailActionType.Attack;
+                break;
+            case ActionType.Defend:
+                type = DetailActionType.Defend;
+                break;
+            case ActionType.Move:
+                type = DetailActionType.Move;
+                break;
+            case ActionType.Upgrade:
+                type = DetailActionType.Upgrade;
+                break;
+        }
+        if (a.type == ActionType.Attack || a.type == ActionType.Move)
+        {
+            let is_first = !first_arriver.has(a.move.to);
+            first_arriver.put(a.move.to);
+            if (!is_first)
+            {
+                if (a.type == ActionType.Attack)
+                {
+                    type = DetailActionType.AttackAssist;
+                }
+                else
+                {
+                    type = DetailActionType.MoveAssist;
+                }
+            }
+        }
+        return new DetailAction(a, type);
+    });
 }

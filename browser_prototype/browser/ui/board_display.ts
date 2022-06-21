@@ -2,10 +2,9 @@ import { ResourceStatus } from '../../common/game_round'
 import { IGameUiFacade } from '../game'
 import { GameCanvas } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
-import { GameBoard, Rule } from '../../common/rule';
-import { Action, ActionType, Coordinate, Move, Player, PlayerAction, Players } from '../../common/entity';
+import { DetailAction, DetailActionType, GameBoard, get_detailed, Rule } from '../../common/rule';
+import { Coordinate, Move, Player, PlayerAction, Players } from '../../common/entity';
 import { g } from '../../common/global';
-import { HashSet } from '../../common/language';
 import { IComponent } from './dom_helper';
 import { event_box } from './ui';
 
@@ -350,66 +349,24 @@ export class BoardDisplay implements IBoardDisplay
     }
 }
 
-export enum DisplayActionType
-{
-    Upgrade = 1,
-    Defend = 2,
-    Move = 3,
-    Attack = 4,
-    MoveAssist = 7,
-    AttackAssist = 8
-}
-
-export class DisplayAction
-{
-    //display_action_style = new Map<DisplayActionType, string>();
-    static display_action_style = new Map<DisplayActionType, string>([
-        [DisplayActionType.Attack, g.const.STYLE_RED_LIGHT],
-        [DisplayActionType.Defend, g.const.STYLE_GREEN_LIGHT],
-        [DisplayActionType.Move, g.const.STYLE_BLACK],
-        [DisplayActionType.Upgrade, g.const.STYLE_CYAN],
-        [DisplayActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
-        [DisplayActionType.MoveAssist, g.const.STYLE_BLACK]
-    ]);
-
-    constructor(public player: Player, public type: DisplayActionType, public action: Action)
-    {
-    }
-}
+export const display_action_style = new Map<DetailActionType, string>([
+    [DetailActionType.Attack, g.const.STYLE_RED_LIGHT],
+    [DetailActionType.Defend, g.const.STYLE_GREEN_LIGHT],
+    [DetailActionType.Move, g.const.STYLE_BLACK],
+    [DetailActionType.Upgrade, g.const.STYLE_CYAN],
+    [DetailActionType.AttackAssist, g.const.STYLE_RED_LIGHT],
+    [DetailActionType.MoveAssist, g.const.STYLE_BLACK]
+]);
 
 export class DisplayPlayerAction
 {
     player: Player;
-    actions: DisplayAction[];
+    actions: DetailAction[];
 
     constructor(player_action: PlayerAction)
     {
         this.player = player_action.player;
-
-        let first_arriver = new HashSet<Coordinate>();
-
-        player_action.actions.sort((a1, a2) => a2.type - a1.type);
-
-        this.actions = player_action.actions.map((a: Action) =>
-        {
-            let type = <DisplayActionType> <unknown> a.type;
-            if (a.type == ActionType.Attack || a.type == ActionType.Move)
-            {
-                let is_first = !first_arriver.has(a.move.to);
-                first_arriver.put(a.move.to);
-                if (!is_first)
-                {
-                    if (a.type == ActionType.Attack)
-                    {
-                        type = DisplayActionType.AttackAssist;
-                    }
-                    else
-                    {
-                        type = DisplayActionType.MoveAssist;
-                    }
-                }
-            }
-            return new DisplayAction(this.player, type, a);
-        });
+        this.actions = get_detailed(player_action.actions);
+        this.actions.sort((a1, a2) => a2.type - a1.type);
     }
 }

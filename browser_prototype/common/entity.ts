@@ -34,7 +34,7 @@ export class Coordinate implements IHashable, ISerializable, ICopyable<Coordinat
 
     hash(): string
     {
-        return `Coordinate(${ this.x },${ this.y })`;
+        return `Coord(${ this.x },${ this.y })`;
     }
 
     serialize(): string

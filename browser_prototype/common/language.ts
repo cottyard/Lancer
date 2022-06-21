@@ -31,6 +31,11 @@ export class HashMap<K extends IHashable, V>
         }
     }
 
+    has(key: K): boolean
+    {
+        return this.map.has(key.hash());
+    }
+
     put(key: K, value: V): void
     {
         this.map.set(key.hash(), value);
