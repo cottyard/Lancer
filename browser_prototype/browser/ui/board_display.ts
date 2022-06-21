@@ -1,8 +1,7 @@
-import { ResourceStatus } from '../../common/game_round'
 import { IGameUiFacade } from '../game'
 import { GameCanvas } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
-import { DetailAction, DetailActionType, GameBoard, get_detailed, Rule } from '../../common/rule';
+import { DetailAction, DetailActionType, GameBoard, get_detailed, ResourceStatus, Rule } from '../../common/rule';
 import { Coordinate, Move, Player, PlayerAction, Players } from '../../common/entity';
 import { g } from '../../common/global';
 import { IComponent } from './dom_helper';

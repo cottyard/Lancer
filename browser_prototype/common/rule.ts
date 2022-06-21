@@ -1,9 +1,39 @@
 import { Board, FullBoard, SerializableBoard } from "./board";
 import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
-import { ResourceStatus } from "./game_round";
 import { min, max, ISerializable, HashMap, HashSet } from "./language";
 
 class InvalidMove extends Error { }
+
+export class ResourceStatus implements ISerializable
+{
+    static readonly full: number = 6;
+
+    constructor(public player: Player,
+                public captured: boolean,
+                public progress: number = -1)
+    {
+        if (this.progress == -1)
+        {
+            this.progress = captured ? ResourceStatus.full : 0;
+        }
+    }
+
+    neutral(): boolean
+    {
+        return !this.captured && this.progress == 0;
+    }
+
+    serialize(): string
+    {
+        return JSON.stringify([this.player, this.progress, this.captured]);
+    }
+
+    static deserialize(payload: string): ResourceStatus
+    {
+        let [player, progress, captured] = JSON.parse(payload);
+        return new ResourceStatus(player, captured, progress);
+    }
+}
 
 export class Rule
 {

@@ -2,7 +2,7 @@ import { Board, create_serializable_board_ctor, SerializableBoard } from "./boar
 import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
 import { ISerializable } from "./language";
-import { GameBoard, Martyr, Rule } from "./rule";
+import { GameBoard, Martyr, ResourceStatus, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }
 
@@ -14,36 +14,7 @@ export enum GameStatus
     Tied
 }
 
-export class ResourceStatus implements ISerializable
-{
-    static readonly full: number = 6;
 
-    constructor(public player: Player,
-                public captured: boolean,
-                public progress: number = -1)
-    {
-        if (this.progress == -1)
-        {
-            this.progress = captured ? ResourceStatus.full : 0;
-        }
-    }
-
-    neutral(): boolean
-    {
-        return !this.captured && this.progress == 0;
-    }
-
-    serialize(): string
-    {
-        return JSON.stringify([this.player, this.progress, this.captured]);
-    }
-
-    static deserialize(payload: string): ResourceStatus
-    {
-        let [player, progress, captured] = JSON.parse(payload);
-        return new ResourceStatus(player, captured, progress);
-    }
-}
 
 export class GameRound implements ISerializable
 {
