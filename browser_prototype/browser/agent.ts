@@ -306,8 +306,10 @@ export class OnlineAgent extends ServerAgent
             {
                 event_box.emit("show last round", null);
             }
-
-            this.start_count_down();
+            if (this.context.status == GameContextStatus.WaitForPlayer)
+            {
+                this.start_count_down();
+            }
             event_box.emit("refresh ui", null);
         });
     }
