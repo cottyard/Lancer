@@ -6,8 +6,8 @@ import { Heat, Rule } from "../../common/rule";
 export function gorilla(round: GameRound, player: Player): PlayerMove
 {
     let all_moves = Rule.valid_moves(round.board, player);
-    let all_actions = all_moves.map((m) => Rule.validate_move(round.board, m, player));
-
+    let all_actions = Rule.validate_player_move(
+        round.board, new PlayerMove(player, all_moves)).actions;
     let evaluated: [number, Action][] = all_actions.map(
         (a) => [evaluate(round, player, a), a]);
     

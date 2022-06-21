@@ -5,7 +5,8 @@ import { Rule } from "../../common/rule";
 export function monkey(round: GameRound, player: Player): PlayerMove
 {
     let all_moves = Rule.valid_moves(round.board, player);
-    let all_actions = all_moves.map((m) => Rule.validate_move(round.board, m, player));
+    let all_actions = Rule.validate_player_move(
+        round.board, new PlayerMove(player, all_moves)).actions;
     let cost = 0;
     let res = new PlayerMove(player);
     let supply = round.supply(player);
