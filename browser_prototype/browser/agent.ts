@@ -3,12 +3,12 @@ import { opponent, Player, PlayerMove, Players } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
 import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
-import { event_box } from "./ui/ui";
+import { beep, event_box } from "./ui/ui";
 import { gorilla } from "./ai/gorilla";
 
 export interface IServerAgent
 {
-    submit_move(move: PlayerMove): void;
+    submit_move(): void;
     new_game(name: string): void;
 }
 
@@ -18,7 +18,7 @@ abstract class ServerAgent implements IServerAgent
     {
     }
 
-    abstract submit_move(_: PlayerMove): void
+    abstract submit_move(): void
     abstract new_game(_: string): void
 }
 
@@ -49,12 +49,13 @@ function update_context_status(context: IGameContext): void
 
 export class LocalAgent extends ServerAgent
 {
-    submit_move(move: PlayerMove): void
+    submit_move(): void
     {
-        let moves = Players.create((p) => new PlayerMove(p));
-        moves[move.player] = move;
-        let op = opponent(move.player);
-        moves[op] = monkey(this.context.present, op);
+        let op = opponent(this.context.player);
+        let moves = <Players<PlayerMove>>{
+            [this.context.player]: this.context.staging_area.move,
+            [op]: gorilla(this.context.present, op),
+        };
 
         try
         {
@@ -100,15 +101,13 @@ export class AiBattleAgent extends ServerAgent
         // }, 1000);
     }
 
-    submit_move(move: PlayerMove): void
+    submit_move(): void
     {
-        let moves = Players.create((p) => new PlayerMove(p));
-        let player = move.player;
-        let op = opponent(player);
-
-        moves[player] = gorilla(this.context.present, player);
-        moves[op] = monkey(this.context.present, op);
-
+        let moves : Players<PlayerMove> = {
+            [Player.P1]: gorilla(this.context.present, Player.P1),
+            [Player.P2]: monkey(this.context.present, Player.P2)
+        };
+        
         try
         {
             let next = this.context.present.proceed(moves);
@@ -140,10 +139,12 @@ export class AiBattleAgent extends ServerAgent
 
 export class OnlineAgent extends ServerAgent
 {
+    readonly allowed_round_time = 70;
     private session_id: string | null = null;
     private current_game_id: string | null = null;
     private latest_game_id: string | null = null;
     private player_name: string = "";
+    private timer_handle: NodeJS.Timeout | null = null;
 
     constructor(context: IGameContext)
     {
@@ -158,18 +159,29 @@ export class OnlineAgent extends ServerAgent
         }, 2500);
     }
 
-    submit_move(move: PlayerMove): void 
+    submit_move(): void
     {
+        while (!this.context.sufficient_fund())
+        {
+            this.context.staging_area.pop_move();
+        }
+
         if (this.current_game_id)
         {
             this.context.status = GameContextStatus.Submitting;
+            this.stop_count_down();
+            event_box.emit("refresh counter", null);
             event_box.emit("refresh ui", null);
             let msec_consumed: number = Date.now() - this.context.round_begin_time;
-            Net.submit_move(this.current_game_id, move, msec_consumed, (_: string) =>
-            {
-                this.context.status = GameContextStatus.WaitForOpponent;
-                event_box.emit("refresh ui", null);
-            });
+            Net.submit_move(
+                this.current_game_id, 
+                this.context.staging_area.move,
+                msec_consumed, 
+                (_: string) =>
+                {
+                    this.context.status = GameContextStatus.WaitForOpponent;
+                    event_box.emit("refresh ui", null);
+                });
         }
     }
 
@@ -290,6 +302,43 @@ export class OnlineAgent extends ServerAgent
             }
             
             event_box.emit("refresh ui", null);
+            this.start_count_down();
         });
+    }
+
+    timer()
+    {
+        let elapsed_secs : number = 
+            Math.floor((Date.now() - this.context.round_begin_time) / 1000);
+        
+        let remaining_secs : number = this.allowed_round_time - elapsed_secs;
+        if (remaining_secs <= 10)
+        {
+            beep();
+        }
+
+        if (remaining_secs <= 0)
+        {
+            this.submit_move();
+        }
+        else
+        {
+            event_box.emit("refresh counter", remaining_secs);
+        }
+    }
+
+    start_count_down()
+    {
+        this.stop_count_down();
+        this.timer_handle = setInterval(this.timer.bind(this), 1000);
+    }
+
+    stop_count_down()
+    {
+        if (this.timer_handle)
+        {
+            clearInterval(this.timer_handle);
+            this.timer_handle = null;
+        }
     }
 }

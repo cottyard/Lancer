@@ -201,7 +201,7 @@ export class GameUiFacade implements IGameUiFacade
 
     submit_move(): void 
     {
-        this.server_agent.submit_move(this.context.staging_area.move);
+        this.server_agent.submit_move();
     }
 
     new_game(): void

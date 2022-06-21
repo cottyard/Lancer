@@ -51,6 +51,10 @@ export function main()
         button_bar.view_last_round = true;
     });
 
+    event_box.subscribe("refresh counter", secs => {
+        button_bar.update_counter(secs);
+    });
+
     event_box.emit("refresh ui", null);
 }
 

@@ -5,7 +5,7 @@ import { DomHelper, IComponent } from "./dom_helper";
 interface IButtonBar extends IComponent
 {
     view_last_round: boolean;
-    update_text(): void;
+    update_counter(secs: number | null): void;
 }
 
 export class ButtonBar implements IButtonBar
@@ -17,6 +17,7 @@ export class ButtonBar implements IButtonBar
     private _view_last_round: boolean = false;
     private _show_heat: boolean = false;
     private view_last_round_handle: NodeJS.Timeout | null = null;
+    private counter_value: number | null = null;
 
     constructor(
         public dom_element: HTMLDivElement,
@@ -63,6 +64,12 @@ export class ButtonBar implements IButtonBar
         return this._show_heat;
     }
 
+    update_counter(secs: number | null) 
+    {
+        this.counter_value = secs;
+        this.update_submit_name();
+    }
+
     update_text()
     {
         this.update_last_round_name();
@@ -105,9 +112,10 @@ export class ButtonBar implements IButtonBar
                 this.submit_button.disabled = this.view_last_round;
                 this.submit_button.innerText = "Submit Move";
             }
-
-            // this.submit_button.innerText += 
-            //     ` (${ this.game.seconds_before_submit })`;
+            if (this.counter_value)
+            {
+                this.submit_button.innerText += ` (${this.counter_value})`;
+            }
         }
         else if (this.game.context.status == GameContextStatus.WaitForOpponent)
         {
