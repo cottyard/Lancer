@@ -78,6 +78,11 @@ export class Skill implements IHashable
         return Math.abs(this.x) > 1 || Math.abs(this.y) > 1;
     }
 
+    is_adjacent(): boolean
+    {
+        return Math.abs(this.x) + Math.abs(this.y) == 1;
+    }
+
     static is_valid(x: number, y: number)
     {
         return -g.skill_range <= x && x <= g.skill_range &&
@@ -387,7 +392,7 @@ export class Action implements ICopyable<Action>, ISerializable
             case ActionType.Move:
                 return this.move_cost(this.unit, this.move);
             case ActionType.Upgrade:
-                return this.upgrade_cost(this.unit);
+                return this.upgrade_cost(this.unit, this.move);
             case ActionType.Attack:
                 return this.move_cost(this.unit, this.move) + 1;
         }
@@ -430,7 +435,7 @@ export class Action implements ICopyable<Action>, ISerializable
         return 4;
     }
 
-    private upgrade_cost(unit: Unit): number
+    private upgrade_cost(unit: Unit, move: Move): number
     {
         if (unit.is_promotion_ready())
         {
@@ -442,15 +447,17 @@ export class Action implements ICopyable<Action>, ISerializable
             case Soldier:
                 return 6;
             case Barbarian:
-            case Archer:
                 return 5;
+            case Archer:
+                return 4;
             case Rider:
-                return 9;
-            case Warrior:
                 return 8;
+            case Warrior:
+                return move.which_skill().is_leap() ? 8 : 7;
             case Swordsman:
+                return move.which_skill().is_adjacent() ? 12 : 10;
             case Spearman:
-                return 15;
+                return move.which_skill().is_leap() ? 12 : 10;
             case Lancer:
                 return 9;
             case Knight:
