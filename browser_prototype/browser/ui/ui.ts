@@ -2,7 +2,7 @@ import { EventBox } from "./event";
 import { IComponent } from "./dom_helper";
 
 export let ui_components: IComponent[] = [];
-export let audio_context = new AudioContext();
+// export let audio_context = new AudioContext();
 export let event_box = new EventBox();
 
     
@@ -26,18 +26,18 @@ export let event_box = new EventBox();
 //       return new Proxy(object, handler);
 // }
 
-export function beep(): void
-{
-    let v = audio_context.createOscillator();
-    let u = audio_context.createGain();
-    v.connect(u);
-    v.frequency.value = 880;
-    u.gain.value = 0.01;
-    v.type = "square";
-    u.connect(audio_context.destination);
-    v.start(audio_context.currentTime);
-    v.stop(audio_context.currentTime + 0.05);
-}
+// export function beep(): void
+// {
+//     let v = audio_context.createOscillator();
+//     let u = audio_context.createGain();
+//     v.connect(u);
+//     v.frequency.value = 880;
+//     u.gain.value = 0.01;
+//     v.type = "square";
+//     u.connect(audio_context.destination);
+//     v.start(audio_context.currentTime);
+//     v.stop(audio_context.currentTime + 0.05);
+// }
 
 export function clear_intervals()
 {

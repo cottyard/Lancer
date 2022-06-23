@@ -3,7 +3,7 @@ import { opponent, Player, PlayerMove, Players } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
 import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
-import { beep, event_box } from "./ui/ui";
+import { event_box } from "./ui/ui";
 import { gorilla } from "./ai/gorilla";
 
 export interface IServerAgent
@@ -320,10 +320,10 @@ export class OnlineAgent extends ServerAgent
             Math.floor((Date.now() - this.context.round_begin_time) / 1000);
         
         let remaining_secs : number = this.allowed_round_time - elapsed_secs;
-        if (remaining_secs <= 10)
-        {
-            beep();
-        }
+        // if (remaining_secs <= 10)
+        // {
+        //     beep();
+        // }
 
         if (remaining_secs <= 0)
         {
