@@ -455,13 +455,15 @@ export class Action implements ICopyable<Action>, ISerializable
             case Warrior:
                 return move.which_skill().is_leap() ? 8 : 7;
             case Swordsman:
-                return move.which_skill().is_adjacent() ? 12 : 10;
+                return move.which_skill().is_adjacent() ? 9 : 12;
             case Spearman:
-                return move.which_skill().is_leap() ? 12 : 10;
+                return move.which_skill().is_leap() ? 12 : 9;
             case Lancer:
                 return 9;
             case Knight:
                 return 12;
+            case King:
+                return 0;
             default:
                 throw new Error("Wrong type");
         }
