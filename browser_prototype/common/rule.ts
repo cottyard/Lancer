@@ -1,6 +1,6 @@
 import { Board, FullBoard, SerializableBoard } from "./board";
 import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor} from "./entity";
-import { min, max, ISerializable, HashMap, HashSet } from "./language";
+import { min, max, ISerializable, HashSet, extract } from "./language";
 
 class InvalidMove extends Error { }
 
@@ -148,76 +148,70 @@ export class Rule
 
     static validate_player_move(board: GameBoard, player_move: PlayerMove): PlayerAction
     {
-        let actions = player_move.moves.map((move: Move) =>
-        {
-            return Rule.validate_move(board, move, player_move.player);
-        });
+        let info = new HashSet<Coordinate>();
 
-        let info = new HashMap<Coordinate, DetailAction>();
-
-        let detailed = get_detailed(actions);
-        for (let i in actions)
+        for (let m of player_move.moves)
         {
-            if (info.has(actions[i].move.from))
+            if (info.has(m.from))
             {
                 throw new InvalidMove("unit moved more than once");
             }
-            info.put(actions[i].move.from, detailed[i]);
+            info.put(m.from);
         }
 
-        for (let action of actions)
+        let helper_board = board.unit.copy();
+
+        let actions = player_move.moves.map((move: Move) => {
+            return Rule.validate_move(helper_board, move, player_move.player);
+        });
+
+        let d_actions = get_detailed(actions);
+
+        let attack_actions = extract(d_actions, (a):a is DetailAction =>
+            a.type == DetailActionType.Attack || a.type == DetailActionType.AttackAssist);
+        let upgrade_actions = extract(d_actions, (a):a is DetailAction => 
+            a.type == DetailActionType.Upgrade);
+        let move_actions: DetailAction[] = [];
+
+        let is_move = (a: DetailAction): a is DetailAction => a.type == DetailActionType.Move;
+
+        while (d_actions.find(is_move))
         {
-            if (this.should_convert_action_type_to_move(action, info, action))
+            for (let da of d_actions)
             {
-                action.type = ActionType.Move;
+                if (da.type == DetailActionType.Move)
+                {
+                    helper_board.remove(da.action.move.from);
+                }
             }
+            move_actions = move_actions.concat(
+                extract(d_actions, (a):a is DetailAction => 
+                    a.type == DetailActionType.Move || a.type == DetailActionType.MoveAssist));
+
+            //convert defend actions to move actions
+            for (let da of d_actions)
+            {
+                if (helper_board.at(da.action.move.to) == null)
+                {
+                    da.action.type = ActionType.Move;
+                }
+            }
+
+            d_actions = get_detailed(d_actions.map(da => da.action));
         }
 
-        return new PlayerAction(player_move.player, actions);
+        return new PlayerAction(
+            player_move.player,
+            attack_actions
+                .concat(move_actions)
+                .concat(upgrade_actions)
+                .concat(d_actions)
+                .map(da => da.action));
     }
 
-    private static should_convert_action_type_to_move(
-        action: Action, info: HashMap<Coordinate, DetailAction>, origin: Action): boolean
+    private static validate_move(board: Board<Unit>, move: Move, player: Player): Action
     {
-        //each defend action chain must point to a staionary unit
-        if (action.type != ActionType.Defend)
-        {
-            return false;
-        }
-        let to_grid = action.move.to;
-        if (info.has(to_grid))
-        {
-            let chained: DetailAction = info.get(to_grid)!;
-            switch(chained.type)
-            {
-                case DetailActionType.Move:
-                case DetailActionType.Attack:
-                    return true;
-                case DetailActionType.Upgrade:
-                case DetailActionType.MoveAssist:
-                case DetailActionType.AttackAssist:
-                    return false;
-                case DetailActionType.Defend:
-                    if (chained.action != origin) // prevent circular defence
-                    {
-                        return this.should_convert_action_type_to_move(
-                            chained.action, info, origin);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private static validate_move(board: GameBoard, move: Move, player: Player): Action
-    {
-        let unit = board.unit.at(move.from);
+        let unit = board.at(move.from);
         if (unit == null)
         {
             throw new InvalidMove("unit is empty");
@@ -236,7 +230,7 @@ export class Rule
 
         if (unit.capable(skill))
         {
-            let target = board.unit.at(move.to);
+            let target = board.at(move.to);
             if (target == null)
             {
                 return new Action(move, ActionType.Move, unit);
