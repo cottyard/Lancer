@@ -1,5 +1,5 @@
 import { Board, FullBoard, SerializableBoard } from "./board";
-import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor} from "./entity";
+import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, SkillSet, Soldier, Unit, UnitConstructor} from "./entity";
 import { min, max, ISerializable, HashSet, extract } from "./language";
 
 class InvalidMove extends Error { }
@@ -398,11 +398,21 @@ export class Rule
     {
         for (let player_action of Players.values(player_actions))
         {
-            for (let action of player_action.extract((a): a is Action => a.type == ActionType.Upgrade))
+            for (let action of player_action.extract(
+                (a): a is Action => a.type == ActionType.Upgrade))
             {
                 let unit = board.at(action.move.from)!;
                 let skill = action.move.which_skill();
-                if (unit.is_promotion_ready())
+
+                if (unit.type == King)
+                {
+                    unit.current = new SkillSet();
+                    if (!unit.endow(skill))
+                    {
+                        throw new Error("upgrade error");
+                    }
+                }
+                else if (unit.is_promotion_ready())
                 {
                     let promoted = unit.promote(skill);
                     if (promoted == null)

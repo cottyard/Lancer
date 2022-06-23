@@ -840,9 +840,9 @@ const perfect_skills_literal: { [unit_name: string]: string | undefined; } =
 {
     'King':
     `-----
-    --x--
+    -xxx-
     -x-x-
-    --x--
+    -xxx-
     -----`,
 
     'Rider':
@@ -913,9 +913,9 @@ const inborn_skills_literal: { [unit_name: string]: string | undefined; } =
 {
     'King':
     `-----
-    --x--
-    -x-x-
-    --x--
+    -----
+    -----
+    -----
     -----`,
     
     'Rider':
