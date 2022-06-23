@@ -44,6 +44,8 @@ export class Rule
         new Coordinate(1, 4), new Coordinate(4, 4), new Coordinate(7, 4),
         new Coordinate(1, 7), new Coordinate(4, 7), new Coordinate(7, 7),
     ];
+    static readonly resource_grid_center = new Coordinate(4, 4);
+
     static readonly resource_grids_initial_status =[
         new ResourceStatus(Player.P2, true), 
         new ResourceStatus(Player.P2, true),
@@ -59,13 +61,11 @@ export class Rule
 
     static readonly resource_grid_supplies: number[] = 
         [2, 2, 2, 2, 4, 2, 2, 2, 2];
-    
+
     static readonly resource_capturing_speed = 2;
     static readonly resource_decapturing_speed = 3;
     static readonly resource_neutralizing_speed = 1;
     static readonly resource_recovering_speed = 1;
-
-    static readonly spawn_options: UnitConstructor[] = [Soldier, Barbarian, Archer];
 
     static updated_resource_status(status: ResourceStatus, unit: Unit | null): ResourceStatus
     {

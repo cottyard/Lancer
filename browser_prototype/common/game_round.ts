@@ -1,5 +1,5 @@
 import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
-import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Unit, UnitConstructor } from "./entity";
+import { all_unit_types, Archer, Barbarian, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Rider, Soldier, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
 import { ISerializable, randint } from "./language";
 import { GameBoard, Martyr, ResourceStatus, Rule } from "./rule";
@@ -59,13 +59,17 @@ export class GameRound implements ISerializable
             let where = king_recruiting_at[p];
             if (where && next_board.unit.at(where) == null)
             {
-                let spawn_type = Rule.spawn_options[randint(Rule.spawn_options.length)];
+                let spawn_options: UnitConstructor[] = [Soldier, Barbarian, Archer];
+                if (where.equals(Rule.resource_grid_center))
+                {
+                    spawn_options.push(Rider);
+                }
+                let spawn_type = spawn_options[randint(spawn_options.length)];
                 let spawned = new spawn_type(p, null);
                 spawned.endow_inborn();
                 next_board.unit.put(where, spawned);
             }
         }
-
 
         let supplies = {
             [Player.P1]: 0,
