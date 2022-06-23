@@ -6,7 +6,7 @@
     "uglifyjs": "^2.4.11"
   },
   "scripts": {
-    "build": "browserify main.ts -p [ tsify --noImplicitAny] | uglifyjs -cm -o ../target/lancer.js",
+    "build": "browserify main.ts -p [ tsify --noImplicitAny] | uglifyjs -c -o ../target/lancer.js",
     "build-dev": "browserify main.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js"
   },
   "devDependencies": {
