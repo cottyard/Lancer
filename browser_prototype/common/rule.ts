@@ -167,44 +167,37 @@ export class Rule
 
         let d_actions = get_detailed(actions);
 
-        let attack_actions = extract(d_actions, (a):a is DetailAction =>
-            a.type == DetailActionType.Attack || a.type == DetailActionType.AttackAssist);
-        let upgrade_actions = extract(d_actions, (a):a is DetailAction => 
-            a.type == DetailActionType.Upgrade);
-        let move_actions: DetailAction[] = [];
+        let confirmed_actions: DetailAction[] = [];
 
-        let is_move = (a: DetailAction): a is DetailAction => a.type == DetailActionType.Move;
+        let is_move_or_attack = (da: DetailAction): da is DetailAction => 
+            da.type == DetailActionType.Move || da.type == DetailActionType.Attack;
 
-        while (d_actions.find(is_move))
+        let is_assist = (da: DetailAction): da is DetailAction => 
+            da.type == DetailActionType.MoveAssist || da.type == DetailActionType.AttackAssist;
+
+        while (d_actions.find(is_move_or_attack))
         {
-            for (let da of d_actions)
-            {
-                if (da.type == DetailActionType.Move)
-                {
-                    helper_board.remove(da.action.move.from);
-                }
-            }
-            move_actions = move_actions.concat(
-                extract(d_actions, (a):a is DetailAction => 
-                    a.type == DetailActionType.Move || a.type == DetailActionType.MoveAssist));
+            let confirmed = extract(d_actions, is_move_or_attack);
+            confirmed.map((da) => helper_board.remove(da.action.move.from));
+            confirmed_actions = confirmed_actions.concat(confirmed);
 
-            //convert defend actions to move actions
+            confirmed = extract(d_actions, is_assist);
+            confirmed_actions = confirmed_actions.concat(confirmed);
+
             for (let da of d_actions)
             {
-                if (helper_board.at(da.action.move.to) == null)
+                if (da.type == DetailActionType.Defend &&
+                    helper_board.at(da.action.move.to) == null)
                 {
                     da.action.type = ActionType.Move;
                 }
             }
-
             d_actions = get_detailed(d_actions.map(da => da.action));
         }
 
         return new PlayerAction(
             player_move.player,
-            attack_actions
-                .concat(move_actions)
-                .concat(upgrade_actions)
+            confirmed_actions
                 .concat(d_actions)
                 .map(da => da.action));
     }
