@@ -1,5 +1,6 @@
 import { Player, PlayerMove } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
+import { randint } from "../../common/language";
 import { Rule } from "../../common/rule";
 import { PlayerMoveStagingArea } from "../staging_area";
 
@@ -15,7 +16,7 @@ export function monkey(round: GameRound, player: Player): PlayerMove
         {
             break;
         }
-        let random_index = Math.floor(Math.random() * all_moves.length);
+        let random_index = randint(all_moves.length);
         let m = all_moves[random_index];
         all_moves.splice(random_index, 1);
         staging_area.prepare_move(round.board, m);

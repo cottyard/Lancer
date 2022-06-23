@@ -1,7 +1,7 @@
 import { Board, create_serializable_board_ctor, SerializableBoard } from "./board";
 import { all_unit_types, Coordinate, deserialize_player, King, Player, PlayerAction, PlayerMove, Players, Unit, UnitConstructor } from "./entity";
 import { g } from "./global";
-import { ISerializable } from "./language";
+import { ISerializable, randint } from "./language";
 import { GameBoard, Martyr, ResourceStatus, Rule } from "./rule";
 
 export class InsufficientSupply extends Error { }
@@ -36,7 +36,37 @@ export class GameRound implements ISerializable
             [Player.P2]: this.validate_move(moves[Player.P2])
         };
 
+        let king_recruiting_at: Players<Coordinate | null> = {
+            [Player.P1]: null,
+            [Player.P2]: null
+        };
+
+        for (let i = 0; i < this.resources.length; ++i)
+        {
+            let grid = Rule.resource_grids[i];
+            let u = this.board.unit.at(grid);
+            if (u && u.type == King &&
+                this.resources[i].captured && this.resources[i].player == u.owner)
+            {
+                king_recruiting_at[u.owner] = grid;
+            }
+        }
+
         let [next_board, martyrs] = Rule.proceed_board_with_moves(this.board, moves);
+
+        for (let p of Players.both())
+        {
+            let where = king_recruiting_at[p];
+            if (where && next_board.unit.at(where) == null)
+            {
+                let spawn_type = Rule.spawn_options[randint(Rule.spawn_options.length)];
+                let spawned = new spawn_type(p, null);
+                spawned.endow_inborn();
+                next_board.unit.put(where, spawned);
+            }
+        }
+
+
         let supplies = {
             [Player.P1]: 0,
             [Player.P2]: 0

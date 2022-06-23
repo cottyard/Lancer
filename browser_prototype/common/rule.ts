@@ -1,5 +1,5 @@
 import { Board, FullBoard, SerializableBoard } from "./board";
-import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor } from "./entity";
+import { Action, ActionType, Archer, Barbarian, Coordinate, King, Move, opponent, Player, PlayerAction, PlayerMove, Players, Rider, Skill, Soldier, Unit, UnitConstructor} from "./entity";
 import { min, max, ISerializable, HashMap, HashSet } from "./language";
 
 class InvalidMove extends Error { }
@@ -64,6 +64,8 @@ export class Rule
     static readonly resource_decapturing_speed = 3;
     static readonly resource_neutralizing_speed = 1;
     static readonly resource_recovering_speed = 1;
+
+    static readonly spawn_options: UnitConstructor[] = [Soldier, Barbarian, Archer];
 
     static updated_resource_status(status: ResourceStatus, unit: Unit | null): ResourceStatus
     {
