@@ -125,14 +125,7 @@ class Session
 
     expired(): boolean
     {
-        if (Date.now() - this.update_time > 1000 * 3600 * 3)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return Date.now() - this.update_time > 1000 * 3600;
     }
 
     recycle(): void
