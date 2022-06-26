@@ -359,10 +359,6 @@ export class Rule
             if (unit.owner == player)
             {
                 let reachable = this.reachable_by(board.unit, c);
-                reachable = reachable.filter((t) => {
-                    let u = board.unit.at(t);
-                    return !(u && u.type == King && u.owner == player);
-                });
                 let upgradable = this.upgradable_by(board.unit, c);
                 for (let dest of reachable.concat(upgradable))
                 {
