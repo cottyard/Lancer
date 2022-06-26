@@ -4,45 +4,34 @@ import { ICopyable, IDeserializable, ISerializable } from "./language";
 
 export class FullBoard<T>
 {
-    protected board: (T)[][];
-
+    protected board: (T)[];
+    protected index_of(coord: Coordinate)
+    {
+        return coord.x * g.board_size_x + coord.y;
+    }
     constructor(initializer: () => T)
     {
         let value = initializer();
         let type = typeof value;
         this.board = [];
-        if (value == null || type == "number" || type == "string" || type == "boolean" || type == "undefined")
+        let value_is_basic: boolean = value == null || type == "number" || 
+            type == "string" || type == "boolean" || type == "undefined";
+
+        for (let i = 0; i < g.board_size_x * g.board_size_y; i++)
         {
-            for (let i = 0; i < g.board_size_x; i++)
-            {
-                this.board[i] = [];
-                for (let j = 0; j < g.board_size_y; j++)
-                {
-                    this.board[i][j] = value;
-                }
-            }
-        }
-        else
-        {
-            for (let i = 0; i < g.board_size_x; i++)
-            {
-                this.board[i] = [];
-                for (let j = 0; j < g.board_size_y; j++)
-                {
-                    this.board[i][j] = initializer();
-                }
-            }
+            this.board[i] = value_is_basic ? value : initializer();
         }
     }
 
+    
     at(coord: Coordinate): T
     {
-        return this.board[coord.x][coord.y];
+        return this.board[this.index_of(coord)];
     }
 
     put(coord: Coordinate, unit: T): void
     {
-        this.board[coord.x][coord.y] = unit;
+        this.board[this.index_of(coord)] = unit;
     }
 
     iterate_units(foreach: (unit: T, coord: Coordinate) => void): void
@@ -51,7 +40,8 @@ export class FullBoard<T>
         {
             for (let j = 0; j < g.board_size_y; j++)
             {
-                foreach(this.board[i][j], new Coordinate(i, j));
+                let c = new Coordinate(i, j);
+                foreach(this.board[this.index_of(c)], c);
             }
         }
     }
@@ -66,8 +56,8 @@ export class Board<T extends ICopyable<T>> extends FullBoard<T | null>
 
     remove(coord: Coordinate): T | null
     {
-        let unit = this.board[coord.x][coord.y];
-        this.board[coord.x][coord.y] = null;
+        let unit = this.board[this.index_of(coord)];
+        this.board[this.index_of(coord)] = null;
         return unit;
     }
 
@@ -104,19 +94,16 @@ export class SerializableBoard<T extends ISerializable & ICopyable<T>>
     serialize(): string
     {
         let s: (string | number)[] = [];
-        for (let i = 0; i < g.board_size_x; i++)
+        for (let i = 0; i < g.board_size_x * g.board_size_y; i++)
         {
-            for (let j = 0; j < g.board_size_y; j++)
+            let unit = this.board[i];
+            if (unit)
             {
-                let unit = this.board[i][j];
-                if (unit)
-                {
-                    s.push(unit.serialize());
-                }
-                else
-                {
-                    s.push(0);
-                }
+                s.push(unit.serialize());
+            }
+            else
+            {
+                s.push(0);
             }
         }
         return JSON.stringify(s);
@@ -126,15 +113,12 @@ export class SerializableBoard<T extends ISerializable & ICopyable<T>>
     {
         let board = new SerializableBoard<T>();
 
-        for (let i = 0; i < g.board_size_x; i++)
+        for (let i = 0; i < g.board_size_x * g.board_size_y; i++)
         {
-            for (let j = 0; j < g.board_size_y; j++)
+            let u = this.board[i];
+            if (u)
             {
-                let u = this.board[i][j];
-                if (u)
-                {
-                    board.board[i][j] = u.copy();
-                }
+                board.board[i] = u.copy();
             }
         }
 
