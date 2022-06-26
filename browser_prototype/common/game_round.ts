@@ -14,8 +14,6 @@ export enum GameStatus
     Tied
 }
 
-
-
 export class GameRound implements ISerializable
 {
     private constructor(
@@ -52,7 +50,65 @@ export class GameRound implements ISerializable
             }
         }
 
-        let [next_board, martyrs] = Rule.proceed_board_with_moves(this.board, moves);
+        let [next_board, martyrs] = Rule.proceed_board_with_actions(this.board, actions);
+
+        for (let p of Players.both())
+        {
+            let where = king_recruiting_at[p];
+            if (where && next_board.unit.at(where) == null)
+            {
+                let spawn_options: UnitConstructor[] = [Soldier, Barbarian, Archer];
+                if (where.equals(Rule.resource_grid_center))
+                {
+                    spawn_options.push(Rider);
+                }
+                let spawn_type = spawn_options[randint(spawn_options.length)];
+                let spawned = new spawn_type(p, null);
+                spawned.endow_inborn();
+                next_board.unit.put(where, spawned);
+            }
+        }
+
+        let supplies = {
+            [Player.P1]: 0,
+            [Player.P2]: 0
+        };
+
+        for (let player of Players.both())
+        {
+            supplies[player] = this.supplies[player] 
+                             + this.supply_income(player)
+                             - actions[player].cost();
+        }
+
+        return new GameRound(
+            this.round_count + 1,
+            next_board,
+            supplies,
+            actions,
+            martyrs,
+            this.resources_updated(next_board));
+    }
+
+    proceed_with_action(actions: Players<PlayerAction>): GameRound
+    {
+        let king_recruiting_at: Players<Coordinate | null> = {
+            [Player.P1]: null,
+            [Player.P2]: null
+        };
+
+        for (let i = 0; i < this.resources.length; ++i)
+        {
+            let grid = Rule.resource_grids[i];
+            let u = this.board.unit.at(grid);
+            if (u && u.type == King &&
+                this.resources[i].captured && this.resources[i].player == u.owner)
+            {
+                king_recruiting_at[u.owner] = grid;
+            }
+        }
+
+        let [next_board, martyrs] = Rule.proceed_board_with_actions(this.board, actions);
 
         for (let p of Players.both())
         {

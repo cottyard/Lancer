@@ -370,14 +370,9 @@ export class Rule
         return all;
     }
 
-    static proceed_board_with_moves(board: GameBoard, moves: Players<PlayerMove>)
+    static proceed_board_with_actions(board: GameBoard, actions: Players<PlayerAction>)
         : [GameBoard, Martyr[]]
     {
-        let actions: Players<PlayerAction> = {
-            [Player.P1]: this.validate_player_move(board, moves[Player.P1]),
-            [Player.P2]: this.validate_player_move(board, moves[Player.P2])
-        };
-
         let next_board = board.unit.copy();
         let force_board = new FullBoard<Force>(() => new Force());
         let martyrs: Martyr[] = [];
