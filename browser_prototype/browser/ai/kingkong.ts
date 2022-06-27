@@ -1,21 +1,11 @@
-// import { FullBoard } from "../../common/board";
 import {
-  // Archer,
-  // Barbarian,
   Coordinate,
   King,
-  // Knight,
-  // Lancer,
   Move,
   Player,
   PlayerAction,
   PlayerMove,
-  // Rider,
-  // Soldier,
-  // Spearman,
-  // Swordsman,
   Unit,
-  // Warrior,
 } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
 import { /*GameBoard, Heat,*/ GameBoard, Rule } from "../../common/rule";
@@ -23,7 +13,7 @@ import { PlayerMoveStagingArea } from "../staging_area";
 import { randint } from "../../common/language";
 import { g } from "../../common/global";
 
-type RobotParams = {
+type Params = {
   iterations: number;
   movePoolSize: number;
 
@@ -121,7 +111,7 @@ type RobotParams = {
   valueOfResourceGrid: number;
 };
 
-const DefaultRebotParams: RobotParams = {
+const DefaultParams: Params = {
   iterations: 20,
   movePoolSize: 50,
   reproduceRate: 0.5,
@@ -178,12 +168,12 @@ type MovePool = {
 };
 
 export class KingKong {
-  params: RobotParams;
+  params: Params;
   movePool: MovePool = {};
   round: GameRound = GameRound.new_game();
   player: Player = Player.P1;
 
-  constructor(params: RobotParams = DefaultRebotParams) {
+  constructor(params: Params = DefaultParams) {
     this.params = params;
   }
 
