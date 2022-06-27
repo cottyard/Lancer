@@ -5,6 +5,7 @@ import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
 import { event_box } from "./ui/ui";
 import { gorilla } from "./ai/gorilla";
+import { KingKong } from "./ai/kingkong";
 
 export interface IServerAgent
 {
@@ -54,7 +55,7 @@ export class LocalAgent extends ServerAgent
         let op = opponent(this.context.player);
         let moves = <Players<PlayerMove>>{
             [this.context.player]: this.context.staging_area.move,
-            [op]: gorilla(this.context.present, op),
+            [op]: new KingKong().think(this.context.present, op),
         };
 
         try

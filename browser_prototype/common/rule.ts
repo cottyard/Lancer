@@ -511,9 +511,17 @@ export class Rule
                 let target = action.move.to;
                 if (force_board.at(target).arriver[player_action.player] == null)
                 {
-                    let unit = board.remove(action.move.from)!;
-                    force_board.at(target).arriver[player_action.player] = 
+                    let unit = board.remove(action.move.from);
+                    if (unit)
+                    {
+                        force_board.at(target).arriver[player_action.player] = 
                         new Quester(unit, action.move.from);
+                    }
+                    else // should never happen
+                    {
+                        console.log(action.move.from);
+                        throw "error: unit is null at ";
+                    }
                 }
                 else
                 {
