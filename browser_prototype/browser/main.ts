@@ -1,25 +1,12 @@
-import { OnlineAgent } from "./agent";
-import { Player } from "../common/entity";
-import { GameContext, GameUiFacade } from "./game";
+import { GameUiFacade } from "./game";
 import { BoardDisplay } from "./ui/board_display";
 import { ButtonBar } from "./ui/button_bar";
 import { StatusBar } from "./ui/status_bar";
-import { clear_intervals, event_box, ui_components } from "./ui/ui";
+import { event_box, ui_components } from "./ui/ui";
 
 export function main()
 {
-    clear_intervals();
-
-    let context = new GameContext(
-        Player.P1,
-        {
-            [Player.P1]: 'player 1',
-            [Player.P2]: 'player 2'
-        });
-    let facade = new GameUiFacade(
-        context, 
-        new OnlineAgent(context));
-
+    let facade = new GameUiFacade();
     let board_display = new BoardDisplay(facade);
 
     // let action_panel = new ActionPanel(
@@ -48,6 +35,11 @@ export function main()
     event_box.subscribe("show last round", _ => {
         board_display.show_last();
         button_bar.view_last_round = true;
+    });
+
+    event_box.subscribe("show present round", _ => {
+        board_display.show_present();
+        button_bar.view_last_round = false;
     });
 
     event_box.subscribe("refresh counter", secs => {

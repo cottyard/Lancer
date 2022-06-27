@@ -145,7 +145,21 @@ export class ButtonBar implements IButtonBar
             height: "40px"
         });
 
-        if (!this.game.context.is_playing())
+
+        if (this.game.context.is_in_menu() || this.game.context.is_finished())
+        {
+            let vs_AI = DomHelper.create_button();
+            vs_AI.onclick = () => { this.game.AI_mode(); };
+            vs_AI.innerText = "Play AI";
+
+            let vs_Human = DomHelper.create_button();
+            vs_Human.onclick = () => { this.game.online_mode(); };
+            vs_Human.innerText = "Play Online";
+
+            this.dom_element.appendChild(vs_AI);
+            this.dom_element.appendChild(vs_Human);
+        }
+        else if (this.game.context.is_in_queue() || this.game.context.is_not_started())
         {
             let new_game = DomHelper.create_button();
             new_game.onclick = () => { this.game.new_game(); };
@@ -181,8 +195,7 @@ export class ButtonBar implements IButtonBar
             this.dom_element.appendChild(new_game);
             this.dom_element.appendChild(player_name);
         }
-
-        if (this.game.context.is_playing())
+        else if (this.game.context.is_playing())
         {
             let submit_button = DomHelper.create_button();
 
@@ -226,7 +239,7 @@ export class ButtonBar implements IButtonBar
             flexGrow: 1
         }));
 
-        if (!this.game.context.is_not_started() && !this.game.context.is_in_queue())
+        if (this.game.context.is_playing() || this.game.context.is_finished())
         {
             this.last_round_button = DomHelper.create_button();
 

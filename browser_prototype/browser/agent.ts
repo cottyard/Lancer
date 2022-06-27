@@ -11,16 +11,15 @@ export interface IServerAgent
 {
     submit_move(): void;
     new_game(name: string): void;
+    destroy(): void;
 }
 
 abstract class ServerAgent implements IServerAgent
 {
-    constructor(protected context: IGameContext)
-    {
-    }
-
+    constructor(protected context: IGameContext) {}
     abstract submit_move(): void
     abstract new_game(_: string): void
+    destroy(): void {}
 }
 
 function update_context_status(context: IGameContext): void
@@ -50,6 +49,16 @@ function update_context_status(context: IGameContext): void
 
 export class LocalAgent extends ServerAgent
 {
+    constructor(context: IGameContext)
+    {
+        super(context);
+        this.context.players_name = {
+            [Player.P1]: "You",
+            [Player.P2]: "King Kong"
+        }
+        this.new_game();
+    }
+    
     submit_move(): void
     {
         let op = opponent(this.context.player);
@@ -79,10 +88,9 @@ export class LocalAgent extends ServerAgent
 
     new_game(): void 
     {
-        this.context.clear_all();
-        this.context.new_round(GameRound.new_game());
+        this.context.clear_as_newgame();
         this.context.status = GameContextStatus.WaitForPlayer;
-        event_box.emit("refresh board", null);
+        event_box.emit("show present round", null);
         event_box.emit("refresh ui", null);
     }
 }
@@ -122,7 +130,6 @@ export class AiBattleAgent extends ServerAgent
         }
 
         update_context_status(this.context);
-        this.context.clear_staged_moves();
         
         event_box.emit("refresh board", null);
         event_box.emit("refresh ui", null);
@@ -130,8 +137,7 @@ export class AiBattleAgent extends ServerAgent
 
     new_game(): void 
     {
-        this.context.clear_all();
-        this.context.new_round(GameRound.new_game());
+        this.context.clear_as_newgame();
         this.context.status = GameContextStatus.WaitForPlayer;
         event_box.emit("refresh board", null);
         event_box.emit("refresh ui", null);
@@ -147,18 +153,28 @@ export class OnlineAgent extends ServerAgent
     private player_name: string = "";
     private timer_handle: NodeJS.Timeout | null = null;
     private observer_mode: boolean = false;
+    private query_handle: NodeJS.Timeout;
 
     constructor(context: IGameContext)
     {
         super(context);
 
-        setInterval(() =>
+        this.context.status = GameContextStatus.NotStarted;
+        event_box.emit("refresh ui", null);
+
+        this.query_handle = setInterval(() =>
         {
             if (this.session_id)
             {
                 Net.query_match(this.session_id, this.process_session_status.bind(this));
             }
         }, 2500);
+    }
+
+    destroy(): void 
+    {
+        this.stop_count_down();
+        clearInterval(this.query_handle);
     }
 
     submit_move(): void
@@ -202,7 +218,7 @@ export class OnlineAgent extends ServerAgent
                 let session_id = JSON.parse(session);
                 console.log('new session:', session_id);
                 this.context.status = GameContextStatus.InQueue;
-                this.context.clear_all();
+                this.context.clear_as_showcase();
                 this.session_id = session_id;
                 this.latest_game_id = null;
                 this.current_game_id = null;

@@ -1,10 +1,11 @@
-import { IServerAgent } from "./agent";
+import { IServerAgent, LocalAgent, OnlineAgent } from "./agent";
 import { Move, Player, PlayerAction, Players } from "../common/entity";
 import { GameRound } from "../common/game_round";
 import { IPlayerMoveStagingArea, PlayerMoveStagingArea } from "./staging_area";
 
 export enum GameContextStatus
 {
+    InMenu,
     NotStarted,
     InQueue,
     WaitForPlayer,
@@ -33,8 +34,10 @@ export interface IGameContext
     prepare_move(move: Move): void;
     prepare_moves(moves: Move[]): void;
     new_round(round: GameRound): void;
-    clear_all(): void;
+    clear_as_showcase(): void;
+    clear_as_newgame(): void;
     clear_staged_moves(): void;
+    is_in_menu(): boolean;
     is_playing(): boolean;
     is_waiting(): boolean;
     is_in_queue(): boolean;
@@ -46,8 +49,13 @@ export interface IGameContext
 export class GameContext implements IGameContext
 {
     private rounds: GameRound[] = [ GameRound.new_showcase() ];
+    
+    players_name: Players<string> = {
+        [Player.P1]: 'player 1',
+        [Player.P2]: 'player 2'
+    };
 
-    status: GameContextStatus = GameContextStatus.NotStarted;
+    status: GameContextStatus = GameContextStatus.InMenu;
     players_moved: Players<boolean> = Players.create(() => false);
     staging_area: IPlayerMoveStagingArea;
     round_begin_time: number = Date.now();
@@ -59,12 +67,10 @@ export class GameContext implements IGameContext
 
     private _player: Player;
 
-    constructor(
-        player: Player,
-        public players_name: Players<string>)
+    constructor()
     {
-        this._player = player;
-        this.staging_area = new PlayerMoveStagingArea(player);
+        this._player = Player.P1;
+        this.staging_area = new PlayerMoveStagingArea(this.player);
     }
 
     get player()
@@ -87,11 +93,18 @@ export class GameContext implements IGameContext
         this.round_begin_time = Date.now();
     }
 
-    clear_all(): void 
+    clear_as_showcase(): void 
     {
         this.rounds = [ GameRound.new_showcase() ];
         this.clear_staged_moves();
     }
+
+    clear_as_newgame(): void 
+    {
+        this.rounds = [ GameRound.new_game() ];
+        this.clear_staged_moves();
+    }
+
 
     clear_staged_moves(): void 
     {
@@ -136,6 +149,11 @@ export class GameContext implements IGameContext
     prepare_moves(moves: Move[]): void 
     {
         this.staging_area.prepare_moves(this.present.board, moves);
+    }
+
+    is_in_menu(): boolean 
+    {
+        return this.status == GameContextStatus.InMenu;
     }
 
     is_playing(): boolean
@@ -187,25 +205,55 @@ export interface IGameUiFacade
     player_name: string;
     submit_move(): void;
     new_game(): void;
+    online_mode(): void;
+    AI_mode(): void;
 }
 
 export class GameUiFacade implements IGameUiFacade
 {
-    public player_name: string = "Anonymous";
+    player_name: string = "Anonymous";
+    context: IGameContext = new GameContext();
+    agent: IServerAgent | null = null;
 
-    constructor(
-        public context: IGameContext, 
-        public server_agent: IServerAgent)
+    constructor()
     {
+    }
+
+    private destroy_agent()
+    {
+        if (this.agent)
+        {
+            this.agent.destroy();
+        }
+    }
+
+    online_mode()
+    {
+        this.destroy_agent();
+        this.context = new GameContext();
+        this.agent = new OnlineAgent(this.context);
+    }
+
+    AI_mode()
+    {
+        this.destroy_agent();
+        this.context = new GameContext();
+        this.agent = new LocalAgent(this.context);
     }
 
     submit_move(): void 
     {
-        this.server_agent.submit_move();
+        if (this.agent)
+        {
+            this.agent.submit_move();
+        }
     }
 
     new_game(): void
     {
-        this.server_agent.new_game(this.player_name);
+        if (this.agent)
+        {
+            this.agent.new_game(this.player_name);
+        }
     }
 }

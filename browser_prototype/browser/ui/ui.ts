@@ -5,7 +5,12 @@ export let ui_components: IComponent[] = [];
 // export let audio_context = new AudioContext();
 export let event_box = new EventBox();
 
-    
+// export function init()
+// {
+//     ui_components = [];
+//     event_box = new EventBox();
+//     clear_intervals();
+// }
 // function notify_changes_for_object(event: string, object: any): any
 // {
 //     let handler = {
@@ -39,11 +44,11 @@ export let event_box = new EventBox();
 //     v.stop(audio_context.currentTime + 0.05);
 // }
 
-export function clear_intervals()
-{
-    let interval_id = setInterval(() => { }, 10000);
-    for (let i = 1; i <= <number><unknown>interval_id; i++)
-    {
-        clearInterval(i);
-    }
-}
+// function clear_intervals()
+// {
+//     let interval_id = setInterval(() => { }, 10000);
+//     for (let i = 1; i <= <number><unknown>interval_id; i++)
+//     {
+//         clearInterval(i);
+//     }
+// }
