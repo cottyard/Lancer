@@ -313,9 +313,21 @@ class CanvasSwordsman extends CanvasHaloUnit
     }
 }
 
-
-class CanvasKing extends CanvasUnit
+class CanvasKing extends CanvasHaloUnit
 {
+    skill_direction = new HashMap([
+        [new Skill(0, -1), HaloDirection.Up],
+        [new Skill(0, 1), HaloDirection.Down],
+        [new Skill(-1, 0), HaloDirection.Left],
+        [new Skill(1, 0), HaloDirection.Right],
+        [new Skill(-1, 1), HaloDirection.DownLeft],
+        [new Skill(1, 1), HaloDirection.DownRight],
+        [new Skill(-1, -1), HaloDirection.UpLeft],
+        [new Skill(1, -1), HaloDirection.UpRight]
+    ]);
+    halo_size = CanvasUnit.halo_size_large;
+    halo_radius = CanvasUnit.halo_radius_medium;
+
     paint_unit(renderer: Renderer): void 
     {
         renderer.soldier(this.color);
