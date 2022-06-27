@@ -66,6 +66,7 @@ export class GameRound implements ISerializable
                 let spawned = new spawn_type(p, null);
                 spawned.endow_inborn();
                 next_board.unit.put(where, spawned);
+                next_board.update_heat();
             }
         }
 

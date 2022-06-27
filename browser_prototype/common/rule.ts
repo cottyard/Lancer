@@ -624,27 +624,34 @@ export class GameBoard
     heat: FullBoard<Heat>;
     constructor(public unit: SerializableBoard<Unit>)
     {
-        this.heat = Rule.get_heat(unit);
+        this.heat = Rule.get_heat(this.unit);
+    }
+    update_heat()
+    {
+        this.heat = Rule.get_heat(this.unit);
     }
 }
 
 export class Heat
 {
-    map = [0, 0, 0];
+    players_heat: Players<number> = {
+        [Player.P1]: 0,
+        [Player.P2]: 0,
+    }
 
     heatup(player: Player)
     {
-        this.map[player] += 1;
+        this.players_heat[player] += 1;
     }
 
     friendly(player: Player): number
     {
-        return this.map[player];
+        return this.players_heat[player];
     }
 
     hostile(player: Player): number
     {
-        return this.map[opponent(player)];
+        return this.players_heat[opponent(player)];
     }
 }
 
