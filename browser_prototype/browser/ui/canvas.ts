@@ -278,7 +278,15 @@ export class GameCanvas
             const color = display_action_style.get(a.type)!;
             const skill = a.action.move.which_skill();
             let shrink = g.settings.grid_size / 2 - 5;
-            const width = (a.type == DetailActionType.Attack || a.type == DetailActionType.Move) ? 5 : 3;
+            let width = 3;
+            if (a.type == DetailActionType.Defend || a.type == DetailActionType.Upgrade)
+            {
+                width = 4;
+            }
+            else if (a.type == DetailActionType.Move || a.type == DetailActionType.Attack)
+            {
+                width = 5;
+            }
             let go_around = false;
             let rider_move = false;
             let adjacent_move = false;
