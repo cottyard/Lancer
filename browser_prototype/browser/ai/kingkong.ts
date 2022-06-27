@@ -8,6 +8,7 @@ import {
   // Lancer,
   Move,
   Player,
+  PlayerAction,
   PlayerMove,
   // Rider,
   // Soldier,
@@ -173,7 +174,7 @@ const DefaultRebotParams: RobotParams = {
 };
 
 type MovePool = {
-  [player: number]: Array<{ move: PlayerMove; eval: number }>;
+  [player: number]: Array<{ move: PlayerMove; eval: number; action: PlayerAction | null }>;
 };
 
 export class KingKong {
@@ -220,6 +221,7 @@ export class KingKong {
         this.movePool[player].push({
           move: this.randMove(player, allMoves, false, []),
           eval: 0,
+          action: null
         });
       }
     });
@@ -285,6 +287,7 @@ export class KingKong {
         newPool[player].push({
           move: oldPool[i].move,
           eval: 0,
+          action: oldPool[i].action
         });
       }
       const allMoves = Rule.valid_moves(this.round.board, player);
@@ -299,6 +302,7 @@ export class KingKong {
             allMoves
           ),
           eval: 0,
+          action: null
         });
       }
     });
@@ -306,11 +310,16 @@ export class KingKong {
   }
 
   testMoves(): void {
+    [Player.P1, Player.P2].forEach((player) => {
+      this.movePool[player].forEach((move) => {
+        move.action = Rule.validate_player_move(this.round.board, move.move)
+      });
+    });
     this.movePool[Player.P1].forEach((move1) => {
       this.movePool[Player.P2].forEach((move2) => {
-        const round = this.round.proceed({
-          [Player.P1]: move1.move,
-          [Player.P2]: move2.move,
+        const round = this.round.proceed_with_action({
+          [Player.P1]: move1.action!,
+          [Player.P2]: move2.action!
         });
         const value = this.evaluate(round);
         const winRate = this.valueToWinrate(value);
