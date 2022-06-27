@@ -485,8 +485,9 @@ export class Rule
             }
             else
             {
-                let action = clash[opponent(surviver.owner)];
-                player_actions[surviver.owner].extract((a): a is Action => a == action);
+                let defeated_player = opponent(surviver.owner);
+                let action = clash[defeated_player];
+                player_actions[defeated_player].extract((a): a is Action => a == action);
                 fallen.push(action);
             }
 
