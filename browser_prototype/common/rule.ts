@@ -373,14 +373,15 @@ export class Rule
     static proceed_board_with_actions(board: GameBoard, actions: Players<PlayerAction>)
         : [GameBoard, Martyr[]]
     {
+        let actions_ = Players.copy(actions);
         let next_board = board.unit.copy();
         let force_board = new FullBoard<Force>(() => new Force());
         let martyrs: Martyr[] = [];
 
-        this.process_upgrade_phase(next_board, actions);
-        this.process_defend_phase(next_board, actions, force_board);
-        martyrs = martyrs.concat(this.process_clash_phase(next_board, actions));
-        martyrs = martyrs.concat(this.process_battle_phase(next_board, actions, force_board));
+        this.process_upgrade_phase(next_board, actions_);
+        this.process_defend_phase(next_board, actions_, force_board);
+        martyrs = martyrs.concat(this.process_clash_phase(next_board, actions_));
+        martyrs = martyrs.concat(this.process_battle_phase(next_board, actions_, force_board));
 
         return [new GameBoard(next_board), martyrs];
     }

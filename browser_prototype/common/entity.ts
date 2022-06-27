@@ -278,6 +278,14 @@ export module Players
             [Player.P2]: ctor(Player.P2)
         };
     }
+
+    export function copy<T extends ICopyable<T>>(players: Players<T>): Players<T>
+    {
+        return {
+            [Player.P1]: players[Player.P1].copy(),
+            [Player.P2]: players[Player.P2].copy()
+        };
+    }
 }
 
 export function opponent(player: Player)
@@ -502,7 +510,7 @@ export const action_style = new Map<ActionType, string>([
     [ActionType.Upgrade, g.const.STYLE_CYAN],
 ]);
 
-export class PlayerAction implements ISerializable
+export class PlayerAction implements ISerializable, ICopyable<PlayerAction>
 {
     constructor(public player: Player, public actions: Action[] = [])
     {
@@ -537,6 +545,11 @@ export class PlayerAction implements ISerializable
         }
 
         return new PlayerAction(player, actions);
+    }
+
+    copy(): PlayerAction
+    {
+        return new PlayerAction(this.player, this.actions.map((a) => a.copy()));
     }
 }
 
