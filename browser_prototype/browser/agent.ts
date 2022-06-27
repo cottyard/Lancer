@@ -1,11 +1,10 @@
 import { monkey } from "./ai/monkey";
-import { opponent, Player, PlayerMove, Players } from "../common/entity";
+import { Player, PlayerMove, Players, serialize_player } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
 import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
 import { event_box } from "./ui/ui";
 import { gorilla } from "./ai/gorilla";
-import { KingKong } from "./ai/kingkong";
 
 export interface IServerAgent
 {
@@ -49,22 +48,34 @@ function update_context_status(context: IGameContext): void
 
 export class LocalAgent extends ServerAgent
 {
+    private ai_worker: Worker;
+    private ai_move: PlayerMove | null = null;
+    private player_move: PlayerMove | null = null;
+
     constructor(context: IGameContext)
     {
         super(context);
+        this.context.player = Player.P1;
         this.context.players_name = {
             [Player.P1]: "You",
             [Player.P2]: "King Kong"
         }
+
+        this.ai_worker = new Worker("kingkong.js");
+        this.ai_worker.onmessage = this.on_ai_move.bind(this);
         this.new_game();
     }
-    
-    submit_move(): void
+
+    try_proceed(): void
     {
-        let op = opponent(this.context.player);
+        if (!this.player_move || !this.ai_move)
+        {
+            return;
+        }
+
         let moves = <Players<PlayerMove>>{
-            [this.context.player]: this.context.staging_area.move,
-            [op]: new KingKong().think(this.context.present, op),
+            [Player.P1]: this.player_move,
+            [Player.P2]: this.ai_move,
         };
 
         try
@@ -84,14 +95,60 @@ export class LocalAgent extends ServerAgent
 
         event_box.emit("show last round", null);
         event_box.emit("refresh ui", null);
+
+        this.reset_moves();
+
+        if (this.context.status == GameContextStatus.WaitForPlayer)
+        {
+            this.trigger_ai_move();
+        }
+    }
+
+    reset_moves()
+    {
+        this.player_move = null;
+        this.ai_move = null;
+        this.context.players_moved[Player.P1] = false;
+        this.context.players_moved[Player.P2] = false;
+    }
+
+    trigger_ai_move()
+    {
+        this.ai_worker.postMessage([
+            this.context.present.serialize(),
+            serialize_player(Player.P2)]);
+    }
+    
+    submit_move(): void
+    {
+        this.player_move = this.context.staging_area.move.copy();
+        this.context.players_moved[Player.P1] = true;
+        this.context.consumed_msec[Player.P1] += Date.now() - this.context.round_begin_time;
+        this.context.status = GameContextStatus.WaitForOpponent;
+        event_box.emit("refresh ui", null);
+        
+        this.try_proceed();
+    }
+
+    on_ai_move(e: any): void
+    {
+        this.ai_move = PlayerMove.deserialize(e.data);
+        this.context.players_moved[Player.P2] = true;
+        this.context.consumed_msec[Player.P2] += Date.now() - this.context.round_begin_time;
+        event_box.emit("refresh ui", null);
+        this.try_proceed();
     }
 
     new_game(): void 
     {
         this.context.clear_as_newgame();
         this.context.status = GameContextStatus.WaitForPlayer;
+        
         event_box.emit("show present round", null);
         event_box.emit("refresh ui", null);
+
+        this.reset_moves();
+        this.trigger_ai_move();
     }
 }
 
@@ -280,11 +337,11 @@ export class OnlineAgent extends ServerAgent
 
         if (updated)
         {
-            /* refresh ui only when context is updated here
-               because this method is called on a regular basis
-               refreshing the ui too often will interfere with the buttons
-               when the user clicks a button but it refreshes before mouse release
-               the click will become ineffective */
+            /* refresh ui only when context is updated here.
+               because this method is called on a regular basis,
+               refreshing the ui too often will interfere with the buttons.
+               when the user clicks a button, but the button refreshes 
+               before mouse release, the click will become ineffective */
             event_box.emit("refresh ui", null);
         }
 

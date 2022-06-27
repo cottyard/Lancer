@@ -343,7 +343,7 @@ export class Move implements ISerializable, ICopyable<Move>, IHashable
     }
 }
 
-export class PlayerMove implements ISerializable
+export class PlayerMove implements ISerializable, ICopyable<PlayerMove>
 {
     constructor(public player: Player, public moves: Move[] = [])
     {
@@ -369,6 +369,11 @@ export class PlayerMove implements ISerializable
         let s = this.moves.map(m => m.serialize());
         s.unshift(serialize_player(this.player));
         return JSON.stringify(s);
+    }
+
+    copy(): PlayerMove 
+    {
+        return new PlayerMove(this.player, this.moves.map((m) => m.copy()));
     }
 
     static deserialize(payload: string): PlayerMove

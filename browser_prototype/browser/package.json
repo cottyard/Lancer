@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "browserify main.ts -p [ tsify --noImplicitAny] | uglifyjs -c -o ../target/lancer.js",
-    "build-dev": "browserify main.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js"
+    "build-dev": "browserify main.ts -d -p [ tsify --noImplicitAny] > ../target/lancer.js",
+    "build-ai": "browserify ai/kingkong.ts -p [ tsify --noImplicitAny] > ../target/kingkong.js"
   },
   "devDependencies": {
     "@capacitor/cli": "^3.6.0"

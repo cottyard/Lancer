@@ -57,13 +57,9 @@ export class GameContext implements IGameContext
 
     status: GameContextStatus = GameContextStatus.InMenu;
     players_moved: Players<boolean> = Players.create(() => false);
+    consumed_msec: Players<number> = Players.create(() => 0);
     staging_area: IPlayerMoveStagingArea;
     round_begin_time: number = Date.now();
-
-    consumed_msec: Players<number> = {
-        [Player.P1]: 0,
-        [Player.P2]: 0
-    }
 
     private _player: Player;
 
@@ -102,9 +98,10 @@ export class GameContext implements IGameContext
     clear_as_newgame(): void 
     {
         this.rounds = [ GameRound.new_game() ];
+        this.consumed_msec = Players.create(() => 0);
+        this.players_moved = Players.create(() => false);
         this.clear_staged_moves();
     }
-
 
     clear_staged_moves(): void 
     {

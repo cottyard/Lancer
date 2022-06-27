@@ -1,5 +1,6 @@
 import {
   Coordinate,
+  deserialize_player,
   King,
   Move,
   Player,
@@ -569,4 +570,11 @@ export class KingKong {
       return this.params.threatenAndNotDefendablePenalty[unit.level];
     }
   }
+}
+
+onmessage = function(e) {
+  let m = new KingKong().think(
+    GameRound.deserialize(e.data[0]), 
+    deserialize_player(e.data[1]));
+  postMessage(m.serialize());
 }
