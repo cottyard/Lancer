@@ -175,8 +175,8 @@ type Params = {
 };
 
 const DefaultParams: Params = {
-  iterations: 25,
-  movePoolSize: 60,
+  iterations: 30,
+  movePoolSize: 50,
   reproduceRate: 0.5,
   surviveRate: 0.1,
   pickRate: 0.05,

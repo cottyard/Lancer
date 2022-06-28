@@ -135,9 +135,11 @@ export class BoardDisplay implements IBoardDisplay
         {
             this.update_displaying_items();
 
-            let edge_usage: EdgeUsage = {
-                row: Array<boolean>(g.board_size_x + 1).fill(false),
-                col: Array<boolean>(g.board_size_x + 1).fill(false)
+            let edge_usage: EdgeUsage = {row: [], col: []};
+            for (let i = 0; i <= g.board_size_x; ++i)
+            {
+                edge_usage.row.push(Array<boolean>(g.board_size_y + 1).fill(false));
+                edge_usage.col.push(Array<boolean>(g.board_size_y + 1).fill(false));
             }
 
             for (let player_action of Players.values(this.displaying_actions))
@@ -147,15 +149,15 @@ export class BoardDisplay implements IBoardDisplay
                     let skill = a.move.which_skill();
                     if (Math.abs(skill.x) == 2 && Math.abs(skill.y) == 1)
                     {
-                        edge_usage.row[
-                            a.move.from.y + (Math.sign(skill.y) < 0 ? 0 : 1)
-                        ] = true;
+                        edge_usage.row
+                            [a.move.from.x + (Math.sign(skill.x) < 0 ? -1 : 1)]
+                            [a.move.from.y + (Math.sign(skill.y) < 0 ? 0 : 1)] = true;
                     }
                     else if (Math.abs(skill.x) == 1 && Math.abs(skill.y) == 2)
                     {
-                        edge_usage.col[
-                            a.move.from.x + (Math.sign(skill.x) < 0 ? 0 : 1)
-                        ] = true;
+                        edge_usage.col
+                            [a.move.from.x + (Math.sign(skill.x) < 0 ? 0 : 1)]
+                            [a.move.from.y + (Math.sign(skill.y) < 0 ? -1 : 1)] = true;
                     }
                 }
             }

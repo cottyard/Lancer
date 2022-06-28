@@ -7,7 +7,7 @@ import { DisplayPlayerAction, display_action_style } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
 import { Renderer } from "./renderer";
 
-export type EdgeUsage = {row: boolean[], col: boolean[]};
+export type EdgeUsage = {row: boolean[][], col: boolean[][]};
 
 export class GameCanvas
 {
@@ -333,39 +333,45 @@ export class GameCanvas
                 let sx = Math.sign(skill.x);
                 let sy = Math.sign(skill.y);
 
-                let edges: boolean[];
-                let edge_index: number;
-                let opposite_edge_index: number;
+                let edges: boolean[][];
+                let edge_x: number, edge_y: number;
+                let alternate_edge_x, alternate_edge_y: number;
 
-                if (a.action.move.from.x == a.action.move.to.x)
+                let fx = a.action.move.from.x;
+                let fy = a.action.move.from.y;
+                let tx = a.action.move.to.x;
+
+                if (fx == tx)
                 {
                     edges = edge_usage.col;
-                    edge_index = a.action.move.from.x + (sy > 0 ? 0 : 1);
-                    opposite_edge_index = a.action.move.from.x + (sy < 0 ? 0 : 1);
+                    edge_x = fx + (sy < 0 ? 1 : 0);
+                    alternate_edge_x = fx + (sy < 0 ? 0 : 1);
+                    edge_y = alternate_edge_y = fy + (sy < 0 ? -1 : 1);
                 }
                 else
                 {
                     edges = edge_usage.row;
-                    edge_index = a.action.move.from.y + (sx > 0 ? 1 : 0);
-                    opposite_edge_index = a.action.move.from.y + (sx < 0 ? 1 : 0);
+                    edge_y = fy + (sx < 0 ? 0 : 1);
+                    alternate_edge_y = fy + (sx < 0 ? 1 : 0);
+                    edge_x = alternate_edge_x = fx + (sx < 0 ? -1 : 1);
                 }
 
-                if (edges[edge_index])
+                if (edges[edge_x][edge_y])
                 {
-                    if (!edges[opposite_edge_index])
+                    if (!edges[alternate_edge_x][alternate_edge_y])
                     {
                         sx *= -1;
                         sy *= -1;
-                        edges[opposite_edge_index] = true;
+                        edges[alternate_edge_x][alternate_edge_y] = true;
                     }
                     else
                     {
-                        control_distance *= 0.8;
+                        control_distance *= 0.7;
                     }
                 }
                 else
                 {
-                    edges[edge_index] = true;
+                    edges[edge_x][edge_y] = true;
                 }
 
                 let control = new Position(
