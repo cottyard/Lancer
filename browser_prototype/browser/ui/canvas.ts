@@ -144,8 +144,8 @@ export class GameCanvas
     paint_victim_indicator(coordinate: Coordinate)
     {
         let center = GameCanvas.get_grid_center(coordinate);
-        let size = 7;
-        let width = 4;
+        let size = 6;
+        let width = 3;
         using(new Renderer(this.am_ctx), (renderer) =>
         {
             renderer.set_color(g.const.STYLE_RED);
@@ -438,6 +438,18 @@ export class GameCanvas
                     );
                 });
             }
+
+            using(new Renderer(this.am_ctx), (renderer) =>
+            {
+                renderer.translate(from);
+                
+                renderer.circle(new Position(0, g.settings.grid_size / 4), 9, 2, g.const.STYLE_WHITE);
+                renderer.set_color(g.const.STYLE_BLACK);
+
+                let cost = a.action.cost;
+                renderer.ctx.font = cost >= 10 ? "10px Sans-Serif" : "15px Sans-Serif";
+                renderer.ctx.fillText(cost.toString(), -5, 5 + g.settings.grid_size / 4);
+            });
         }
     }
 
