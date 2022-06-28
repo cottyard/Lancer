@@ -452,7 +452,7 @@ export class Action implements ICopyable<Action>, ISerializable
     {
         if (unit.is_promotion_ready())
         {
-            return 15;
+            return 12;
         }
 
         switch(unit.type)
@@ -464,17 +464,17 @@ export class Action implements ICopyable<Action>, ISerializable
             case Archer:
                 return 4;
             case Rider:
-                return 8;
+                return 7;
             case Warrior:
                 return move.which_skill().is_leap() ? 8 : 7;
             case Swordsman:
-                return move.which_skill().is_adjacent() ? 9 : 12;
+                return move.which_skill().is_adjacent() ? 9 : 10;
             case Spearman:
-                return move.which_skill().is_leap() ? 12 : 9;
+                return move.which_skill().is_leap() ? 10 : 9;
             case Lancer:
-                return 9;
+                return 8;
             case Knight:
-                return 12;
+                return 10;
             case King:
                 return 0;
             default:
