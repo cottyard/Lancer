@@ -1,4 +1,6 @@
 import {
+  Action,
+  ActionType,
   Coordinate,
   deserialize_player,
   King,
@@ -10,9 +12,69 @@ import {
 } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
 import { /*GameBoard, Heat,*/ GameBoard, Rule } from "../../common/rule";
-import { PlayerMoveStagingArea } from "../staging_area";
 import { randint } from "../../common/language";
 import { g } from "../../common/global";
+
+class StagingArea
+{
+    move: PlayerMove;
+    constructor(player: Player)
+    {
+        this.move = new PlayerMove(player);
+    }
+
+    action(board: GameBoard): PlayerAction
+    {
+        return Rule.validate_player_move(board, this.move);
+    }
+
+    rough_cost(board: GameBoard): number
+    {
+      // roughly estimate the cost in exchange for complexity
+      // the rough cost will always be >= real cost to avoid over spending
+      return this.move.moves.reduce<number>(
+        (total, m) => {
+          let unit = board.unit.at(m.from)!;
+          let skill = m.which_skill();
+          let a;
+          if (unit.capable(skill))
+          {
+              let target = board.unit.at(m.to);
+              if (target == null || unit.owner == target.owner)
+              {
+                // assume the more expensive action Move here instead of Defend
+                  a = new Action(m, ActionType.Move, unit);
+              }
+              else
+              {
+                  a = new Action(m, ActionType.Attack, unit);
+              }
+          }
+          else
+          {
+              a = new Action(m, ActionType.Upgrade, unit);
+          }
+          return total + a.cost;
+        }, 0);
+    }
+
+    pop_move(): Move | null
+    {
+        let removed = this.move.moves.pop();
+        return removed || null;
+    }
+
+    prepare_move(move: Move): void
+    {
+        this.move.extract((m: Move): m is Move => m.from.equals(move.from));
+        this.move.moves.push(move);
+    }
+
+    prepare_moves(moves: Move[]): void
+    {
+      this.move.moves = moves;
+    }
+}
 
 type Params = {
   iterations: number;
@@ -113,8 +175,8 @@ type Params = {
 };
 
 const DefaultParams: Params = {
-  iterations: 20,
-  movePoolSize: 50,
+  iterations: 25,
+  movePoolSize: 60,
   reproduceRate: 0.5,
   surviveRate: 0.1,
   pickRate: 0.05,
@@ -226,7 +288,7 @@ export class KingKong {
   ): PlayerMove {
     const selectedMove: Set<number> = new Set();
     const moveIndex: { [moveStr: string]: number } = {};
-    var area = new PlayerMoveStagingArea(player);
+    var area = new StagingArea(player);
     const supply = this.round.supply(player);
     while (moves.length > selectedMove.size) {
       const i = randint(moves.length);
@@ -242,8 +304,8 @@ export class KingKong {
       if (moveIndex[moveStr] != null) {
         continue;
       }
-      area.prepare_move(this.round.board, move);
-      if (area.cost(this.round.board) > supply) {
+      area.prepare_move(move);
+      if (area.rough_cost(this.round.board) > supply) {
         area.pop_move();
         break;
       }
@@ -254,9 +316,9 @@ export class KingKong {
       sortedMoves.sort(
         (a, b) => moveIndex[a.serialize()] - moveIndex[b.serialize()]
       );
-      area = new PlayerMoveStagingArea(player);
-      area.prepare_moves(this.round.board, sortedMoves);
-      while (area.cost(this.round.board) > supply) {
+      area = new StagingArea(player);
+      area.prepare_moves(sortedMoves);
+      while (area.rough_cost(this.round.board) > supply) {
         area.pop_move();
       }
     }
