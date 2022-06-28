@@ -7,6 +7,8 @@ import { DisplayPlayerAction, display_action_style } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
 import { Renderer } from "./renderer";
 
+export type EdgeUsage = {row: boolean[], col: boolean[]};
+
 export class GameCanvas
 {
     background: HTMLCanvasElement;
@@ -269,7 +271,9 @@ export class GameCanvas
         });
     }
 
-    paint_actions(player_action: DisplayPlayerAction, board: Board<Unit>)
+    paint_actions(player_action: DisplayPlayerAction, 
+                  board: Board<Unit>, 
+                  edge_usage: EdgeUsage)
     {
         for (let a of player_action.actions)
         {
@@ -294,21 +298,17 @@ export class GameCanvas
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) &&
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
             {
-                let middleground = a.action.move.from.add(skill.x / 2, skill.y / 2);
-                if (!middleground)
-                {
-                    throw Error("action move has no middleground");
-                }
-                let _middleground = middleground;
+                let middleground = a.action.move.from.add(skill.x / 2, skill.y / 2)!;
                 let unit = board.at(middleground);
                 if (unit)
                 {
                     go_around = true;
                 }
                 else if (
-                    player_action.actions.reduce<boolean>((previous: boolean, current: DetailAction) =>
+                    player_action.actions.reduce<boolean>(
+                        (previous: boolean, current: DetailAction) =>
                     {
-                        return previous || current.action.move.from.equals(_middleground);
+                        return previous || current.action.move.from.equals(middleground);
                     }, false))
                 {
                     go_around = true;
@@ -329,18 +329,55 @@ export class GameCanvas
 
             if (go_around)
             {
-                const control_distance = g.settings.grid_size * 0.75;
+                let control_distance = g.settings.grid_size * 0.75;
                 let sx = Math.sign(skill.x);
                 let sy = Math.sign(skill.y);
+
+                let edges: boolean[];
+                let edge_index: number;
+                let opposite_edge_index: number;
+
+                if (a.action.move.from.x == a.action.move.to.x)
+                {
+                    edges = edge_usage.col;
+                    edge_index = a.action.move.from.x + (sy > 0 ? 0 : 1);
+                    opposite_edge_index = a.action.move.from.x + (sy < 0 ? 0 : 1);
+                }
+                else
+                {
+                    edges = edge_usage.row;
+                    edge_index = a.action.move.from.y + (sx > 0 ? 1 : 0);
+                    opposite_edge_index = a.action.move.from.y + (sx < 0 ? 1 : 0);
+                }
+
+                if (edges[edge_index])
+                {
+                    if (!edges[opposite_edge_index])
+                    {
+                        sx *= -1;
+                        sy *= -1;
+                        edges[opposite_edge_index] = true;
+                    }
+                    else
+                    {
+                        control_distance *= 0.8;
+                    }
+                }
+                else
+                {
+                    edges[edge_index] = true;
+                }
+
                 let control = new Position(
                     (from.x + to.x) / 2 - sy * control_distance,
                     (from.y + to.y) / 2 + sx * control_distance);
+
                 using(new Renderer(this.am_ctx), (renderer) =>
                 {
                     renderer.curved_arrow(
-                        renderer.go_towards(from, control, shrink),
+                        Renderer.go_towards(from, control, shrink),
                         control,
-                        renderer.go_towards(to, control, shrink),
+                        Renderer.go_towards(to, control, shrink),
                         color, width
                     );
                 });
@@ -351,25 +388,27 @@ export class GameCanvas
                 {
                     return a * weight + b * (1 - weight);
                 }
+
+                let from_s = Renderer.go_towards(from, to, shrink);
+                let to_s = Renderer.go_towards(to, from, shrink);
+                let mid = new Position((from.x + to.x) / 2, (from.y + to.y) / 2);
+
+                let control_1: Position;
+                let control_2: Position;
+
+                if (Math.abs(skill.x) == 2)
+                {
+                    control_1 = new Position(mix(from_s.x, mid.x), mid.y);
+                    control_2 = new Position(mix(to_s.x, mid.x), mid.y);
+                }
+                else
+                {
+                    control_1 = new Position(mid.x, mix(from_s.y, mid.y));
+                    control_2 = new Position(mid.x, mix(to_s.y, mid.y));
+                }
+
                 using(new Renderer(this.am_ctx), (renderer) =>
                 {
-                    let from_s = renderer.go_towards(from, to, shrink);
-                    let to_s = renderer.go_towards(to, from, shrink);
-                    let mid = new Position((from.x + to.x) / 2, (from.y + to.y) / 2);
-
-                    let control_1: Position;
-                    let control_2: Position;
-                    if (Math.abs(skill.x) == 2)
-                    {
-                        control_1 = new Position(mix(from_s.x, mid.x), mid.y);
-                        control_2 = new Position(mix(to_s.x, mid.x), mid.y);
-                    }
-                    else
-                    {
-                        control_1 = new Position(mid.x, mix(from_s.y, mid.y));
-                        control_2 = new Position(mid.x, mix(to_s.y, mid.y));
-                    }
-
                     renderer.set_color(color);
                     renderer.curve(
                         from_s,

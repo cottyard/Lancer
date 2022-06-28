@@ -1,5 +1,5 @@
 import { IGameUiFacade } from '../game'
-import { GameCanvas } from './canvas';
+import { EdgeUsage, GameCanvas } from './canvas';
 import { CanvasUnitFactory } from './canvas_entity';
 import { DetailAction, DetailActionType, GameBoard, get_detailed, ResourceStatus, Rule } from '../../common/rule';
 import { Coordinate, Move, Player, PlayerAction, Players } from '../../common/entity';
@@ -134,10 +134,38 @@ export class BoardDisplay implements IBoardDisplay
         try
         {
             this.update_displaying_items();
-            for (let player_action of Array.from(Players.values(this.displaying_actions)))
+
+            let edge_usage: EdgeUsage = {
+                row: Array<boolean>(g.board_size_x + 1).fill(false),
+                col: Array<boolean>(g.board_size_x + 1).fill(false)
+            }
+
+            for (let player_action of Players.values(this.displaying_actions))
+            {
+                for (let a of player_action.actions)
+                {
+                    let skill = a.move.which_skill();
+                    if (Math.abs(skill.x) == 2 && Math.abs(skill.y) == 1)
+                    {
+                        edge_usage.row[
+                            a.move.from.y + (Math.sign(skill.y) < 0 ? 0 : 1)
+                        ] = true;
+                    }
+                    else if (Math.abs(skill.x) == 1 && Math.abs(skill.y) == 2)
+                    {
+                        edge_usage.col[
+                            a.move.from.x + (Math.sign(skill.x) < 0 ? 0 : 1)
+                        ] = true;
+                    }
+                }
+            }
+
+            for (let player_action of Players.values(this.displaying_actions))
             {
                 this.canvas.paint_actions(
-                    new DisplayPlayerAction(player_action), this.displaying_board.unit);
+                    new DisplayPlayerAction(player_action), 
+                    this.displaying_board.unit,
+                    edge_usage);
             }
             if (this.show_last_round)
             {

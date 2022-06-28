@@ -443,14 +443,15 @@ export class Renderer implements IDisposable
             width);
     }
 
-    curved_arrow(from: Position, control: Position, to: Position, style: string, width: number = 3): void
+    curved_arrow(from: Position, control: Position, to: Position, 
+                 style: string, width: number = 3): void
     {
         this.set_color(style);
         let size = 3;
 
         this.curve(from, control, to, width);
 
-        let direction = this.get_direction(control, to);
+        let direction = Renderer.get_direction(control, to);
         this.ctx.save();
         this.ctx.translate(to.x, to.y);
         this.ctx.rotate(direction.add(90).to_radian().value);
@@ -460,18 +461,19 @@ export class Renderer implements IDisposable
         this.ctx.restore();
     }
 
-    arrow(from: Position, to: Position, style: string, shrink_length: number, width: number = 3, arrow_head = 0.6): void
+    arrow(from: Position, to: Position, style: string, shrink_length: number, 
+          width: number = 3, arrow_head = 0.6): void
     {
         this.set_color(style);
         let size = 3;
         let head_size = size * arrow_head;
 
-        from = this.go_towards(from, to, shrink_length);
-        to = this.go_towards(to, from, shrink_length);
+        from = Renderer.go_towards(from, to, shrink_length);
+        to = Renderer.go_towards(to, from, shrink_length);
 
         this.line(from, to, width);
 
-        let direction = this.get_direction(from, to);
+        let direction = Renderer.get_direction(from, to);
         this.ctx.save();
         this.ctx.translate(to.x, to.y);
         this.ctx.rotate(direction.add(90).to_radian().value);
@@ -481,15 +483,15 @@ export class Renderer implements IDisposable
         this.ctx.restore();
     }
 
-    go_towards(from: Position, to: Position, length: number): Position
+    static go_towards(from: Position, to: Position, length: number): Position
     {
-        let direction = this.get_direction(from, to);
+        let direction = Renderer.get_direction(from, to);
         let dy = length * Math.sin(direction.to_radian().value);
         let dx = length * Math.cos(direction.to_radian().value);
         return from.add(new PositionDelta(dx, dy));
     }
 
-    get_direction(from: Position, to: Position): Direction
+    static get_direction(from: Position, to: Position): Direction
     {
         let delta = from.delta(to);
         
