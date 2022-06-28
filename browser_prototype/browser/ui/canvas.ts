@@ -2,7 +2,7 @@ import { Board } from "../../common/board";
 import { Coordinate, Players, Unit } from "../../common/entity";
 import { g } from "../../common/global";
 import { using } from "../../common/language";
-import { DetailAction, DetailActionType, Heat } from "../../common/rule";
+import { DetailActionType, Heat } from "../../common/rule";
 import { DisplayPlayerAction, display_action_style } from "./board_display";
 import { CanvasUnit } from "./canvas_entity";
 import { Renderer } from "./renderer";
@@ -275,8 +275,9 @@ export class GameCanvas
                   board: Board<Unit>, 
                   edge_usage: EdgeUsage)
     {
-        for (let a of player_action.actions)
+        for (let i = 0; i < player_action.actions.length; ++i)
         {
+            let a = player_action.actions[i];
             const from = GameCanvas.get_grid_center(a.action.move.from);
             const to = GameCanvas.get_grid_center(a.action.move.to);
             const color = display_action_style.get(a.type)!;
@@ -304,14 +305,18 @@ export class GameCanvas
                 {
                     go_around = true;
                 }
-                else if (
-                    player_action.actions.reduce<boolean>(
-                        (previous: boolean, current: DetailAction) =>
-                    {
-                        return previous || current.action.move.from.equals(middleground);
-                    }, false))
+                else
                 {
-                    go_around = true;
+                    for (let j = i + 1; j < player_action.actions.length; ++j)
+                    {
+                        let other = player_action.actions[j];
+                        if (other.action.move.from.equals(a.action.move.to) &&
+                            other.action.move.to.equals(a.action.move.from))
+                        {
+                            go_around = true;
+                        }
+                        break;
+                    }
                 }
             }
             else if (
