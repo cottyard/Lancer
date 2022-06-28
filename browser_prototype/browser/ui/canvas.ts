@@ -295,6 +295,7 @@ export class GameCanvas
             let go_around = false;
             let rider_move = false;
             let adjacent_move = false;
+            let move_clash = false;
 
             if ((Math.abs(skill.x) == 2 || Math.abs(skill.y) == 2) &&
                 (Math.abs(skill.x) == 0 || Math.abs(skill.y) == 0))
@@ -304,19 +305,6 @@ export class GameCanvas
                 if (unit)
                 {
                     go_around = true;
-                }
-                else
-                {
-                    for (let j = i + 1; j < player_action.actions.length; ++j)
-                    {
-                        let other = player_action.actions[j];
-                        if (other.action.move.from.equals(a.action.move.to) &&
-                            other.action.move.to.equals(a.action.move.from))
-                        {
-                            go_around = true;
-                        }
-                        break;
-                    }
                 }
             }
             else if (
@@ -330,6 +318,17 @@ export class GameCanvas
                 (Math.abs(skill.x) == 0 && Math.abs(skill.y) == 1))
             {
                 adjacent_move = true;
+            }
+
+            for (let j = 0; j < i; ++j)
+            {
+                let other = player_action.actions[j];
+                if (other.action.move.from.equals(a.action.move.to) &&
+                    other.action.move.to.equals(a.action.move.from))
+                {
+                    move_clash = true;
+                    break;
+                }
             }
 
             if (go_around)
@@ -442,6 +441,10 @@ export class GameCanvas
                 }
                 using(new Renderer(this.am_ctx), (renderer) =>
                 {
+                    if (move_clash)
+                    {
+                        renderer.translate(new Position(0, 10));
+                    }
                     renderer.arrow(
                         GameCanvas.get_grid_center(a.action.move.from),
                         GameCanvas.get_grid_center(a.action.move.to),
