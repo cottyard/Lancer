@@ -1,10 +1,9 @@
-import { monkey } from "./ai/monkey";
 import { Player, PlayerMove, Players, serialize_player } from "../common/entity";
 import { GameContextStatus, IGameContext } from "./game";
 import { GameRound, GameStatus } from "../common/game_round";
 import { Net } from "./net";
 import { event_box } from "./ui/ui";
-import { gorilla } from "./ai/gorilla";
+import { KingKong } from "./ai/kingkong";
 
 export interface IServerAgent
 {
@@ -165,13 +164,14 @@ export class AiBattleAgent extends ServerAgent
         //         this.submit_move(new PlayerMove(this.context.player));
         //     }
         // }, 1000);
+        this.new_game();
     }
 
     submit_move(): void
     {
         let moves : Players<PlayerMove> = {
-            [Player.P1]: gorilla(this.context.present, Player.P1),
-            [Player.P2]: monkey(this.context.present, Player.P2)
+            [Player.P1]: new KingKong().think(this.context.present, Player.P1),
+            [Player.P2]: new KingKong().think(this.context.present, Player.P2)
         };
         
         try
@@ -196,7 +196,8 @@ export class AiBattleAgent extends ServerAgent
     {
         this.context.clear_as_newgame();
         this.context.status = GameContextStatus.WaitForPlayer;
-        event_box.emit("refresh board", null);
+        
+        event_box.emit("show present round", null);
         event_box.emit("refresh ui", null);
     }
 }
