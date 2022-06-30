@@ -8,6 +8,7 @@ import {
   Player,
   PlayerAction,
   PlayerMove,
+  Skill,
   Unit,
 } from "../../common/entity";
 import { GameRound } from "../../common/game_round";
@@ -76,7 +77,7 @@ class StagingArea
     }
 }
 
-type Params = {
+export type KingKongParams = {
   iterations: number;
   movePoolSize: number;
 
@@ -96,6 +97,15 @@ type Params = {
 
   // There's X% chance to pick random move instead of using parent moves in reproduction.
   mutationRate: number;
+
+  // Only lowest X% evals will be used.
+  evalRate: number;
+
+  // Let's say evalRate picked lowest 10 values.
+  // Average returns average of them.
+  // Max returns the 10th value.
+  // Min returns the 1st value (evalRate is not needed for this mode).
+  evalMode: "average" | "max" | "min";
 
   // Value of king - should be very large.
   kingValue: number;
@@ -158,11 +168,20 @@ type Params = {
   // Penalty for King being surrounded by enemy pieces in +-2 area.
   kingSurroundedByEnemyUnitPenalty: { [level: number]: number };
 
-  // Penalty of King being away from center.
-  kingAwayFromCenterPenaltyPerDist: number;
+  // Bonus for King being surrounded by friendly pieces in +-2 area.
+  kingSurroundedByFriendlyUnitBonus: { [level: number]: number };
 
-  // Penalty of King skill not towards center.
-  kingSkillNotTowardsCenterPenalty: number;
+  // Bonus to incentivize king to take resource square.
+  kingOnResourceSquareBonus: number;
+
+  // Bonus to incentivize king to upgrade its move to take nearby resource sqaure.
+  kingNextMoveIsResourceSqaureBonus: number;
+
+  // Bonus to incentivize AI to unblock king from moving into/outof resource sqaure.
+  kingNextResourceMoveNotBlockedBonus: number;
+
+  // Extra multiplier to king summon bonuses for center resource sqaure.
+  kingCenterResourceSquareMultiplier: number;
 
   // Value of non-central grid that you piece can reach.
   valueOfNonCentralGrid: number;
@@ -174,14 +193,16 @@ type Params = {
   valueOfResourceGrid: number;
 };
 
-const DefaultParams: Params = {
-  iterations: 30,
-  movePoolSize: 50,
+export const DefaultParams: KingKongParams = {
+  iterations: 25,
+  movePoolSize: 100,
   reproduceRate: 0.5,
   surviveRate: 0.1,
   pickRate: 0.05,
   keepOrderRate: 0.9,
   mutationRate: 0.05,
+  evalRate: 0.05,
+  evalMode: "min",
 
   kingValue: 1000000,
   skillValue: 8,
@@ -208,35 +229,47 @@ const DefaultParams: Params = {
     3: -7,
   },
   supplyIncomeValue: 5,
-  valueOfCapturingNeutralResources: 2,
-  valueOfCapturingEnemyResources: 4,
-  kingThreatenedAndDefendablePenalty: -3,
-  kingThreatenedAndNotDefendableButMovablePenalty: -5,
-  kingThreatenedAndNotDefendableNorMovablePenalty: -15,
-  kingNotMoveablePenalty: -3,
+  valueOfCapturingNeutralResources: 3,
+  valueOfCapturingEnemyResources: 6,
+  kingThreatenedAndDefendablePenalty: -8,
+  kingThreatenedAndNotDefendableButMovablePenalty: -12,
+  kingThreatenedAndNotDefendableNorMovablePenalty: -16,
+  kingNotMoveablePenalty: -8,
   kingSurroundedByEnemyUnitPenalty: {
-    1: -2,
-    2: -4,
-    3: -6,
+    1: -3,
+    2: -5,
+    3: -7,
   },
-  kingAwayFromCenterPenaltyPerDist: -3,
-  kingSkillNotTowardsCenterPenalty: -3,
+  kingSurroundedByFriendlyUnitBonus: {
+    1: 2,
+    2: 4,
+    3: 6,
+  },
+  kingOnResourceSquareBonus: 10,
+  kingNextMoveIsResourceSqaureBonus: 5,
+  kingNextResourceMoveNotBlockedBonus: 5,
+  kingCenterResourceSquareMultiplier: 1,
   valueOfNonCentralGrid: 0.25,
   valueOfCentralGrid: 1,
   valueOfResourceGrid: 0.5,
 };
 
 type MovePool = {
-  [player: number]: Array<{ move: PlayerMove; eval: number; action: PlayerAction | null }>;
+  [player: number]: Array<{
+    move: PlayerMove;
+    eval: number;
+    values: Array<number>;
+    action: PlayerAction | null;
+  }>;
 };
 
 export class KingKong {
-  params: Params;
+  params: KingKongParams;
   movePool: MovePool = {};
   round: GameRound = GameRound.new_game();
   player: Player = Player.P1;
 
-  constructor(params: Params = DefaultParams) {
+  constructor(params: KingKongParams = DefaultParams) {
     this.params = params;
   }
 
@@ -252,15 +285,9 @@ export class KingKong {
       }
       this.testMoves();
       console.log(
-        `Iteration=${iter}, Win Rate=${(
+        `Player=${player} Iteration=${iter}, Win Rate=${(
           this.movePool[player][0].eval * 100.0
-        ).toFixed(2)}, Best Move=${this.movePool[
-          player
-        ][0].move.serialize()}, Worse Move Win Rate=${(
-          this.movePool[player][this.params.movePoolSize - 1].eval * 100.0
-        ).toFixed(2)}, Worst Move=${this.movePool[player][
-          this.params.movePoolSize - 1
-        ].move.serialize()}`
+        ).toFixed(2)}, Best Move=${this.movePool[player][0].move.serialize()}}`
       );
     }
     return this.pickMove();
@@ -274,7 +301,8 @@ export class KingKong {
         this.movePool[player].push({
           move: this.randMove(player, allMoves, false, []),
           eval: 0,
-          action: null
+          values: [],
+          action: null,
         });
       }
     });
@@ -340,7 +368,8 @@ export class KingKong {
         newPool[player].push({
           move: oldPool[i].move,
           eval: 0,
-          action: oldPool[i].action
+          values: [],
+          action: oldPool[i].action,
         });
       }
       const allMoves = Rule.valid_moves(this.round.board, player);
@@ -355,7 +384,8 @@ export class KingKong {
             allMoves
           ),
           eval: 0,
-          action: null
+          values: [],
+          action: null,
         });
       }
     });
@@ -365,25 +395,46 @@ export class KingKong {
   testMoves(): void {
     [Player.P1, Player.P2].forEach((player) => {
       this.movePool[player].forEach((move) => {
-        move.action = Rule.validate_player_move(this.round.board, move.move)
+        move.action = Rule.validate_player_move(this.round.board, move.move);
       });
     });
     this.movePool[Player.P1].forEach((move1) => {
       this.movePool[Player.P2].forEach((move2) => {
         const round = this.round.proceed_with_action({
           [Player.P1]: move1.action!,
-          [Player.P2]: move2.action!
+          [Player.P2]: move2.action!,
         });
         const value = this.evaluate(round);
         const winRate = this.valueToWinrate(value);
-        move1.eval += winRate / this.params.movePoolSize;
-        move2.eval += (1 - winRate) / this.params.movePoolSize;
+        move1.values.push(winRate);
+        move2.values.push(1 - winRate);
       });
     });
 
     [Player.P1, Player.P2].forEach((player) => {
+      this.movePool[player].forEach((m) => {
+        m.values.sort();
+        m.eval = this.evalValues(m.values);
+      });
       this.movePool[player].sort((a, b) => b.eval - a.eval);
     });
+  }
+
+  evalValues(values: Array<number>): number {
+    if (this.params.evalMode == "min") {
+      return values[0];
+    } else {
+      const end = Math.floor((values.length - 1) * this.params.evalRate);
+      if (this.params.evalMode == "max") {
+        return values[end];
+      } else {
+        var result = 0;
+        for (var i = 0; i <= end; i++) {
+          result += values[i];
+        }
+        return result / (end + 1);
+      }
+    }
   }
 
   valueToWinrate(value: number): number {
@@ -479,7 +530,11 @@ export class KingKong {
 
   getUnitValue(board: GameBoard, unit: Unit, coord: Coordinate): number {
     if (unit.type == King) {
-      return this.params.kingValue + this.getKingPenalty(board, unit, coord);
+      return (
+        this.params.kingValue +
+        this.getKingPenalty(board, unit, coord) +
+        this.getKingSummonBonus(board, unit, coord)
+      );
     }
     return (
       this.getUnitSkillAndLevelValue(unit, coord) +
@@ -487,12 +542,57 @@ export class KingKong {
     );
   }
 
+  getKingSummonBonus(board: GameBoard, unit: Unit, coord: Coordinate): number {
+    var minDist = g.board_size_x + g.board_size_y;
+    var nearbyResource = Rule.resource_grid_center;
+    Rule.resource_grids.forEach((r) => {
+      const dist = Math.max(Math.abs(r.x - coord.x), Math.abs(r.y - coord.y));
+      if (dist < minDist) {
+        minDist = dist;
+        nearbyResource = r;
+      }
+    });
+
+    const multiplier = nearbyResource.equals(Rule.resource_grid_center)
+      ? this.params.kingCenterResourceSquareMultiplier
+      : 1;
+
+    var canMoveToNextStep = false;
+    const nextMove: Skill | null = unit.current.as_list()[0];
+    const nextPosition =
+      nextMove != null ? coord.add(nextMove.x, nextMove.y) : null;
+    if (nextPosition != null) {
+      const nextPositionIsThreatened =
+        board.heat.at(nextPosition).hostile(unit.owner) == 0;
+      const pieceAtNextPosition = board.unit.at(nextPosition);
+      const nextPositionIsBlocked =
+        pieceAtNextPosition == null || pieceAtNextPosition.owner != unit.owner;
+      if (!nextPositionIsThreatened && !nextPositionIsBlocked) {
+        canMoveToNextStep = true;
+      }
+    }
+
+    var value = 0;
+    if (minDist == 0) {
+      value += this.params.kingOnResourceSquareBonus;
+      if (canMoveToNextStep) {
+        value += this.params.kingNextResourceMoveNotBlockedBonus;
+      }
+    } else {
+      const hasSkill =
+        nextPosition != null && nextPosition.equals(nearbyResource);
+      if (hasSkill) {
+        value += this.params.kingNextMoveIsResourceSqaureBonus;
+        if (canMoveToNextStep) {
+          value += this.params.kingNextResourceMoveNotBlockedBonus;
+        }
+      }
+    }
+
+    return value * multiplier;
+  }
+
   getKingPenalty(board: GameBoard, unit: Unit, coord: Coordinate): number {
-    const dist = Math.max(
-      Math.abs(Rule.resource_grid_center.x - coord.x),
-      Math.abs(Rule.resource_grid_center.y - coord.y)
-    );
-    var value = dist * this.params.kingAwayFromCenterPenaltyPerDist;
 
     const defended = board.heat.at(coord).friendly(unit.owner) > 0;
     const attacked = board.heat.at(coord).hostile(unit.owner) > 0;
@@ -503,25 +603,16 @@ export class KingKong {
       if (next != null) {
         const targetUnit = board.unit.at(next);
         if (
-          targetUnit == null ||
-          (targetUnit.owner != unit.owner &&
-            board.heat.at(next).hostile(unit.owner) == 0)
+          (targetUnit == null ||
+          targetUnit.owner != unit.owner) &&
+            board.heat.at(next).hostile(unit.owner) == 0
         ) {
           moveable = true;
-        }
-
-        if (dist > 0) {
-          const distNext = Math.max(
-            Math.abs(Rule.resource_grid_center.x - next.x),
-            Math.abs(Rule.resource_grid_center.y - next.y)
-          );
-          if (distNext >= dist) {
-            value += this.params.kingSkillNotTowardsCenterPenalty;
-          }
         }
       }
     }
 
+    var value = 0;
     if (attacked) {
       if (defended) {
         value += this.params.kingThreatenedAndDefendablePenalty;
@@ -544,9 +635,11 @@ export class KingKong {
           continue;
         }
         const nearbyUnit = board.unit.at(nearbyCoord);
-        if (nearbyUnit != null && nearbyUnit.owner != unit.owner) {
+        if (nearbyUnit != null) {
           value +=
-            this.params.kingSurroundedByEnemyUnitPenalty[nearbyUnit.level];
+            nearbyUnit.owner != unit.owner
+              ? this.params.kingSurroundedByEnemyUnitPenalty[nearbyUnit.level]
+              : this.params.kingSurroundedByFriendlyUnitBonus[nearbyUnit.level];
         }
       }
     }
@@ -634,9 +727,10 @@ export class KingKong {
   }
 }
 
-onmessage = function(e) {
+onmessage = function (e) {
   let m = new KingKong().think(
-    GameRound.deserialize(e.data[0]), 
-    deserialize_player(e.data[1]));
+    GameRound.deserialize(e.data[0]),
+    deserialize_player(e.data[1])
+  );
   postMessage(m.serialize());
-}
+};
