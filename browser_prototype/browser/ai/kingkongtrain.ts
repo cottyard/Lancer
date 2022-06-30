@@ -590,7 +590,6 @@ function pickGroup(state: TrainingState): TestGroup {
 
 function duel(param1: KingKongParams, param2: KingKongParams): GameStatus {
   var round = GameRound.new_game();
-  var numMoves = 0;
   while (round.status() == GameStatus.Ongoing) {
     const moves: Players<PlayerMove> = {
       [Player.P1]: new KingKong(param1).think(round, Player.P1, false),
