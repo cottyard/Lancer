@@ -60,7 +60,7 @@ export class Rule
     static readonly supply_basic: number = 6;
 
     static readonly resource_grid_supplies: number[] = 
-        [2, 2, 2, 2, 4, 2, 2, 2, 2];
+        [2, 2, 2, 2, 2, 2, 2, 2, 2];
 
     static readonly resource_capturing_speed = 2;
     static readonly resource_decapturing_speed = 3;
