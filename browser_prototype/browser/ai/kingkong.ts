@@ -195,7 +195,7 @@ export type KingKongParams = {
 
 export const DefaultParams: KingKongParams = {
   iterations: 25,
-  movePoolSize: 100,
+  movePoolSize: 60,
   reproduceRate: 0.5,
   surviveRate: 0.1,
   pickRate: 0.05,
@@ -273,7 +273,7 @@ export class KingKong {
     this.params = params;
   }
 
-  think(round: GameRound, player: Player): PlayerMove {
+  think(round: GameRound, player: Player, verbose: boolean = true): PlayerMove {
     this.round = round;
     this.player = player;
 
@@ -284,11 +284,14 @@ export class KingKong {
         this.generateMovePool();
       }
       this.testMoves();
-      console.log(
-        `Player=${player} Iteration=${iter}, Win Rate=${(
-          this.movePool[player][0].eval * 100.0
-        ).toFixed(2)}, Best Move=${this.movePool[player][0].move.serialize()}}`
-      );
+      if (verbose)
+      {
+        console.log(
+          `Player=${player} Iteration=${iter}, Win Rate=${(
+            this.movePool[player][0].eval * 100.0
+          ).toFixed(2)}, Best Move=${this.movePool[player][0].move.serialize()}}`
+        );
+      }
     }
     return this.pickMove();
   }
