@@ -75,6 +75,9 @@ export type KingKongParams = {
   // Range: [0, 1]
   reproduceRate: number;
 
+  // X% moves will be purely defends.
+  defendMoveRate: number;
+
   // Top X% moves will be carried to next batch of moves without change.
   // Range: [0, 1]
   surviveRate: number;
@@ -190,6 +193,7 @@ export const DefaultParams: KingKongParams = {
     { iterations: 0, size: 60 },
   ],
   reproduceRate: 0.5,
+  defendMoveRate: 0.1,
   surviveRate: 0.1,
   keepOrderRate: 0.9,
   mutationRate: 0.05,
@@ -323,9 +327,9 @@ export class KingKong {
       console.log(
         `Player=${this.player} Iteration=${this.iter}, Win Rate=${(
           this.movePool[this.player][0].eval * 100.0
-        ).toFixed(2)}, Best Move=${this.movePool[
-          this.player
-        ][0].move.serialize()}}`
+        ).toFixed(2)}, Pool Size=${
+          this.movePool[this.player].length
+        } Best Move=${this.movePool[this.player][0].move.serialize()}}`
       );
     }
     onMoveCallback(this.pickMove());
@@ -410,7 +414,11 @@ export class KingKong {
       const numSurvivedMoves = Math.floor(
         this.params.surviveRate * oldPool.length
       );
-      const numNewMoves = oldPool.length - numSurvivedMoves;
+      const numDefendMoves = Math.floor(
+        this.params.defendMoveRate * this.getPoolSize()
+      );
+      const numNewMoves =
+        this.getPoolSize() - numDefendMoves - numSurvivedMoves;
       const numReproduceMoves = oldPool.length * this.params.reproduceRate;
       for (var i = 0; i < numSurvivedMoves; i++) {
         newPool[player].push({
@@ -421,6 +429,23 @@ export class KingKong {
         });
       }
       const allMoves = Rule.valid_moves(this.round.board, player);
+      for (var i = 0; i < numDefendMoves; i++) {
+        const defendMoves = allMoves.filter((m) => {
+          const fromUnit = this.round.board.unit.at(m.from);
+          const toUnit = this.round.board.unit.at(m.to);
+          return (
+            fromUnit!.capable(m.which_skill()) &&
+            toUnit != null &&
+            toUnit.owner == player
+          );
+        });
+        newPool[player].push({
+          move: this.randMove(player, defendMoves, false, defendMoves),
+          eval: 0,
+          values: [],
+          action: null,
+        });
+      }
       for (var i = 0; i < numNewMoves; i++) {
         const move1 = oldPool[randint(numReproduceMoves)].move.moves;
         const move2 = oldPool[randint(numReproduceMoves)].move.moves;
@@ -501,13 +526,13 @@ export class KingKong {
   evaluate(round: GameRound): number {
     const status = round.status();
     if (status == GameStatus.Tied) {
-      return 0.5;
+      return 0;
     }
     if (status == GameStatus.WonByPlayer1) {
-      return 1;
+      return Infinity;
     }
     if (status == GameStatus.WonByPlayer2) {
-      return 0;
+      return -Infinity;
     }
 
     const board = round.board;

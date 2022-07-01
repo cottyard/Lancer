@@ -43,6 +43,16 @@ export const DefaultTrainingConfig: TrainingConfig = {
         max: 1,
       },
     ],
+    defendMoveRate: [
+      {
+        path: "defendMoveRate",
+        type: "number",
+        numSteps: 2,
+        step: 0.05,
+        min: 0,
+        max: 1,
+      },
+    ],
     surviveRate: [
       {
         path: "surviveRate",
