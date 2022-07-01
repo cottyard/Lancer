@@ -1,8 +1,8 @@
 import { KingKong, KingKongParams } from "../browser/ai/kingkong";
 import { Players, PlayerMove, Player } from "../common/entity";
 import { GameStatus, GameRound } from "../common/game_round";
-import { Task } from "./trainer";
-import axios from 'axios';
+import { Task, Version } from "./trainer";
+import axios from "axios";
 
 function duel(param1: KingKongParams, param2: KingKongParams): GameStatus {
   var round = GameRound.new_game();
@@ -21,7 +21,7 @@ var masterHostname: string = "";
 var hostPort: number = 8844;
 
 process.argv.forEach((arg) => {
-  if (arg.startsWith('--')) {
+  if (arg.startsWith("--")) {
     prevArg = arg;
     return;
   }
@@ -38,12 +38,22 @@ process.argv.forEach((arg) => {
 });
 
 async function getTask(): Promise<Task | null> {
-  const task = await axios.get<Task|null>(`http://${masterHostname}:${hostPort}/getTask`);
-  return task.data;
+  const result = await axios.get<{
+    task: Task | null;
+    version: string;
+  }>(`http://${masterHostname}:${hostPort}/getTask`);
+  const { task, version } = result.data;
+  if (version !== Version) {
+    console.log(`Please update your version to ${version}!`);
+    process.exit();
+  }
+  return task;
 }
 
-async function submitTask(pin:number, result:GameStatus): Promise<void> {
-  await axios.get<void>(`http://${masterHostname}:${hostPort}/submitTask/${pin}/${result}`);
+async function submitTask(pin: number, result: GameStatus): Promise<void> {
+  await axios.get<void>(
+    `http://${masterHostname}:${hostPort}/submitTask/${pin}/${result}`
+  );
 }
 
 async function rest(): Promise<void> {
