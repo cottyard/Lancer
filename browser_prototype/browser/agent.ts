@@ -141,7 +141,7 @@ export class LocalAgent extends ServerAgent
         this.ai_move = PlayerMove.deserialize(ai_move_str);
         this.context.players_moved[Player.P2] = true;
         this.context.consumed_msec[Player.P2] += time_consumed;
-        event_box.emit("refresh ui", null);
+        //event_box.emit("refresh ui", null);
         this.try_proceed();
     }
 
