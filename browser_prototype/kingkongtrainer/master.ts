@@ -6,7 +6,10 @@ import { Trainer } from "./trainer";
 // =========================================================
 
 const app: Express = express();
-const trainer: Trainer = new Trainer("data/state.txt");
+const trainer: Trainer = new Trainer("data/state.txt", "data/log.txt");
+
+// Periodically swipe timeout tasks.
+setInterval(() => trainer.stateUpdate(), 10 * 1000);
 
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
@@ -29,12 +32,20 @@ app.use(express.static("data"));
 
 app.get("/", (req, res) => {
   var result =
-    "/state.txt to see all states<br/>" + "/stop to stop current training";
+    "/state.txt to see all states<br/>" +
+    "/log.txt to see all logs<br/>" +
+    "/stop to stop current training<br/>" +
+    "/manualTrain/[name] to manually stop current training schedule and override with [name]<br/>";
   res.send(result);
 });
 
 app.get("/stop", (req, res) => {
   trainer.stopTraining();
+  res.send("Done.");
+});
+
+app.get("/manualTrain/:name", (req, res) => {
+  trainer.manualTrain(req.params.name);
   res.send("Done.");
 });
 

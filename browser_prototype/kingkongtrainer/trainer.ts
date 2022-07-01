@@ -513,23 +513,30 @@ export class Trainer {
   config: TrainingConfig;
   statePath: string;
   state: TrainingState;
+  logStream: fs.WriteStream;
 
   constructor(
     statePath: string,
+    logPath: string,
     config: TrainingConfig = DefaultTrainingConfig
   ) {
     this.config = config;
     this.statePath = statePath;
+    this.logStream = fs.createWriteStream(logPath, { flags: "a" });
     this.state = this._readTrainingState();
   }
 
+  _log(line: string): void {
+    this.logStream.write(`[${(new Date()).toLocaleString()}]    ${line}\n`);
+  }
+
   _readTrainingState(): TrainingState {
-    console.log(`Loading state file: ${this.statePath}`);
+    this._log(`Loading state file: ${this.statePath}`);
     try {
       const data = fs.readFileSync(this.statePath);
       return JSON.parse(this.statePath);
     } catch (e) {
-      console.log(`Failed to load state, using default internal state.`);
+      this._log(`Failed to load state, using default internal state.`);
       return {
         bestParams: DefaultParams,
         currentTrainingState: null,
@@ -629,6 +636,11 @@ export class Trainer {
   _startNewState(): void {
     const names = Object.keys(this.config.paramSearchConfigs);
     const name = names[randint(names.length)];
+    this._initTraining(name);
+    this._saveTrainingState();
+  }
+
+  _initTraining(name: string): void {
     const config = this.config.paramSearchConfigs[name];
     const testGroups: TestGroup[] = [];
     this._initializeTestGroups(
@@ -642,11 +654,10 @@ export class Trainer {
       name,
       testGroups,
     };
-    console.log(`Start tuning ${name}, with ${testGroups.length} test groups.`);
+    this._log(`Start tuning ${name}, with ${testGroups.length} test groups.`);
     testGroups.forEach((group, i) => {
-      console.log(`Group ${i}: ${JSON.stringify(group.change)}`);
+      this._log(`Group ${i}: ${JSON.stringify(group.change)}`);
     });
-    this._saveTrainingState();
   }
 
   _pickGroup(): number | null {
@@ -707,61 +718,64 @@ export class Trainer {
     }
   }
 
-  _stateUpdate(): void {
+  stateUpdate(): void {
     const current = this.state.currentTrainingState;
-    if (current == null) {
-      throw new Error(`currentTrainingState should not be null.`);
-    }
+    if (current != null) {
+      const completed =
+        current.testGroups.findIndex((group) => !group.isComplete) < 0;
+      if (completed) {
+        this._log(
+          `[Important] Param search on ${current.name} is completed.`
+        );
+        const groups = [...current.testGroups];
+        groups.sort(
+          (a, b) =>
+            -(
+              a.testScore / (a.testScore + a.controlScore) -
+              b.testScore / (b.testScore + b.controlScore)
+            )
+        );
+        groups.forEach((g) => {
+          this._log(
+            `Group ${JSON.stringify(g.change)}, Score: ${g.testScore}:${
+              g.controlScore
+            }, Win rate: ${Math.round(
+              (g.testScore / (g.testScore + g.controlScore)) * 100
+            )}%, Reject: ${g.rejected}`
+          );
+        });
+        const bestGroup = groups[0];
+        const bestGroupWinrate =
+          bestGroup.testScore / (bestGroup.testScore + bestGroup.controlScore);
+        if (bestGroupWinrate <= 0.5) {
+          this._log(
+            `Best test param ${JSON.stringify(
+              bestGroup.change
+            )} is no better than current param.`
+          );
+        } else {
+          const statsSig = this._binominalTest(
+            bestGroup.testScore + bestGroup.controlScore,
+            bestGroup.controlScore
+          );
+          this._log(
+            `Best test param ${JSON.stringify(
+              bestGroup.change
+            )} is better than current param, stats-sig=${statsSig}.`
+          );
+          this.state.bestParams = this._generateParam(
+            this.state.bestParams,
+            bestGroup.change
+          );
+        }
 
-    const completed =
-      current.testGroups.findIndex((group) => !group.isComplete) < 0;
-    if (completed) {
-      console.log(`[Important] Param search on ${current.name} is completed.`);
-      const groups = [...current.testGroups];
-      groups.sort(
-        (a, b) =>
-          -(
-            a.testScore / (a.testScore + a.controlScore) -
-            b.testScore / (b.testScore + b.controlScore)
-          )
-      );
-      groups.forEach((g) => {
-        console.log(
-          `Group ${JSON.stringify(g.change)}, Score: ${g.testScore}:${
-            g.controlScore
-          }, Win rate: ${Math.round(
-            (g.testScore / (g.testScore + g.controlScore)) * 100
-          )}%, Reject: ${g.rejected}`
-        );
-      });
-      const bestGroup = groups[0];
-      const bestGroupWinrate =
-        bestGroup.testScore / (bestGroup.testScore + bestGroup.controlScore);
-      if (bestGroupWinrate <= 0.5) {
-        console.log(
-          `Best test param ${JSON.stringify(
-            bestGroup.change
-          )} is no better than current param.`
-        );
-      } else {
-        const statsSig = this._binominalTest(
-          bestGroup.testScore + bestGroup.controlScore,
-          bestGroup.controlScore
-        );
-        console.log(
-          `Best test param ${JSON.stringify(
-            bestGroup.change
-          )} is better than current param, stats-sig=${statsSig}.`
-        );
-        this.state.bestParams = this._generateParam(this.state.bestParams, bestGroup.change);
+        this._stopCurrentTraining();
       }
-
-      this._stopCurrentTraining();
     }
 
     this.state.tasks.forEach((task) => {
       if (this._isTaskTimeout(task)) {
-        console.log(`Task time out: ${JSON.stringify(task)}`);
+        this._log(`Task time out: ${JSON.stringify(task)}`);
       }
     });
     this.state.tasks = this.state.tasks.filter(
@@ -777,18 +791,21 @@ export class Trainer {
   }
 
   _apply(out: any, change: any): void {
-    Object.keys(change).forEach(key => {
+    Object.keys(change).forEach((key) => {
       const val = change[key];
-      const isObject = typeof val === 'object' && val !== null;
+      const isObject = typeof val === "object" && val !== null;
       if (isObject) {
         this._apply(out[key], val);
       } else {
         out[key] = val;
       }
-    })
+    });
   }
 
-  _generateParam(base: KingKongParams, change: Partial<KingKongParams>): KingKongParams {
+  _generateParam(
+    base: KingKongParams,
+    change: Partial<KingKongParams>
+  ): KingKongParams {
     const out = JSON.parse(JSON.stringify(base));
     this._apply(out, change);
     return out;
@@ -797,7 +814,7 @@ export class Trainer {
   _stopCurrentTraining(): void {
     this.state.currentTrainingState = null;
     if (this.state.tasks.length > 0) {
-      console.log(
+      this._log(
         `Current training finishes with ${
           this.state.tasks.length
         } aborted tasks: ${JSON.stringify(this.state.tasks)}.`
@@ -806,8 +823,14 @@ export class Trainer {
     }
   }
 
+  manualTrain(name: string): void {
+    this._stopCurrentTraining();
+    this._initTraining(name);
+    this._saveTrainingState();
+  }
+
   stopTraining(): void {
-    console.log(`Manually stop training.`);
+    this._log(`Manually stop training.`);
     this._stopCurrentTraining();
     this._saveTrainingState();
   }
@@ -834,7 +857,7 @@ export class Trainer {
 
     const testParams = this._generateParam(
       this.state.bestParams,
-      this.state.currentTrainingState!.testGroups[testGroupIndex].change,
+      this.state.currentTrainingState!.testGroups[testGroupIndex].change
     );
     const task =
       testGroupPlayer == Player.P1
@@ -854,7 +877,7 @@ export class Trainer {
   submitTask(pin: number, result: GameStatus): void {
     const taskIndex = this.state.tasks.findIndex((task) => task.pin == pin);
     if (taskIndex < 0) {
-      console.log(`Task pin ${pin} can not be found.`);
+      this._log(`Task pin ${pin} can not be found.`);
       return;
     }
     const task = this.state.tasks.splice(taskIndex, 1)[0];
@@ -883,13 +906,13 @@ export class Trainer {
     }
 
     this._groupStatsUpdate(group);
-    console.log(
+    this._log(
       `Testing ${JSON.stringify(group.change)}, TestGroup ${
         task.testGroupPlayer
       }, Winner ${result}, Score ${group.testScore}:${
         group.controlScore
       }, Completed ${group.isComplete}, Rejected ${group.rejected}`
     );
-    this._stateUpdate();
+    this.stateUpdate();
   }
 }
