@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import morgan from "morgan";
 import http from "http";
-import { Trainer } from "./trainer";
+import { Trainer, Version } from "./trainer";
 
 // =========================================================
 
@@ -51,7 +51,7 @@ app.get("/manualTrain/:name", (req, res) => {
 
 app.get("/getTask", (req, res) => {
   const task = trainer.getNextTask();
-  res.send(JSON.stringify(task));
+  res.send(JSON.stringify({task, version: Version}));
 });
 
 app.get("/submitTask/:pin/:result", (req, res) => {

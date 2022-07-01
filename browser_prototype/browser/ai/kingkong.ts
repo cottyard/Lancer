@@ -186,6 +186,7 @@ export type KingKongParams = {
 export const DefaultParams: KingKongParams = {
   iterations: 25,
   movePoolSize: [
+    { iterations: 125, size: 160 },
     { iterations: 100, size: 140 },
     { iterations: 75, size: 120 },
     { iterations: 50, size: 100 },
@@ -433,10 +434,13 @@ export class KingKong {
         const defendMoves = allMoves.filter((m) => {
           const fromUnit = this.round.board.unit.at(m.from);
           const toUnit = this.round.board.unit.at(m.to);
+          const toUnitUnderAttack =
+            this.round.board.heat.at(m.to).hostile(player) > 0;
           return (
             fromUnit!.capable(m.which_skill()) &&
             toUnit != null &&
-            toUnit.owner == player
+            toUnit.owner == player &&
+            toUnitUnderAttack
           );
         });
         newPool[player].push({

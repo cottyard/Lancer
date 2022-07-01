@@ -1,12 +1,13 @@
-import { Player, PlayerMove, Players } from "../common/entity";
-import { GameRound, GameStatus } from "../common/game_round";
+import { Player } from "../common/entity";
+import { GameStatus } from "../common/game_round";
 import { randint } from "../common/language";
 import {
   DefaultParams,
-  KingKong,
   KingKongParams,
 } from "../browser/ai/kingkong";
 import * as fs from "fs";
+
+export const Version = '1.0';
 
 export type ParamSearchConfig =
   | {
