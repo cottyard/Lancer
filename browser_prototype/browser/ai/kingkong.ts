@@ -2,7 +2,6 @@ import {
   Action,
   ActionType,
   Coordinate,
-  deserialize_player,
   King,
   Move,
   Player,
@@ -11,75 +10,66 @@ import {
   Skill,
   Unit,
 } from "../../common/entity";
-import { GameRound } from "../../common/game_round";
+import { GameRound, GameStatus } from "../../common/game_round";
 import { /*GameBoard, Heat,*/ GameBoard, Rule } from "../../common/rule";
 import { randint } from "../../common/language";
 import { g } from "../../common/global";
 
-class StagingArea
-{
-    move: PlayerMove;
-    constructor(player: Player)
-    {
-        this.move = new PlayerMove(player);
-    }
+class StagingArea {
+  move: PlayerMove;
+  constructor(player: Player) {
+    this.move = new PlayerMove(player);
+  }
 
-    action(board: GameBoard): PlayerAction
-    {
-        return Rule.validate_player_move(board, this.move);
-    }
+  action(board: GameBoard): PlayerAction {
+    return Rule.validate_player_move(board, this.move);
+  }
 
-    rough_cost(board: GameBoard): number
-    {
-      // roughly estimate the cost in exchange for complexity
-      // the rough cost will always be >= real cost to avoid over spending
-      return this.move.moves.reduce<number>(
-        (total, m) => {
-          let unit = board.unit.at(m.from)!;
-          let skill = m.which_skill();
-          let a;
-          if (unit.capable(skill))
-          {
-              let target = board.unit.at(m.to);
-              if (target == null || unit.owner == target.owner)
-              {
-                // assume the more expensive action Move here instead of Defend
-                  a = new Action(m, ActionType.Move, unit);
-              }
-              else
-              {
-                  a = new Action(m, ActionType.Attack, unit);
-              }
-          }
-          else
-          {
-              a = new Action(m, ActionType.Upgrade, unit);
-          }
-          return total + a.cost;
-        }, 0);
-    }
+  rough_cost(board: GameBoard): number {
+    // roughly estimate the cost in exchange for complexity
+    // the rough cost will always be >= real cost to avoid over spending
+    return this.move.moves.reduce<number>((total, m) => {
+      let unit = board.unit.at(m.from)!;
+      let skill = m.which_skill();
+      let a;
+      if (unit.capable(skill)) {
+        let target = board.unit.at(m.to);
+        if (target == null || unit.owner == target.owner) {
+          // assume the more expensive action Move here instead of Defend
+          a = new Action(m, ActionType.Move, unit);
+        } else {
+          a = new Action(m, ActionType.Attack, unit);
+        }
+      } else {
+        a = new Action(m, ActionType.Upgrade, unit);
+      }
+      return total + a.cost;
+    }, 0);
+  }
 
-    pop_move(): Move | null
-    {
-        let removed = this.move.moves.pop();
-        return removed || null;
-    }
+  pop_move(): Move | null {
+    let removed = this.move.moves.pop();
+    return removed || null;
+  }
 
-    prepare_move(move: Move): void
-    {
-        this.move.extract((m: Move): m is Move => m.from.equals(move.from));
-        this.move.moves.push(move);
-    }
+  prepare_move(move: Move): void {
+    this.move.extract((m: Move): m is Move => m.from.equals(move.from));
+    this.move.moves.push(move);
+  }
 
-    prepare_moves(moves: Move[]): void
-    {
-      this.move.moves = moves;
-    }
+  prepare_moves(moves: Move[]): void {
+    this.move.moves = moves;
+  }
 }
 
 export type KingKongParams = {
   iterations: number;
-  movePoolSize: number;
+
+  // Example: [{size: 100, iterations: 20}, {size: 50, iterations: 0}]
+  // Means if current iteration >= 20, use 100 as size
+  // Otherwise use 50 as size.
+  // Note that it must be order by iterations (descending order).
+  movePoolSize: { size: number; iterations: number }[];
 
   // Top X% moves will be used to generate next batch of moves.
   // Range: [0, 1]
@@ -88,9 +78,6 @@ export type KingKongParams = {
   // Top X% moves will be carried to next batch of moves without change.
   // Range: [0, 1]
   surviveRate: number;
-
-  // Top X% moves of the last iteration will be picked as final result.
-  pickRate: number;
 
   // X% moves generated from reproducing will keep relative order from parent.
   keepOrderRate: number;
@@ -107,8 +94,8 @@ export type KingKongParams = {
   // Min returns the 1st value (evalRate is not needed for this mode).
   evalMode: "average" | "max" | "min";
 
-  // Value of king - should be very large.
-  kingValue: number;
+  // Fluctuation in evaluation result to add some randomness.
+  evalFluctuation: number;
 
   // Value of each skill.
   skillValue: number;
@@ -195,16 +182,21 @@ export type KingKongParams = {
 
 export const DefaultParams: KingKongParams = {
   iterations: 25,
-  movePoolSize: 60,
+  movePoolSize: [
+    { iterations: 100, size: 140 },
+    { iterations: 75, size: 120 },
+    { iterations: 50, size: 100 },
+    { iterations: 25, size: 80 },
+    { iterations: 0, size: 60 },
+  ],
   reproduceRate: 0.5,
   surviveRate: 0.1,
-  pickRate: 0.05,
   keepOrderRate: 0.9,
   mutationRate: 0.05,
   evalRate: 0.05,
   evalMode: "min",
+  evalFluctuation: 5,
 
-  kingValue: 1000000,
   skillValue: 8,
   levelValueBase: {
     1: 10,
@@ -268,6 +260,8 @@ export class KingKong {
   movePool: MovePool = {};
   round: GameRound = GameRound.new_game();
   player: Player = Player.P1;
+  iter: number = 0;
+  stopAsyncThink: boolean = false;
 
   constructor(params: KingKongParams = DefaultParams) {
     this.params = params;
@@ -276,31 +270,82 @@ export class KingKong {
   think(round: GameRound, player: Player, verbose: boolean = true): PlayerMove {
     this.round = round;
     this.player = player;
-
-    for (var iter = 0; iter < this.params.iterations; iter++) {
-      if (iter == 0) {
-        this.initiateMovePoolWithMonkeyMoves();
-      } else {
-        this.generateMovePool();
-      }
-      this.testMoves();
-      if (verbose)
-      {
-        console.log(
-          `Player=${player} Iteration=${iter}, Win Rate=${(
-            this.movePool[player][0].eval * 100.0
-          ).toFixed(2)}, Best Move=${this.movePool[player][0].move.serialize()}}`
-        );
-      }
+    this.iter = 0;
+    for (this.iter = 0; this.iter < this.params.iterations; this.iter++) {
+      this.thinkForOneIteration(verbose, () => {});
     }
     return this.pickMove();
+  }
+
+  async sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  async thinkAsync(
+    round: GameRound,
+    player: Player,
+    verbose: boolean = true,
+    onMoveCallback: (move: PlayerMove) => void
+  ): Promise<void> {
+    this.round = round;
+    this.player = player;
+    this.iter = 0;
+    this.stopAsyncThink = false;
+
+    for (
+      this.iter = 0;
+      !this.stopAsyncThink && this.iter < this.params.iterations;
+      this.iter++
+    ) {
+      this.thinkForOneIteration(verbose, onMoveCallback);
+      // Sleep some time so the worker thread can process stopThinkingAsync message.
+      await this.sleep(10);
+    }
+  }
+
+  stopThinkingAsync(): void {
+    this.stopAsyncThink = true;
+  }
+
+  thinkForOneIteration(
+    verbose: boolean = true,
+    onMoveCallback: (move: PlayerMove) => void
+  ): void {
+    if (this.iter == 0) {
+      this.initiateMovePoolWithMonkeyMoves();
+    } else {
+      this.generateMovePool();
+    }
+    this.testMoves();
+    if (verbose) {
+      console.log(
+        `Player=${this.player} Iteration=${this.iter}, Win Rate=${(
+          this.movePool[this.player][0].eval * 100.0
+        ).toFixed(2)}, Best Move=${this.movePool[
+          this.player
+        ][0].move.serialize()}}`
+      );
+    }
+    onMoveCallback(this.pickMove());
+  }
+
+  getPoolSize(): number {
+    for (var i = 0; i < this.params.movePoolSize.length; i++) {
+      const config = this.params.movePoolSize[i];
+      if (this.iter >= config.iterations) {
+        return config.size;
+      }
+    }
+    throw new Error(`Can not find move pool size for iteration ${this.iter}.`);
   }
 
   initiateMovePoolWithMonkeyMoves(): void {
     [Player.P1, Player.P2].forEach((player) => {
       this.movePool[player] = [];
       const allMoves = Rule.valid_moves(this.round.board, player);
-      for (var i = 0; i < this.params.movePoolSize; i++) {
+      for (var i = 0; i < this.getPoolSize(); i++) {
         this.movePool[player].push({
           move: this.randMove(player, allMoves, false, []),
           eval: 0,
@@ -449,14 +494,24 @@ export class KingKong {
   }
 
   pickMove(): PlayerMove {
-    return this.movePool[this.player][
-      randint(this.params.pickRate * this.params.movePoolSize)
-    ].move;
+    const pool = this.movePool[this.player];
+    return pool[0].move;
   }
 
   evaluate(round: GameRound): number {
+    const status = round.status();
+    if (status == GameStatus.Tied) {
+      return 0.5;
+    }
+    if (status == GameStatus.WonByPlayer1) {
+      return 1;
+    }
+    if (status == GameStatus.WonByPlayer2) {
+      return 0;
+    }
+
     const board = round.board;
-    var result = 0;
+    var result = (Math.random() * 2 - 1) * this.params.evalFluctuation;
     board.unit.iterate_units((unit, coord) => {
       result +=
         this.getUnitValue(board, unit, coord) *
@@ -534,7 +589,6 @@ export class KingKong {
   getUnitValue(board: GameBoard, unit: Unit, coord: Coordinate): number {
     if (unit.type == King) {
       return (
-        this.params.kingValue +
         this.getKingPenalty(board, unit, coord) +
         this.getKingSummonBonus(board, unit, coord)
       );
@@ -596,7 +650,6 @@ export class KingKong {
   }
 
   getKingPenalty(board: GameBoard, unit: Unit, coord: Coordinate): number {
-
     const defended = board.heat.at(coord).friendly(unit.owner) > 0;
     const attacked = board.heat.at(coord).hostile(unit.owner) > 0;
     const skills = unit.current.as_list();
@@ -606,9 +659,8 @@ export class KingKong {
       if (next != null) {
         const targetUnit = board.unit.at(next);
         if (
-          (targetUnit == null ||
-          targetUnit.owner != unit.owner) &&
-            board.heat.at(next).hostile(unit.owner) == 0
+          (targetUnit == null || targetUnit.owner != unit.owner) &&
+          board.heat.at(next).hostile(unit.owner) == 0
         ) {
           moveable = true;
         }
@@ -729,11 +781,3 @@ export class KingKong {
     }
   }
 }
-
-onmessage = function (e) {
-  let m = new KingKong().think(
-    GameRound.deserialize(e.data[0]),
-    deserialize_player(e.data[1])
-  );
-  postMessage(m.serialize());
-};

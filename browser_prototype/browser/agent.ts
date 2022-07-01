@@ -47,7 +47,7 @@ function update_context_status(context: IGameContext): void
 
 export class LocalAgent extends ServerAgent
 {
-    private ai_worker: Worker;
+    private ai_worker: Worker | null = null;
     private ai_move: PlayerMove | null = null;
     private player_move: PlayerMove | null = null;
 
@@ -60,8 +60,6 @@ export class LocalAgent extends ServerAgent
             [Player.P2]: "King Kong"
         }
 
-        this.ai_worker = new Worker("kingkong.js");
-        this.ai_worker.onmessage = this.on_ai_move.bind(this);
         this.new_game();
     }
 
@@ -113,6 +111,8 @@ export class LocalAgent extends ServerAgent
 
     trigger_ai_move()
     {
+        this.ai_worker = new Worker("kingkong_worker.js");
+        this.ai_worker.onmessage = this.on_ai_move.bind(this);
         this.ai_worker.postMessage([
             this.context.present.serialize(),
             serialize_player(Player.P2)]);
@@ -125,15 +125,22 @@ export class LocalAgent extends ServerAgent
         this.context.consumed_msec[Player.P1] += Date.now() - this.context.round_begin_time;
         this.context.status = GameContextStatus.WaitForOpponent;
         event_box.emit("refresh ui", null);
+
+        this.ai_worker?.postMessage(null); // Null message to stop thinking.
+        this.ai_worker?.terminate();
         
         this.try_proceed();
     }
 
     on_ai_move(e: any): void
     {
-        this.ai_move = PlayerMove.deserialize(e.data);
+        const [round_str, ai_move_str, time_consumed] = e.data;
+        if (round_str != this.context.present.serialize()) {
+            return;
+        }
+        this.ai_move = PlayerMove.deserialize(ai_move_str);
         this.context.players_moved[Player.P2] = true;
-        this.context.consumed_msec[Player.P2] += Date.now() - this.context.round_begin_time;
+        this.context.consumed_msec[Player.P2] += time_consumed;
         event_box.emit("refresh ui", null);
         this.try_proceed();
     }
